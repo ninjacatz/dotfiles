@@ -2,4 +2,42 @@
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME "$@"
+dotfiles=(
+	"$HOME/.asoundrc"
+	"$HOME/.bashrc"
+	"$HOME/README.md"
+	"$HOME/.vim/vimrc"
+	"$HOME/.vim/snippets"
+	"$HOME/.config/alacritty/alacritty.yml"
+	"$HOME/.config/bspwm/bspwmrc"
+	"$HOME/.config/mpv/mpv.conf"
+	"$HOME/.config/mpv/input.conf"
+	"$HOME/.config/mpv/scripts"
+	"$HOME/.config/polybar"
+	"$HOME/.config/sxhkd/sxhkdrc"
+	"$HOME/.config/vifm/vifmrc"
+	"$HOME/.config/zathura/zathurarc"
+	"$HOME/.config/mimeapps.list"
+	"$HOME/.local/bin"
+)
+
+dotfiles_fn() {
+	git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME "$@"
+}
+
+# if the command is 'commit', only commit if there are changes
+if [[ "$1" == "commit" ]]; then
+	for file in "${dotfiles[@]}"; do
+		echo $file
+		dotfiles_fn add "$file"
+	done
+	# check if there are changes to commit
+	if ! dotfiles_fn diff --cached --quiet; then
+		dotfiles_fn commit -m "Automated commit"
+	else
+		echo "No changes to commit"
+	fi
+# otherwise, pass all arguments directly to git
+else
+	dotfiles_fn "$@"
+fi

@@ -2,6 +2,13 @@
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+read -p "Do you want to push dotfile updates to GitHub? ('y' or *) " github_answer
+
+if [ "$github_answer" = "y" ]; then
+	$source_dir/qqdotfiles commit
+	$source_dir/qqdotfiles push
+fi
+
 # -------------------------------
 # decrypt and mount devices
 
