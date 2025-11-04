@@ -28,7 +28,6 @@ dotfiles_fn() {
 # if the command is 'commit', only commit if there are changes
 if [[ "$1" == "commit" ]]; then
 	for file in "${dotfiles[@]}"; do
-		echo $file
 		dotfiles_fn add "$file"
 	done
 	# check if there are changes to commit
