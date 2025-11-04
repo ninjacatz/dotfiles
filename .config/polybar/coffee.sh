@@ -1,0 +1,9 @@
+#!/bin/sh
+
+output=""
+
+if ! pgrep -x xautolock > /dev/null && ! pgrep -x xlock > /dev/null; then
+	output="*"
+fi
+
+echo "$output"

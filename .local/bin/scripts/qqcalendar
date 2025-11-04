@@ -1,0 +1,8 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+calendar_path=/mnt/part/calendar
+
+$source_dir/qqmount part
+calcurse -D $calendar_path

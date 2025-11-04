@@ -1,0 +1,5 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME "$@"

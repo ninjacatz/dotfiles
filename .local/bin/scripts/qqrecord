@@ -1,0 +1,72 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+video_command="-f x11grab -thread_queue_size 512 -r 30 -i"
+video_codecs="-c:v libx264 -preset ultrafast -pix_fmt yuv420p"
+audio_command="-f alsa -use_wallclock_as_timestamps 1 -thread_queue_size 512 -i"
+audio_codecs="-c:a aac -b:a 128k -ar 44100"
+mic_audio="hw:0,0"
+dir="$HOME/Downloads/recordings"
+
+case $1 in
+	-screenshot)
+		mkdir $dir
+		base_name="screenshot"
+		ext_name="png"
+		counter=1
+		while [[ -f $dir/$base_name.$ext_name ]]; do
+			base_name="${base_name%%[0-9]*}$counter"
+			counter=$((counter + 1))
+		done
+		scrot $dir/$base_name.$ext_name
+		;;
+	-screencrop)
+		mkdir $dir
+		base_name="screencrop"
+		ext_name="png"
+		counter=1
+		while [[ -f $dir/$base_name.$ext_name ]]; do
+			base_name="${base_name%%[0-9]*}$counter"
+			counter=$((counter + 1))
+		done
+		scrot -s $dir/$base_name.$ext_name
+		;;
+	-mic)
+		mkdir $dir
+		base_name="mic"
+		ext_name="mp3"
+		counter=1
+		while [[ -f $dir/$base_name.$ext_name ]]; do
+			base_name="${base_name%%[0-9]*}$counter"
+			counter=$((counter + 1))
+		done
+		ffmpeg $audio_command $mic_audio $audio_codecs $dir/$base_name.$ext_name
+		;;
+	-screen)
+		mkdir $dir
+		base_name="screen"
+		ext_name="mp4"
+		counter=1
+		while [[ -f $dir/$base_name.$ext_name ]]; do
+			base_name="${base_name%%[0-9]*}$counter"
+			counter=$((counter + 1))
+		done
+		ffmpeg $video_command $DISPLAY $video_codecs $dir/$base_name.$ext_name
+		;;
+	-screen-mic)
+		mkdir $dir
+		base_name="screen-mic"
+		ext_name="mp4"
+		counter=1
+		while [[ -f $dir/$base_name.$ext_name ]]; do
+			base_name="${base_name%%[0-9]*}$counter"
+			counter=$((counter + 1))
+		done
+		ffmpeg $video_command $DISPLAY $audio_command $mic_audio $video_codecs $audio_codecs $dir/$base_name.$ext_name
+		;;
+	*)
+		echo "Invalid argument (-screenshot, -mic, -screen, -screen-mic)"
+		exit 1
+		;;
+esac

@@ -1,0 +1,118 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+get_disk_path() {
+	while [ "$disk_path" == "" ]; do
+		lsblk
+		read -p "Name of $1: " disk
+		if [ -b /dev/"$disk" ]; then
+			disk_path="/dev/$disk"
+		fi
+	done
+}
+
+get_mnt_path() {
+	while [ "$dev" == "" ]; do
+		lsblk
+		read -p "Name of $1: " mount_dir
+		if mountpoint /mnt/"$mount_dir" > /dev/null; then
+			dev="$mount_dir"
+			dev_mnt_path="/mnt/$mount_dir"
+		fi
+	done
+}
+
+if [ "$1" == "-u" ]; then
+	umount=true
+	shift
+fi
+
+dev="$1"
+dev_mnt_path="/mnt/$1"
+
+case "$1" in
+	intdev)
+		custom_disk_path=/dev/sdb14
+		;;
+	part)
+		custom_disk_path=/dev/sda2
+		;;
+	*)
+		if [ -z "$1" ]; then
+			if [ "$umount" == "true" ]; then
+				get_mnt_path "directory to unmount"
+			else
+				echo "Invalid arguments (mount_name, -u mount_name, -u)"
+				exit 1
+			fi
+		else
+			if ! [ -e "$dev_mnt_path" ]; then
+				echo "$dev_mnt_path directory doesn't exist"
+				exit 1
+			fi
+		fi
+		;;
+esac
+
+if [ "$custom_disk_path" != "" ]; then
+	disk_path="$custom_disk_path"
+else
+	disk_path=$(mount | grep /mnt/"$dev" | awk '{print $1}')
+fi
+
+echo $dev
+echo $dev_mnt_path
+echo $disk_path
+exit
+
+if [ "$umount" == "true" ]; then
+	if mountpoint "$dev_mnt_path" > /dev/null; then
+		echo "unmounting $dev..."
+		sudo $source_dir/../qqsudo umount $dev_mnt_path || exit 1
+		success=true
+	else
+		echo "$dev not mounted"
+		exit 1
+	fi
+	luks_disk_path=$(sudo $source_dir/../qqsudo cryptsetup status "$dev" | grep device: | awk '{print $2}')
+	if [ "$luks_disk_path" == "" ]; then
+		get_disk_path "$dev"
+		luks_disk_path="$disk_path"
+	fi
+	if sudo $source_dir/../qqsudo cryptsetup isLuks "$luks_disk_path" 2> /dev/null; then
+		if sudo $source_dir/../qqsudo cryptsetup status "$dev" > /dev/null; then
+			echo "locking $dev..."
+			sudo $source_dir/../qqsudo cryptsetup luksClose /dev/mapper/$dev || exit 1
+			success=true
+		else
+			echo "$dev already locked"
+			exit 1
+		fi
+	fi
+	if [ "$success" == "true" ]; then
+		echo "success"
+	fi
+else
+	get_disk_path "$dev"
+	echo $disk_path
+	if sudo $source_dir/../qqsudo cryptsetup isLuks "$disk_path" 2> /dev/null; then
+		if ! sudo $source_dir/../qqsudo cryptsetup status "$dev" > /dev/null; then
+			echo "unlocking $dev..."
+			sudo $source_dir/../qqsudo cryptsetup luksOpen $disk_path $dev || exit 1
+		else
+			echo "$dev already unlocked"
+		fi
+		disk_path="/dev/mapper/$dev" # for changing mount behavior to use newly setup /dev/mapper
+	fi
+	if ! mountpoint "$dev_mnt_path" > /dev/null; then
+		echo "mounting $dev..."
+		sudo $source_dir/../qqsudo mount $disk_path $dev_mnt_path || exit 1
+	else
+		echo "$dev already mounted"
+		exit 1
+	fi
+	echo "changing mount point ownership..."
+	sudo $source_dir/../qqsudo chown -R $USER:$USER "$dev_mnt_path"
+	echo "success"
+fi

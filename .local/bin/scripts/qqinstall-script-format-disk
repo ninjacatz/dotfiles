@@ -1,0 +1,98 @@
+#!/bin/bash
+
+read -p "WARNING: This will destory the selected drive. PROCEED WITH CAUTION"
+
+lsblk
+echo -n "Name of drive: "
+read drive
+
+disk_name="$drive"
+disk_name_boot="${drive}p1"
+disk_name_swap="${drive}p2"
+disk_name_root="${drive}p3"
+disk_name_part="${drive}p4"
+
+# Stop on any errors
+set -euo pipefail
+
+# Wipe disk
+wipefs -a /dev/"$disk_name"
+parted /dev/"$disk_name" --script mklabel gpt
+
+# Create partitions
+parted /dev/"$disk_name" --script mkpart ESP fat32 1MiB 513MiB
+parted /dev/"$disk_name" --script set 1 esp on
+parted /dev/"$disk_name" --script mkpart primary linux-swap 513MiB 16897MiB
+parted /dev/"$disk_name" --script mkpart primary ext4 16897MiB 75%
+parted /dev/"$disk_name" --script mkpart primary ext4 75% 100%
+
+# Wait for kernel to recognize new partitions
+sleep 2
+partprobe /dev/"$disk_name"
+
+# Format partitions
+mkfs.fat -F32 /dev/"$disk_name_boot"
+
+mkswap /dev/"$disk_name_swap"
+swapon /dev/"$disk_name_swap"
+
+# Do not encrypt root partition yet
+mkfs.ext4 /dev/"$disk_name_root"
+
+cryptsetup luksFormat /dev/"$disk_name_part"
+cryptsetup luksOpen /dev/"$disk_name_part" part
+mkfs.ext4 /dev/mapper/part
+cryptsetup luksClose /dev/mapper/part
+
+# Install antix to unencrypted root partition
+cli-installer
+
+exit
+
+# Mount root partition
+mkdir antix-install
+mount /dev/"$disk_name_root" antix-install
+# Copy root partition
+mkdir antix-install-copy
+rsync -aAX --info=progress2 antix-install/ antix-install-copy/
+# Unmount root partition
+umount antix-install
+rmdir antix-install
+
+# Format encrypted root partition
+cryptsetup luksFormat /dev/"$disk_name_root"
+cryptsetup luksOpen /dev/"$disk_name_root" root
+mkfs.ext4 /dev/mapper/root
+
+# DO ANY FSTAB/GRUB UPDATES IN ANTIX-INSTALL-COPY
+# Update fstab
+uuid=$(blkid -s UUID -o value /dev/mapper/root)
+sed -i "\|/ ext4|s|.*|UUID=$uuid / ext4 defaults,relatime 0 1|" antix-install-copy/etc/fstab
+# Update crypttab
+luks_uuid=$(cryptsetup luksUUID /dev/"$disk_name_root")
+echo "root UUID=$luks_uuid none luks" | sudo tee -a antix-install-copy/etc/crypttab
+# Update default/grub
+grub_cmdline_linux_values=$(grep GRUB_CMDLINE_LINUX_DEFAULT antix-install-copy/etc/default/grub | awk -F'="|"' '{print $2}')
+new_grub_cmdline_linux_values="$grub_cmdline_linux_values cryptdevice=UUID=$luks_uuid:root root=/dev/mapper/root"
+sudo sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"$new_grub_cmdline_linux_values\"|" antix-install-copy/etc/default/grub
+
+# Chroot stuff
+mount --bind /dev  antix-install-copy/dev
+mount --bind /proc antix-install-copy/proc
+mount --bind /sys  antix-install-copy/sys
+mount --bind /run  antix-install-copy/run
+echo -e "ENTERING CHROOT\nRUN THESE COMMANDS:\nupdate-initramfs -u\nupdate-grub\n"
+chroot antix-install-copy
+umount antix-install-copy/dev
+umount antix-install-copy/proc
+umount antix-install-copy/sys
+umount antix-install-copy/run
+
+# Mount decrypted root partition
+mkdir encrypted-install
+mount /dev/mapper/root encrypted-install
+# Copy installed system to encrypted root partition
+rsync -aAX --info=progress2 --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} antix-install-copy/ encrypted-install/
+
+# set home directory to qq ownership?
+

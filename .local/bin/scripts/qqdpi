@@ -1,0 +1,70 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+echo Current DPI: $(awk '/dpi:/ {print $2}' $HOME/.Xresources)
+
+# if no arguments supplied
+if [ $# -eq 0 ]; then
+	read -p "DPI (96|1, 144|1.5, 192|2): " input
+else
+	input=$1
+fi
+
+case $input in
+	96|1)
+		ui_scale="1.0"
+		dpi="96"
+		xlock_font_size=$((dpi/4))
+		xlock_font=-*-helvetica-*-r-*-*-$xlock_font_size-*-*-*-*-*-*-*
+		;;
+	144|1.5)
+		ui_scale="1.5"
+		dpi="144"
+		xlock_font_size=$((dpi/4))
+		xlock_font=-*-helvetica-*-r-*-*-$xlock_font_size-*-*-*-*-*-*-*
+		;;
+	192|2)
+		ui_scale="2.0"
+		dpi="192"
+		xlock_font_size=$((dpi/4))
+		xlock_font=-*-helvetica-*-r-*-*-$xlock_font_size-*-*-*-*-*-*-*
+		;;
+	*)
+		echo "Invalid argument (96|1, 144|1.5, 192|2)"
+		exit 1
+		;;
+esac
+
+# change xlock font size
+sed -i s/"xlock_font=.*"/"xlock_font=$xlock_font"/ $source_dir/qqpc
+
+# change gtk dpi
+sed -i s/"gtk-xft-dpi=.*"/"gtk-xft-dpi=$dpi"/ ~/.config/gtk-3.0/settings.ini
+
+# change polybar dpi
+sed -i s/"dpi = .*"/"dpi = $dpi"/ ~/.config/polybar/config.ini
+
+# change wine dpi
+if [ -e ~/.wine ];then
+	wine reg add 'HKCU\Control Panel\Desktop' -v LogPixels -t REG_DWORD -d "$dpi" /f
+fi
+
+# change dillo font factor
+dillo_file=$HOME/.dillo/dillorc
+sed -i s/"font_factor=.*"/"font_factor=$ui_scale"/ $dillo_file
+
+# change Xresources DPI
+xresources_file="$HOME/.Xresources"
+#if existing setting is present, change it
+sed -i s/"Xft.dpi:.*"/"Xft.dpi: $dpi"/ $xresources_file
+#replace old Xresources file with current version
+xrdb $xresources_file
+
+# refresh wm
+bspc config bottom_padding 0
+sudo -u $USER ~/.config/bspwm/bspwmrc > /dev/null
+
+echo "DPI is set to $dpi"
+
+

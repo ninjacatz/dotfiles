@@ -1,0 +1,16 @@
+set selection-clipboard clipboard
+set window-title-basename
+set statusbar-basename
+
+set zoom-min 10
+set zoom-max 1000
+
+map - zoom out
+map = zoom in
+
+set font "JetBrains Mono 11"
+
+set default-bg "#3c3b37"
+set default-fg "#dedede"
+set statusbar-bg "#3c3b37"
+set statusbar-fg "#dedede"

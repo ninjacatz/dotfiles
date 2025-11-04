@@ -1,0 +1,412 @@
+#!/bin/bash
+
+if [ $(id -u) -eq 0 ]; then
+	echo "Run as user"
+	exit 1
+fi
+
+# ----TO FIX:
+# starting wifi doesnt work the first time (key is doing something extra on its own?)
+# ~/.fltk installed by dillo
+# headphones not working
+# bleachbit and luckybackup as root not working from rofi
+# numlock and scroll lock not showing up correctly in xset -q
+# how to get rid of antiX-cli-cc, fbsplash-antix?, isomount? (from antix)
+# properly spin down external devices?
+# mute audio and mute mic on startup?
+# cursors icons? (gtk2 and gtk3 config not changing anything)
+
+# To format the drive
+# sudo fdisk /dev/sdb (then p, then d, then n, then w)
+# sudo mkfs.ext4 /dev/sdb1
+
+sudo echo ""
+read -p "Plug in ext1. Press enter to continue"
+read -p "Must be connected to the internet. Press enter to continue"
+read -p "WARNING: If running script for the second time (or more), make sure backups have been completed, or no important changes have been made. Press enter to continue"
+
+# Save the error messages
+errors_file="$HOME/qqinstall-output.txt"
+touch "$errors_file"
+echo -e "\n\n\nqqinstall: $(date +"%-I:%M%P %a %b %-d")" >> "$errors_file"
+mkfifo /tmp/pipe
+tee -a "$errors_file" < /tmp/pipe &
+exec > /tmp/pipe 2>&1
+
+# ##########################
+# Functions
+# ##########################
+
+apt_add () {
+	for arg in "$@"; do
+		if dpkg -l | grep -q "^ii  $arg "; then
+			echo "qq: apt_add: $arg already installed"
+		else
+			echo "qq: apt_add: Installing $arg"
+			sudo apt install "$arg" -y
+		fi
+	done
+}
+
+apt_rm () {
+	for arg in "$@"; do
+		if dpkg -l | grep -q "^ii  $arg "; then
+			echo "qq: apt_rm: Removing $arg"
+			sudo apt purge "$arg" -y
+		else
+			echo "qq: apt_rm: $arg not installed"
+		fi
+	done
+}
+
+conf_add() {
+	for arg in "$@"; do
+		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		if [ ! -e "$arg_trim" ]; then
+			echo "qq: conf_add: Copying $arg_trim"
+			cp -r $arg $arg_trim
+		else
+			echo "qq: conf_add: Already exists: $arg_trim"
+		fi
+	done
+}
+
+conf_add_ow() {
+	for arg in "$@"; do
+		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		echo "qq: conf_add_ow: Copying $arg_trim"
+		rm -rf $arg_trim
+		cp -r $arg $arg_trim
+	done
+}
+
+su_conf_add() {
+	for arg in "$@"; do
+		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		if sudo [ ! -e "$arg_trim" ]; then
+			echo "qq: su_conf_add: Copying $arg_trim"
+			sudo cp -r $arg $arg_trim
+		else
+			echo "qq: su_conf_add: Already exists: $arg_trim"
+		fi
+	done
+}
+
+su_conf_add_ow() {
+	for arg in "$@"; do
+		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		echo "qq: su_conf_add_ow: Copying $arg_trim"
+		sudo rm -rf $arg_trim
+		sudo cp -r $arg $arg_trim
+	done
+}
+
+root_ln() {
+	trim=$(echo "$1" | sed "s|/home/$USER/||")
+	link="/root/$trim"
+	if sudo [ ! -L "$link" ]; then
+		echo "qq: root_ln: Linking $1"
+		sudo ln -s "$1" "$link"
+	else
+		echo "qq: root_ln: Already exists: $link"
+	fi
+}
+
+# ##########################
+# Setup
+# ##########################
+
+# Set up directories
+backups_dir="/mnt/ext1/backups"
+backups_home_dir="$backups_dir/home/$USER"
+backups_etc_dir="$backups_dir/etc"
+backups_root_dir="$backups_dir/root"
+backups_var_dir="$backups_dir/var"
+backups_usr_share_dir="$backups_dir/usr/share"
+
+echo "qq: Mounting ext1"
+sudo mkdir /mnt/ext1
+while ! mount | grep -q /mnt/ext1; do
+	lsblk
+	echo -n "Name of ext1: "
+	read device
+	if [ -b /dev/"$device" ]; then
+		sudo cryptsetup luksOpen /dev/"$device" ext1
+		sudo mount /dev/mapper/ext1 /mnt/ext1
+		echo "qq: Done mounting ext1"
+	fi
+done
+
+echo "qq: Creating directories"
+sudo mkdir /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6
+mkdir -p ~/.config ~/.local/share
+sudo mkdir -p /root/.config /root/.local/share
+
+echo "qq: Adding configs"
+conf_add_ow "$backups_home_dir"/.bashrc
+sudo rm -rf ~/.bash_logout
+sudo rm -rf /root/.bashrc
+root_ln ~/.bashrc
+conf_add_ow "$backups_home_dir"/.profile
+sudo rm -rf /root/.profile
+root_ln ~/.profile
+conf_add "$backups_home_dir"/.asoundrc
+conf_add_ow "$backups_home_dir"/.Xresources
+conf_add "$backups_home_dir"/.config/mimeapps.list
+root_ln ~/.config/mimeapps.list
+conf_add "$backups_home_dir"/.local/bin
+
+conf_add "$backups_home_dir"/.themes
+root_ln ~/.themes
+conf_add "$backups_home_dir"/.local/share/fonts
+root_ln ~/.local/share/fonts
+conf_add "$backups_home_dir"/.local/share/icons
+root_ln ~/.local/share/icons
+conf_add "$backups_home_dir"/.config/gtk-3.0
+root_ln ~/.config/gtk-3.0
+conf_add "$backups_home_dir"/.config/gtk-2.0
+root_ln ~/.config/gtk-2.0
+conf_add "$backups_home_dir"/.gtkrc-2.0
+root_ln ~/.gtkrc-2.0
+
+su_conf_add_ow  "$backups_etc_dir"/tlp.conf
+su_conf_add_ow "$backups_etc_dir"/inputrc
+su_conf_add_ow "$backups_etc_dir"/inittab
+sudo init q
+su_conf_add_ow "$backups_etc_dir"/fstab
+su_conf_add_ow "$backups_etc_dir"/default/keyboard
+su_conf_add_ow "$backups_etc_dir"/default/grub
+# sudo update-grub
+
+echo "qq: Adding user to input group"
+sudo usermod -aG input $USER
+
+echo "qq: Setting up ufw"
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+
+echo "qq: Disabling startup services"
+sudo update-rc.d networking disable
+
+echo "qq: Fixing broken keys"
+su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
+sudo udevadm hwdb --update
+sudo udevadm trigger /dev/input/event4
+
+echo "qq: Adding qqsudo to sudoers"
+sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/bin/qqsudo" | sudo tee -a /etc/sudoers
+
+# ##########################
+# Remove programs and upgrade
+# ##########################
+
+sudo apt update
+
+# antix-archive-keyring, antix-libs, apt-antix, live-kernel-updater, live-usb-maker, remaster-antix
+apt_rm antix-goodies-core
+apt_rm ceni
+apt_rm chroot-rescue
+apt_rm cli-aptix
+apt_rm desktop-defaults-core-antix
+sudo rm -rf ~/.conky*
+apt_rm elinks
+apt_rm mc mc-data
+apt_rm nano
+sudo rm -rf ~/.nanorc
+sudo rm -rf /root/.nanorc
+apt_rm tmux
+apt_rm vim-tiny
+
+sudo apt autopurge -y
+sudo apt upgrade -y
+
+# ##########################
+# Install Xorg and WM
+# ##########################
+
+apt_add xorg
+apt_add xserver-xorg-video-intel
+apt_add xdotool xlockmore xzoom
+apt_add dbus dbus-x11
+
+apt_add bspwm
+conf_add "$backups_home_dir"/.config/bspwm
+conf_add "$backups_home_dir"/.config/sxhkd
+apt_add polybar
+conf_add "$backups_home_dir"/.config/polybar
+
+# ##########################
+# Install Networking Software
+# ##########################
+
+apt_add iwd
+su_conf_add_ow "$backups_etc_dir"/iwd/main.conf
+su_conf_add "$backups_var_dir"/lib/iwd
+
+apt_add openvpn
+conf_add "$backups_home_dir"/.config/openvpn
+sudo update-rc.d openvpn disable
+
+apt_add ssh
+conf_add_ow "$backups_home_dir"/.ssh
+sudo rm -rf /root/.ssh
+root_ln ~/.ssh
+sudo update-rc.d ssh disable
+
+# ##########################
+# Install Programs (No GUI)
+# ##########################
+
+apt_add acpid
+su_conf_add "$backups_etc_dir"/acpi/events/lidbtn
+apt_add bc
+apt_add bleachbit
+conf_add "$backups_home_dir"/.config/bleachbit
+su_conf_add "$backups_root_dir"/.config/bleachbit
+apt_add build-essential
+apt_add calcurse
+apt_add cpufrequtils
+su_conf_add_ow "$backups_etc_dir"/init.d/cpufrequtils
+apt_add ddccontrol
+apt_add exfatprogs
+apt_add ffmpeg
+apt_add gcc-doc
+apt_add gdb
+apt_add gh
+conf_add "$backups_home_dir"/.config/gh
+apt_add git
+conf_add "$backups_home_dir"/.gitconfig
+apt_add imagemagick
+apt_add jq
+apt_add lm-sensors
+apt_add luckybackup
+su_conf_add "$backups_root_dir"/.luckyBackup
+apt_add macchanger
+apt_add mesa-utils
+apt_add pandoc
+apt_add pm-utils
+apt_add scrot
+apt_add socat
+apt_add splint
+apt_add tldr
+apt_add trash-cli
+apt_add tree
+apt_add unclutter-xfixes
+apt_add usbmuxd ifuse
+su_conf_add "$backups_etc_dir"/init.d/usbmuxd
+sudo update-rc.d usbmuxd defaults
+apt_add vifm
+conf_add "$backups_home_dir"/.config/vifm
+root_ln ~/.config/vifm
+apt_add vim-gtk3
+conf_add "$backups_home_dir"/.vim
+root_ln ~/.vim
+apt_add wodim
+apt_add xautolock
+apt_add xinput
+apt_add yt-dlp
+apt_add zip unzip rar unrar 7zip zstd
+
+# ##########################
+# Install Programs (GUI)
+# ##########################
+
+apt_add alacritty
+conf_add "$backups_home_dir"/.config/alacritty
+root_ln ~/.config/alacritty
+apt_add audacity
+conf_add "$backups_home_dir"/.config/audacity
+conf_add "$backups_home_dir"/.local/share/audacity
+apt_add dillo
+conf_add "$backups_home_dir"/.dillo
+apt_add feh
+apt_add galculator
+conf_add "$backups_home_dir"/.config/galculator
+apt_add gimp
+conf_add "$backups_home_dir"/.config/GIMP
+apt_add guvcview
+apt_add libreoffice
+conf_add "$backups_home_dir"/.config/libreoffice
+
+apt_add extrepo
+if ! dpkg-query -l | grep librewolf > /dev/null; then
+	sudo extrepo enable librewolf
+	sudo apt update
+fi
+apt_add librewolf
+conf_add "$backups_home_dir"/.librewolf
+conf_add "$backups_home_dir"/.mozilla
+conf_add "$backups_home_dir"/.local/share/tridactyl
+
+# monero (appimage)
+conf_add "$backups_home_dir"/.bitmonero
+
+apt_add mpv
+conf_add "$backups_home_dir"/.config/mpv
+root_ln ~/.config/mpv
+apt_add picom
+apt_add qbittorrent
+conf_add "$backups_home_dir"/.config/qBittorrent
+conf_add "$backups_home_dir"/.local/share/qBittorrent
+apt_add rofi
+conf_add "$backups_home_dir"/.local/share/applications
+apt_add telegram-desktop
+conf_add "$backups_home_dir"/.local/share/TelegramDesktop
+apt_add zathura
+conf_add "$backups_home_dir"/.config/zathura
+
+# ##########################
+# Copy/Install Games
+# ##########################
+
+conf_add "$backups_home_dir"/Games
+
+# wine games
+apt_add wine
+apt_add wine32:i386
+apt_add libvulkan1:i386
+apt_add libgl1:i386
+apt_add libxrandr2:i386
+
+# for goldsrc engine
+apt_add libcrypt1:i386
+
+# for jedi outcast singleplayer
+apt_add libjpeg8
+
+apt_add dosbox
+
+apt_add mednaffe
+
+apt_add mupen64plus-qt
+
+apt_add scummvm
+
+# ##########################
+# Copy documents
+# ##########################
+
+conf_add "$backups_home_dir"/Videos
+conf_add "$backups_home_dir"/Music
+conf_add "$backups_home_dir"/Pictures
+conf_add "$backups_home_dir"/Documents
+conf_add "$backups_home_dir"/Desktop
+conf_add "$backups_home_dir"/Downloads
+
+# ##########################
+# Extra
+# ##########################
+
+# set default terminal
+sudo update-alternatives --config x-terminal-emulator
+
+# unmount ext1
+if mount | grep -q /mnt/ext1; then
+	sudo umount /dev/mapper/ext1
+	sudo cryptsetup luksClose /dev/mapper/ext1
+	echo "qq: ext1 unmounted"
+fi
+
+echo "qq: done!"

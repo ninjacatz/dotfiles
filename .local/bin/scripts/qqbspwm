@@ -1,0 +1,169 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+move_value=80
+
+case $1 in
+	-bar)
+		case $2 in
+			-hide)
+				polybar-msg cmd hide && bspc config bottom_padding 0
+				;;
+			-show)
+				polybar-msg cmd show
+				;;
+			-toggle)
+				polybar-msg cmd toggle && bspc config bottom_padding 0
+				;;
+			*)
+				echo "Invalid second argument (-hide, -show, -toggle)"
+				exit 1
+		esac
+		;;
+	-fullscreen)
+		bspc node -t fullscreen
+		;;
+	-tiled)
+		bspc node -t tiled
+		;;
+	-floating)
+		bspc node -t floating
+		;;
+	-next-window)
+		bspc node -f next.local.!hidden.window
+		;;
+	-desktop-occupied)
+		# Getting desktop information
+		current_desktop=$(bspc query -D -d --names)
+		readarray -t monitors < <(bspc query -M --names)
+		all_desktops=()
+		for monitor in "${monitors[@]}"; do
+			readarray -t desktops < <(bspc query -D -m "$monitor" --names)
+			all_desktops+=("${desktops[@]}")
+		done
+		occupied_desktops=()
+		for d in "${all_desktops[@]}"; do
+			if bspc query -N -d "$d" > /dev/null; then
+				occupied_desktops+=("$d")
+			fi
+		done
+
+		# Getting next or prev index
+		for i in "${!occupied_desktops[@]}"; do
+			if [[ "${occupied_desktops[$i]}" == "$current_desktop" ]]; then
+				next_index=$(( (i + 1) % ${#occupied_desktops[@]} ))
+				prev_index=$(( (i - 1) % ${#occupied_desktops[@]} ))
+			fi
+		done
+
+		# Moving to new desktop
+		case $2 in
+			-next)
+				bspc desktop -f "${occupied_desktops[$next_index]}"
+				;;
+			-prev)
+				bspc desktop -f "${occupied_desktops[$prev_index]}"
+				;;
+			*)
+				echo "Invalid second argument (-next, -prev)"
+				exit 1
+				;;
+		esac
+		;;
+	-select)
+		case $2 in
+			west|east|north|south)
+				bspc node -f $2
+				;;
+			*)
+				echo "Invalid second argument (west, east, north, south)"
+				exit 1
+				;;
+		esac
+		;;
+	-move)
+		case $2 in
+			west)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -s west
+				else
+					bspc node -z right -$move_value 0
+					bspc node -z left -$move_value 0
+				fi
+				;;
+			east)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -s east
+				else
+					bspc node -z right $move_value 0
+					bspc node -z left $move_value 0
+				fi
+				;;
+			north)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -s north
+				else
+					bspc node -z top 0 -$move_value
+					bspc node -z bottom 0 -$move_value
+				fi
+				;;
+			south)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -s south
+				else
+					bspc node -z top 0 $move_value
+					bspc node -z bottom 0 $move_value
+				fi
+				;;
+			*)
+				echo "Invalid second argument (west, east, north, south)"
+				exit 1
+				;;
+		esac
+		;;
+	-size)
+		case $2 in
+			left)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -z right -$move_value 0 || bspc node -z left -$move_value 0
+				else
+					bspc node -z right -$move_value 0
+					bspc node -z left $move_value 0
+				fi
+				;;
+			right)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -z right $move_value 0 || bspc node -z left $move_value 0
+				else
+					bspc node -z right $move_value 0
+					bspc node -z left -$move_value 0
+				fi
+				;;
+			top)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -z top 0 -$move_value || bspc node -z bottom 0 -$move_value
+				else
+					bspc node -z top 0 -$move_value
+					bspc node -z bottom 0 $move_value
+				fi
+				;;
+			bottom)
+				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+					bspc node -z top 0 $move_value || bspc node -z bottom 0 $move_value
+				else
+					bspc node -z top 0 $move_value
+					bspc node -z bottom 0 -$move_value
+				fi
+				;;
+			*)
+				echo "Invalid second argument (left, right, top, bottom)"
+				exit 1
+				;;
+		esac
+		;;
+	*)
+		echo "Invalid argument (-bar, -fullscreen, -tiled, -floating, next-window, -desktop-occupied, -select, -move, -size)"
+		exit 1
+		;;
+esac

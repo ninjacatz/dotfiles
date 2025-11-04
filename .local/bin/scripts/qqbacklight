@@ -1,0 +1,75 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+# TODO: internal and external brightness changes at the same time
+
+# internal monitor backlight
+backlight_path=/sys/class/backlight/acpi_video0
+backlight_increment=1
+
+# external monitor backlight
+external_backlight_device=/dev/i2c-7
+external_backlight_address=0x10
+external_backlight_increment=34
+
+# set up variables
+case $1 in
+	-internal)
+		backlight=$(cat $backlight_path/brightness)
+		max=$(cat $backlight_path/max_brightness)
+		min=0
+		increment=$backlight_increment
+		;;
+	-external)
+		backlight=$(ddccontrol -r $external_backlight_address dev:$external_backlight_device | awk -F '[/ ]' '/^Control/ {print $4}')
+		max=$(ddccontrol -r $external_backlight_address dev:$external_backlight_device | awk -F '[/ ]' '/^Control/ {print $5}')
+		min=0
+		increment=$external_backlight_increment
+		;;
+	*)
+		echo "Invalid argument (-internal, -external)"
+		exit 1
+		;;
+esac
+
+# find new value
+case $2 in
+	-up)
+		total=$((backlight + increment))
+		if [ "$total" -gt "$max" ]; then
+			total=$max
+		fi
+		;;
+	-down)
+		total=$((backlight - increment))
+		if [ "$total" -lt "$min" ]; then
+			total=$min
+		fi
+		;;
+	-max)
+		total=$max
+		;;
+	-min)
+		total=$min
+		;;
+	*)
+		echo "Invalid second argument (-up, -down, -max, -min)"
+		exit 1
+		;;
+esac
+
+# change brightness
+case $1 in
+	-internal)
+		echo $total | sudo $source_dir/../qqsudo tee $backlight_path/brightness
+		;;
+	-external)
+		ddccontrol -r $external_backlight_address -w $total dev:$external_backlight_device
+		;;
+esac
+
+# kill ddccontrol daemon after period of inactivity
+sleep 20
+sudo $source_dir/../qqsudo pkill ddccontrol_serv
+sudo $source_dir/../qqsudo pkill ddcpci

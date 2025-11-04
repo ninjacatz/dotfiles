@@ -1,0 +1,51 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+case $1 in
+	-mode)
+		case $2 in
+			-default)
+				sudo $source_dir/../qqsudo tlp start
+				;;
+			-ac)
+				sudo $source_dir/../qqsudo tlp ac
+				;;
+			-battery)
+				sudo $source_dir/../qqsudo tlp bat
+				;;
+			*)
+				echo "Invalid second argument (-default, -ac, -battery)"
+				exit 1
+				;;
+		esac
+		;;
+	-governor)
+		cpu_cores=$(nproc)
+		cpu_cores=$((cpu_cores-1))
+
+		case $2 in
+			-performance)
+				for i in $(seq 0 $cpu_cores); do
+					sudo $source_dir/../qqsudo cpufreq-set -c $i -g performance
+				done
+				;;
+			-conservative)
+				for i in $(seq 0 $cpu_cores); do
+					sudo $source_dir/../qqsudo cpufreq-set -c $i -g conservative
+				done
+				;;
+			*)
+				echo "Invalid second argument (-performance, -conservative)"
+				exit 1
+				;;
+		esac
+
+		echo "Governors for cpu0-cpu$cpu_cores:"
+		cpufreq-info | awk -F '\"' '/may decide/ {print $2}'
+		;;
+	*)
+		echo "Invalid argument (-mode, -governor)"
+		exit 1
+		;;
+esac

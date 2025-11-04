@@ -1,0 +1,43 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+journal_path=/mnt/part/journal
+
+$source_dir/qqmount part
+
+# if no arguments supplied
+if [ $# -eq 0 ]; then
+	read -p "Today=0 Yesterday=1 TwoDaysAgo=2 etc. : " days_ago
+else
+	days_ago=$1
+fi
+
+day=$(date -d "$days_ago days ago" +"%-d")
+# set suffix
+if [[ $day -eq 1 || $day -eq 21 || $day -eq 31 ]]; then
+	suffix="st"
+elif [[ $day -eq 2 || $day -eq 22 || $day -eq 32 ]]; then
+	suffix="nd"
+elif [[ $day -eq 3 || $day -eq 23 ]]; then
+	suffix="rd"
+else
+	suffix="th"
+fi
+month=$(date -d "$days_ago days ago" +"%b" | tr '[:upper:]' '[:lower:]')
+month_num=$(date -d "$days_ago days ago" +"%1m")
+year=$(date -d "$days_ago days ago" +"%Y")
+formatted_date=$(date -d "$days_ago days ago" +"%A, %B %-d${suffix}, %Y")
+
+# create folder if it does not already exist
+if [ -d "$journal_path/$year-$month_num/$month$day" ]; then
+	echo "$month$day already exists"
+else
+	if [ ! -d "$journal_path/$year-$month_num" ]; then
+		mkdir $journal_path/$year-$month_num
+	fi
+	mkdir $journal_path/$year-$month_num/$month$day
+	echo "# $formatted_date" | tee "$journal_path/$year-$month_num/$month$day/TXT.md"
+	echo "Created journal for $month$day"
+fi
+

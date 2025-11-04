@@ -1,0 +1,5 @@
+import:
+  - /home/qq/.config/alacritty/alacritty.yml
+  # - /home/qq/.config/alacritty/themes/zenburm.yaml
+  - /home/qq/.config/alacritty/themes/nord.yaml
+

@@ -1,0 +1,36 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+if ! [ -e "$2" ]; then
+	echo "Invalid second argument (valid file)"
+	exit 1
+fi
+
+filetype=$(xdg-mime query filetype "$2")
+
+if [ -z "$filetype" ]; then
+	echo "Failed to get mime type for $2"
+	exit 1
+fi
+
+if grep -q "^$filetype=" "$HOME/.config/mimeapps.list"; then
+	echo "$filetype already in mimeapps.list"
+	exit 1
+fi
+
+case $1 in
+	-vim)
+		new_line="$filetype=vim.desktop"
+		;;
+	-mpv)
+		new_line="$filetype=mpv.desktop"
+		;;
+	*)
+		echo "Invalid argument (-vim, -mpv)"
+		exit 1
+		;;
+esac
+
+echo "$new_line" >> ~/.config/mimeapps.list
+

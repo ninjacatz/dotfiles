@@ -1,0 +1,349 @@
+" ---------------------------
+" BASIC CONFIG
+" ---------------------------
+set nocompatible
+set clipboard=unnamedplus
+set belloff=all
+set updatetime=250
+set swapfile dir=~/.cache
+set viminfo+=n~/.vim/viminfo history=1000
+set encoding=utf-8 fileformat=unix
+set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
+set autoread
+set autochdir
+set switchbuf=uselast
+set mouse=a
+set ignorecase smartcase
+set autoindent
+set nostartofline
+set nojoinspaces
+" Ability to switch from unsaved buffers
+set hidden
+" Backspace behavior
+" indent=deletes any auto-indentation
+" start=goes to previous line when at start of line
+" eol=goes to end of previous line when at start of line
+set backspace=indent,eol,start
+" When changing words (cw) include hyphens
+set iskeyword+=-
+" Set path for :find to search current dir all subdir
+set path=**
+" Set vim to use bashrc
+set shell=/bin/bash\ --login
+" Set path
+let $PATH = substitute(system('echo $PATH'), '\n', '', 'g')
+
+" ---------------------------
+" VISUAL TWEAKS
+" ---------------------------
+" Status bar
+" Always show status bar
+set laststatus=2
+set statusline=
+" Display if root or sudo
+if $USER == "root" || $HOME == "/root"
+	if $HOME == '/root'
+		set statusline+=(root)\ 
+	else
+		set statusline+=(sudo)\ 
+	endif
+endif
+" Display if ssh connection
+if !empty($SSH_CONNECTION)
+	set statusline+=(ssh)\ 
+endif
+" Function to refresh path
+function! TildePath()
+	let path = &autochdir ? expand("%:p:~:h") : getcwd(-1)
+	let home = $HOME
+	if path =~ home | let path = substitute(path, '^' . home, '~', '') | endif
+	return &autochdir ? path . '/' : '[' . path . '] '
+endfunction
+" Function to refresh filetype
+function! FileType()
+	 return !empty(&filetype) ? '[' . &filetype . '] ' : ''
+endfunction
+set statusline+=%{TildePath()}%f\ %m%r%w%=%{FileType()}%L
+
+" Terminal title
+set title
+set titlestring=%F\ %{&modified?'[+]\ ':''}-\ Vim
+
+" Set cursor to line in insert mode
+autocmd InsertEnter * silent execute "!echo -ne '\e[5 q'"
+autocmd InsertLeave * silent execute "!echo -ne '\e[2 q'"
+" Remove intro message
+set shortmess+=I
+" Set true color support
+set termguicolors
+" Line numbers
+set number relativenumber
+" Highlight current line
+set cursorline
+" Scroll only when cursor is at last or first line, and number of lines to keep on screen
+set display=lastline scrolloff=8
+" Enable word wrap and preserve word wrap indentation
+set wrap breakindent
+" Show matching braces, etc.
+set showmatch
+" Highlight words you search and as you type
+set hlsearch incsearch
+" Enable filetype detection
+filetype on
+" Enable file-specific plugins
+filetype plugin on
+" Enable file-specific indentations
+filetype indent on
+" Enable syntax highlighting
+syntax on
+" Use default anguage-specific completions with omni complete
+set omnifunc=syntaxcomplete#Complete
+" Set completeopt (auto complete menu) settings
+set completeopt=menuone,longest
+" Turn on wildmenu for autocomplete (and ignore case)
+set wildmenu wildignorecase
+" set wildmode=list:longest,full
+set wildmode=longest:full,full
+" wildmenu display options
+set wildoptions=pum
+" Files to ignore when using wildmenu such as :e <Tab>
+set wildignore+=
+" Show commands as they are being typed (doesnt do anyting?)
+set showcmd
+" Sign column (beside line numbers)
+set signcolumn=no
+" Vertical and horizontal split settings
+set splitbelow splitright
+" Enable whitespace chars and define them
+set list listchars=tab:»·,extends:>,precedes:<,space:·
+" Never show tabline
+set showtabline=0
+" Prevent netrw from ever loading
+let g:loaded_netrw = 1
+let g:loaded_netrwPlugin = 1
+" When opening a directory, cd to it and open a blank buffer (replaces netrw)
+autocmd BufEnter * if &buftype == '' && isdirectory(expand('%:p')) | execute 'cd ' . expand('%:p') | enew | execute 'bd #' | endif
+" Disable auto-comment on new line (note: MUST come after filetype on)
+autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
+
+" ---------------------------
+" FUNCTIONS FOR KEYMAPS
+" ---------------------------
+" Automatically set all tablength variables with one number
+function! SetTabLength()
+	let l = input('Enter tab length: ')
+	" Check if input is a positive integer
+	if l =~ '^\d\+$'
+		let l = str2nr(l)
+		execute 'set tabstop=' . l
+		execute 'set softtabstop=' . l
+		execute 'set shiftwidth=' . l
+	else
+		echo 'Invalid tab length. Positive integers only.'
+	endif
+endfunction
+" Renaming a file in place and deleting the old file
+function! RenameFile()
+	if &modified
+		echoerr 'Cannot rename unsaved file'
+		return
+	endif
+
+	let old_name = expand('%:t')
+	let old_file_path = expand('%:p')
+	let old_path = expand('%:p:h')
+	if filereadable(old_file_path)
+		let new_name = input('Rename ' . old_name . ' to ')
+		if new_name == ''
+			echoerr 'No new file name provided'
+			return
+		endif
+		let new_file_path = old_path . '/' . new_name
+
+		if !filereadable(new_file_path) && !isdirectory(new_file_path)
+			execute 'silent !cp' old_file_path new_file_path
+			execute 'e' new_file_path
+			execute 'bd' old_file_path
+			execute 'silent !trash' old_file_path
+			execute 'redraw!'
+		else
+			echoerr 'New file name already exists'
+		endif
+	else
+		echoerr 'Current buffer is not readable file'
+	endif
+endfunction
+
+" ---------------------------
+" KEYMAPS
+" ---------------------------
+" Set keymap timeout delay
+set timeoutlen=2000
+
+" timeoutlen is used for mapping delays, and ttimeoutlen is used for key code delays
+" This breaks mappings that start with <Esc>
+set ttimeoutlen=0
+" Clear highlights on pressing <Esc> in normal mode
+nnoremap <silent> <Esc> :nohlsearch<CR>
+
+" Set '%%<Space>' to expand to directory of current file
+cnoremap <expr> %% fnameescape(expand('%:p:h'))
+
+" Enter and '\' when wildmenu open accepts and closes menu instead of newline (emulates zsh)
+cnoremap <expr> <CR> wildmenumode() ? "\<C-y>" : "<CR>"
+cnoremap <expr> / wildmenumode() ? "\<C-y>" : "/"
+" Enter and '\' when completion menu open accepts and closes menu instead of newline (emulates zsh)
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "<CR>"
+inoremap <expr> / pumvisible() ? "\<C-y>" : "/"
+
+" Auto-completing brackets, quotes, etc
+inoremap "<CR> ""<Left>
+inoremap '<CR> ''<Left>
+inoremap (<CR> ()<Left>
+inoremap [<CR> []<Left>
+inoremap <<CR> <><Left>
+inoremap {<CR> {<CR>}<ESC>O
+
+" Set leader key
+let mapleader=' '
+
+" Spacebar
+noremap <Leader><Space> :map<CR>
+
+" 1 -> 9
+" noremap <Leader>`
+" noremap <Leader>1
+" noremap <Leader>2
+" noremap <Leader>3
+noremap <Leader>4 :%!xxd<CR>:set ft=xxd<CR>
+noremap <Leader>$ :%!xxd -r<CR>:set ft=<CR>
+" noremap <Leader>5
+" noremap <Leader>6
+" noremap <Leader>7
+" noremap <Leader>8
+noremap <Leader>9 10<C-w><
+noremap <Leader>0 10<C-w>>
+noremap <Leader>- 3<C-w>-
+noremap <Leader>= 3<C-w>+
+noremap <Leader><BS> :so $HOME/.vim/vimrc<CR>
+"
+" Q -> P
+noremap <Leader><Tab> :set tabstop? softtabstop? shiftwidth? expandtab?<CR>
+noremap <Leader><S-Tab> :call SetTabLength()<CR>
+noremap <Leader>q :q<CR>
+noremap <Leader>Q :q!<CR>
+noremap <Leader>w :w<CR>
+noremap <Leader>W :w!<CR>
+" noremap <Leader>e ALE LSP COMMANDS
+noremap <Leader>r :silent call RenameFile()<CR>
+noremap <Leader>t :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
+noremap <Leader>y :browse oldfiles<CR>
+noremap <Leader>Y :browse history<CR>
+noremap <Leader>u :changes<CR>
+noremap <Leader>i :help<Space>
+noremap <Leader>o :find<Space>
+noremap <Leader>p "0p
+noremap <Leader>[ :set autochdir<CR>
+noremap <Leader>] :cd %:p:h<CR>:set noautochdir<CR>
+noremap <Leader>\ :silent cd  <Bar> set noautochdir<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
+noremap <Leader>\| :cd<Space>
+
+" A -> L
+noremap <Leader>a :wa<CR>
+noremap <Leader>A :wa!<CR>
+noremap <Leader>s :split<CR>
+noremap <Leader>S :vsplit<CR>
+noremap <Leader>d :bd<CR>
+noremap <Leader>D :bd!<CR>
+noremap <Leader>f :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/vifm.yml -e vifm %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
+noremap <Leader>g :tags<CR>:tag<Space>
+noremap <Leader>h <C-w><C-h>
+noremap <C-h> :tabprevious<CR>
+noremap <Leader>j <C-w><C-j>
+noremap <C-j> :bn<CR>
+noremap <Leader>k <C-w><C-k>
+noremap <C-k> :bp<CR>
+noremap <Leader>l <C-w><C-l>
+noremap <C-l> :tabNext<CR>
+noremap <Leader>; :!
+noremap <Leader>: :sh<CR>
+noremap <Leader>' :marks<CR>:mark<Space>
+noremap <Leader>" :registers<CR>
+" noremap <Leader><CR>
+
+" Z -> M
+noremap <Leader>z :args `find . -type f -size -$((256*256))c -name '*'`<Left><Left>
+noremap <Leader>Z :args `find . -type f -size -$((256*256))c -name '*'`<CR>
+noremap <Leader>x :tabc<CR>
+noremap <Leader>X :tabc!<CR>
+" noremap <Leader>c NERD COMMENTER
+noremap <Leader>v :tabs<CR>:tabn<Space>
+noremap <Leader>b :ls<CR>:b<Space>
+noremap <Leader>n :e<Space>
+noremap <Leader>N :e **/
+noremap <Leader>m :tabnew<Space>
+noremap <Leader>M :tabnew **/
+noremap <Leader>, :norm<Space>
+nnoremap <Leader>. :%s///g<Left><Left><Left>
+xnoremap <Leader>. :s///g<Left><Left><Left>
+noremap <Leader>> :args **/*<CR>:argdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
+noremap <Leader>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
+
+" ---------------------------
+" SNIPPETS
+" ---------------------------
+noremap ,cs :-1read $HOME/.vim/snippets/cstart.c<CR>3jo
+noremap ,ps :-1read $HOME/.vim/snippets/pystart.py<CR>o<CR>
+noremap ,ss :-1read $HOME/.vim/snippets/shstart.sh<CR>o<CR>
+
+" ---------------------------
+" AUTO INSTALL vim-plug
+" ---------------------------
+" Install with the command: vim +PlugInstall +qa
+let data_dir = '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+	silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+	autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" ---------------------------
+" INSTALL PLUGINS
+" ---------------------------
+" remember: :PlugStatus, :PlugUpdate, :PlugUpgrade :PlugClean
+call plug#begin()
+" Add/remove comments automatically
+Plug 'preservim/nerdcommenter'
+" Tab to trigger context sensitive autocomplete when typing word
+Plug 'ervandew/supertab'
+" Colorscheme
+Plug 'lifepillar/vim-gruvbox8'
+call plug#end()
+
+" ---------------------------
+" CONFIGURE PLUGINS
+" ---------------------------
+" Supertab context-based completions
+let g:SuperTabDefaultCompletionType="context"
+" fallback default option
+" let g:SuperTabContextDefaultCompletionType="<C-n>"
+let g:SuperTabContextDefaultCompletionType="\<C-x>\<C-o>"
+
+" Nerd commenter
+" get rid of default mappings
+let g:NERDCreateDefaultMappings=0
+" create space around comments
+let NERDSpaceDelims=1
+map <Leader>c :call nerdcommenter#Comment(0,"toggle")<CR>
+
+" Colorschemes based on window class
+let window_class = system("xprop -id $(xdotool getactivewindow) | awk -F '\"' '/WM_CLASS/ {print $2}'")
+let window_class = trim(window_class)
+if window_class == "vim"
+	set background=light
+else
+	set background=dark
+endif
+" Colorscheme
+colorscheme gruvbox8
+" Turn off background (for terminal transparency)
+hi Normal guibg=NONE ctermbg=NONE

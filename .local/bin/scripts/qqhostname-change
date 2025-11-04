@@ -1,0 +1,49 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+# TODO: this script gives weird error messages but still works
+
+echo "WARNING: This script will force a reboot or logout"
+
+read -p "Would you like to set your own hostname? ('y' or *) " input
+
+if [ "$input" = "y" ]; then
+	read -p "Set hostname: " new_hostname
+else
+	names=($(cat $source_dir/../qqhostnames))
+	random_index=$((RANDOM % ${#names[@]}))
+	new_hostname=${names[$random_index]}
+fi
+
+read -p "Would you like to reboot? (* is logout) ('y' or *) " reboot_answer
+
+# check if hostname is valid
+pattern='^[a-zA-Z0-9\-]+$'
+if ! [[ $new_hostname =~ $pattern ]]; then
+	echo "Not a valid hostname"
+	exit 1
+fi
+ip="127.0.0.1"
+
+# add the line (at line 3):
+# 127.0.0.1       new_hostname
+# without removing the old hostname (at line 2):
+# 127.0.0.1       current_hostname
+sudo $source_dir/../qqsudo sed -i "3i\\$ip       $new_hostname" /etc/hosts
+
+# replace the only line in the file
+echo $new_hostname | sudo $source_dir/../qqsudo tee /etc/hostname
+
+# remove the old hostname (at line 2)
+sudo $source_dir/../qqsudo sed -i '2d' /etc/hosts
+
+# make hostname permanent
+sudo $source_dir/../qqsudo hostname -F /etc/hostname
+
+if [ "$reboot_answer" = "y" ]; then
+	$source_dir/qqpc -reboot
+else
+	$source_dir/qqpc -logout
+fi
+

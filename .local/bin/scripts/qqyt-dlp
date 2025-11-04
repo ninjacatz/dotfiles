@@ -1,0 +1,27 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+# Check if URL argument exists
+if [ $# -ne 2 ]; then
+	echo "Invalid number of arguments (ex: qqyt-dlp -audio|-video \"URL\")"
+	exit 1
+fi
+
+mkdir ~/Downloads/yt-dlp
+cd ~/Downloads/yt-dlp
+
+case $1 in
+	-audio)
+		# Best audio quality
+		yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 --no-playlist "$2"
+		;;
+	-video)
+		# Best video quality
+		yt-dlp --format "bestvideo[height<=1080]+bestaudio" --no-playlist "$2"
+		;;
+	*)
+		echo "Invalid argument (-audio, video)"
+		exit 1
+		;;
+esac

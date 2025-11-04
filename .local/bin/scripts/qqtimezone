@@ -1,0 +1,5 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+$source_dir/../qqsudo dpkg-reconfigure tzdata

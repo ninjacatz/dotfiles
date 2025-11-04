@@ -1,0 +1,176 @@
+## TODO
+# implement actual scroll lock functionality
+Scroll_Lock
+Num_Lock
+	alacritty
+
+## KEYBINDS YOU CANT GET RID OF
+# ctrl + Alt + F1 - F3 -> tty
+# ctrl + Alt + F7 -> exit tty
+
+############ Blue Keys Top Left to Bottom Right
+XF86ScreenSaver
+	~/.local/bin/scripts/qqpc -lock
+XF86Battery
+	~/.local/bin/scripts/qqcpu -mode -default && ~/.local/bin/scripts/qqcpu -governor -conservative
+shift + XF86Battery
+	~/.local/bin/scripts/qqcpu -mode -ac && ~/.local/bin/scripts/qqcpu -governor -performance
+XF86Sleep
+	~/.local/bin/scripts/qqpc -suspend
+{_,shift + ,shift + ctrl + }XF86WLAN
+	~/.local/bin/scripts/qqnet -{wifi,ethernet,stop}
+XF86WebCam
+	guvcview
+{_,shift + ,shift + ctrl + }XF86Display
+	~/.local/bin/scripts/qqscreen -{internal,external,internal-external}
+# XF86TouchpadToggle:
+{_,shift + }XF86Launch3
+	~/.local/bin/scripts/qqdevice -trackpad -{stop,start}
+XF86Suspend
+	~/.local/bin/scripts/qqpc -hibernate
+{XF86MonBrightnessUp,XF86MonBrightnessDown}
+	~/.local/bin/scripts/qqbacklight -internal -{up,down}
+shift + {XF86MonBrightnessUp,XF86MonBrightnessDown}
+	~/.local/bin/scripts/qqbacklight -external -{up,down}
+# ThinkLight (Automatic)
+# Zoom:
+XF86Launch4
+	xzoom
+{XF86AudioStop,XF86AudioPlay,XF86AudioPrev,XF86AudioNext}
+	~/.local/bin/scripts/qqmpv-controls -{stop,play-pause,rewind,forward}
+shift + {XF86AudioPrev,XF86AudioNext}
+	~/.local/bin/scripts/qqmpv-controls -{seek-rewind,seek-forward}
+
+############ Buttons
+XF86AudioMute
+	~/.local/bin/scripts/qqvolume -mute -toggle
+XF86AudioLowerVolume
+	~/.local/bin/scripts/qqvolume -down
+XF86AudioRaiseVolume
+	~/.local/bin/scripts/qqvolume -up
+# Mic Mute Button:
+XF86Launch1
+	~/.local/bin/scripts/qqvolume -input -toggle
+# ThinkVantage Button:
+{_,shift + }XF86Launch2
+	~/.local/bin/scripts/qqvolume -output -{default,displayport}
+XF86PowerOff
+	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/bin/scripts/qqpc -menu
+
+############ 1 -> 0
+super + grave
+	~/.local/bin/scripts/qqbspwm -desktop-occupied -next
+super + {1,2,3,4}
+	bspc desktop -f {1,2,3,4}
+super + shift + {1,2,3,4}
+	bspc node -d {1,2,3,4}
+super + shift + ctrl + {1,2,3,4}
+	for node in $(bspc query -N -d); do bspc node "$node" -d {1,2,3,4}; done
+super + 5
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc ~/.config/zathura/zathurarc ~/.bashrc ~/.config/alacritty/alacritty.yml ~/.config/mpv/mpv.conf ~/.config/mpv/input.conf ~/.asoundrc
+super + 6
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini
+super + 7
+super + 8
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.local/bin/scripts
+super + 9
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/Documents/antiX-guides
+super + 0
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sh -c "sudo vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb"
+super + minus
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount ext1; sleep 3"
+super + shift + minus
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount -u ext1; sleep 3"
+super + equal
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount ext2; sleep 3"
+super + shift + equal
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount -u ext2; sleep 3"
+super + BackSpace
+	~/.config/bspwm/bspwmrc
+
+############ Q -> P
+super + Tab
+	~/.local/bin/scripts/qqbspwm -desktop-occupied -prev
+super + q
+	bspc node -c
+super + w
+	librewolf
+super + shift + w
+	dillo
+super + {_, shift + }e
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e {vim,sudo vim /root}
+super + r
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqrecord -screen-mic"
+super + shift + r
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqrecord -mic"
+super + t
+	alacritty --config-file ~/.config/alacritty/term.yml
+super + shift + t
+	alacritty --config-file ~/.config/alacritty/term.yml -e sudo sh -c "cd /root && bash"
+super + {_, shift + }y
+	~/.local/bin/scripts/qqnet -ssh -{start,stop}
+super + u
+super + i
+super + o
+super + p
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqiphone-sync; sleep 3"
+super + bracketleft
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount part; sleep 3"
+super + shift + bracketleft
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount -u part; sleep 3"
+super + bracketright
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount int; sleep 3"
+super + shift + bracketright
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount -u int; sleep 3"
+super + backslash
+	~/.local/bin/scripts/qqbspwm -floating
+
+############ A -> L
+super + a
+super + {_, shift + }s
+	~/.local/bin/scripts/qqrecord -{screenshot,screencrop}
+super + d
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqdpi; sleep 3"
+super + {_, shift + }f
+	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo vifm /root}
+super + {_, shift + }g
+	~/.local/bin/scripts/qqnet -mac -{start,stop}
+super + {h,j,k,l}
+	~/.local/bin/scripts/qqbspwm -select {west,south,north,east}
+super + shift + {h,j,k,l}
+	~/.local/bin/scripts/qqbspwm -move {west,south,north,east}
+super + semicolon
+	~/.local/bin/scripts/qqbspwm -next-window
+super + apostrophe
+	~/.local/bin/scripts/qqbspwm -tiled
+super + Return
+	~/.local/bin/scripts/qqbspwm -fullscreen
+
+############ Z -> M
+super + z
+super + x
+	pkill -x xautolock
+super + shift +x
+	sh -c "$(awk '/xautolock -time/' ~/.config/bspwm/bspwmrc)"
+super + c
+	alacritty --config-file ~/.config/alacritty/term.yml  -e ~/.local/bin/scripts/qqcalendar
+super + {_, shift + }v
+	~/.local/bin/scripts/qqnet -vpn -{start,stop}
+super + b
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqbackup; sleep 3"
+super + {_, shift + }n
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e ~/.local/bin/scripts/{qqnotes,qqjournal}
+super + m
+super + comma
+super + {_, shift + }period
+	~/.local/bin/scripts/qqbspwm -bar -{hide,show}
+super + slash
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/bin/scripts/qqmount -u; sleep 3"
+
+############ OTHER
+super + {_, shift + }space
+	~/.local/bin/scripts/qqrofi -{app,game}
+super + {Left,Right,Up,Down}
+	~/.local/bin/scripts/qqbspwm -size {left,right,top,bottom}
+super + XF86Back
+super + XF86Forward

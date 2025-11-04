@@ -1,0 +1,107 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+increment=5
+default_card="card 0"
+default_device="device 0"
+dp_device="device 3"
+default_master="Master"
+dp_master="IEC958"
+
+case $1 in
+	-up)
+		amixer set "$default_master" $increment%+
+		;;
+	-down)
+		amixer set "$default_master" $increment%-
+		;;
+	-min)
+		amixer set "$default_master" 0%
+		;;
+	-max)
+		amixer set "$default_master" 100%
+		;;
+	-mute)
+		case $2 in
+			-on)
+				amixer set "$default_master" mute
+				amixer set "$dp_master",0 mute
+				;;
+			-off)
+				amixer set "$default_master" unmute
+				amixer set "$dp_master",0 unmute
+				;;
+			-toggle)
+				current_dev=$(grep device ~/.asoundrc | awk '{print $2}')
+				if [ "$current_dev" == "0" ]; then
+					current_master="$default_master"
+				else
+					current_master="$dp_master"
+				fi
+				if amixer get "$current_master" | grep -q '\[off\]'; then
+					amixer set "$default_master" unmute
+					amixer set "$dp_master",0 unmute
+				else
+					amixer set "$default_master" mute
+					amixer set "$dp_master",0 mute
+				fi
+				;;
+			*)
+				echo "Invalid second argument (-on, -off, -toggle)"
+				exit 1
+				;;
+		esac
+		;;
+	-input)
+		case $2 in
+			-on)
+				amixer set Capture cap
+				sudo $source_dir/../qqsudo chmod 660 /dev/video0
+				;;
+			-off)
+				amixer set Capture nocap
+				sudo $source_dir/../qqsudo chmod 000 /dev/video0
+				;;
+			-toggle)
+				if amixer get Capture | grep "\[on\]" > /dev/null; then
+					amixer set Capture nocap
+					sudo $source_dir/../qqsudo chmod 000 /dev/video0
+				else
+					amixer set Capture cap
+					sudo $source_dir/../qqsudo chmod 660 /dev/video0
+				fi
+				;;
+			*)
+				echo "Invalid second argument (-on, -off, -toggle)"
+				exit 1
+				;;
+		esac
+		;;
+	-output)
+		case $2 in
+			-default)
+				sed -i "s/device .*/$default_device/" ~/.asoundrc
+				sed -i "s/card .*/$default_card/" ~/.asoundrc
+				sed -i "s/master-mixer = .*/master-mixer = $default_master/" ~/.config/polybar/config.ini
+				polybar-msg cmd restart > /dev/null
+				;;
+			-displayport)
+				sed -i "s/device .*/$dp_device/" ~/.asoundrc
+				sed -i "s/card .*/$default_card/" ~/.asoundrc
+				sed -i "s/master-mixer = .*/master-mixer = $dp_master/" ~/.config/polybar/config.ini
+				polybar-msg cmd restart > /dev/null
+				;;
+			*)
+				echo "Invalid second argument (-default, -displayport)"
+				exit 1
+				;;
+		esac
+		echo "Changed audio to $(grep card ~/.asoundrc | tr -d '[:space:]') $(grep device ~/.asoundrc | tr -d '[:space:]')"
+		;;
+	*)
+		echo "Invalid argument (-up, -down, -min, -max, -mute, -input, -output)"
+		exit 1
+		;;
+esac
+

@@ -1,0 +1,55 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+case $1 in
+	-play-pause)
+		command="cycle pause"
+		;;
+	-stop)
+		command="stop"
+		;;
+	-rewind)
+		command="playlist-prev"
+		;;
+	-forward)
+		command="playlist-next"
+		;;
+	-seek-rewind)
+		command="seek -1"
+		;;
+	-seek-forward)
+		command="seek 1"
+		;;
+	*)
+		echo "Invalid argument (-play-pause, stop, -rewind, -forward, -seek-rewind, -seek-forward)"
+		exit 1
+		;;
+esac
+
+# if currently focused window is mpv, perform function on only currently focused window
+focused_window_class=$(xprop -id $(bspc query -N -n focused) | awk '/WM_CLASS/ {print $4}')
+if [ "$focused_window_class" = "gl.mpv" ]; then
+	focused_window_pid=$(xprop -id $(bspc query -N -n focused) | awk '/_NET_WM_PID/ {print $4}')
+	mpv_pid=$focused_window_pid
+# otherwise, perform function on only the first opened mpv window (smallest pid)
+else
+	smallest_pid=999999
+	if ! [ -z "$( ls -A '/tmp/mpvSockets' )" ]; then
+		for i in /tmp/mpvSockets/*; do
+			i=$(basename "$i")
+			if [[ $smallest_pid -gt $i ]]; then
+				smallest_pid=$i
+			fi
+		done
+		mpv_pid=$smallest_pid
+	else
+		echo "No MPV instance running"
+		exit 1
+	fi
+fi
+
+full_command="echo $command | socat - \"/tmp/mpvSockets/$mpv_pid\""
+
+bash -c "$full_command"
+

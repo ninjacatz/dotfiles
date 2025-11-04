@@ -1,0 +1,4 @@
+import:
+  - /home/qq/.config/alacritty/alacritty.yml
+  - /home/qq/.config/alacritty/themes/gruvbox_dark.yaml
+

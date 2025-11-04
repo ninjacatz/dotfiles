@@ -1,0 +1,101 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+tick=3
+
+tput civis
+cleanup() {
+	tput cnorm
+}
+trap cleanup EXIT
+
+watts_max=0
+watts_min=999999999999
+watts_avg=0
+watts_total=0
+zone0_max=0
+zone0_min=999999999999
+zone0_avg=0
+zone0_total=0
+zone1_max=0
+zone1_min=999999999999
+zone1_avg=0
+zone1_total=0
+zone2_max=0
+zone2_min=999999999999
+zone2_avg=0
+zone2_total=0
+
+count=1
+while true; do
+	echo "All values missing decimal (ex. 505 = 50.1)"
+	echo "-----COUNT $count-----"
+
+	dir=/sys/class/power_supply/BAT0
+	watts=$(cat $dir/voltage_now)
+	watts=$((watts / 100000))
+	if (( watts > watts_max )); then
+		watts_max=$watts
+	fi
+	if (( watts < watts_min )); then
+		watts_min=$watts
+	fi
+	watts_total=$((watts_total + watts))
+	watts_avg=$((watts_total / count))
+	echo "Wattage"
+	echo "  $watts max:$watts_max min:$watts_min avg:$watts_avg"
+
+	dir=/sys/class/thermal/thermal_zone0
+	name=$(cat $dir/type)
+	temp=$(cat $dir/temp)
+	temp=$((temp / 100))
+	if (( temp > zone0_max )); then
+		zone0_max=$temp
+	fi
+	if (( temp < zone0_min )); then
+		zone0_min=$temp
+	fi
+	zone0_total=$((zone0_total + temp))
+	zone0_avg=$((zone0_total / count))
+	echo "$name"
+	echo "  $temp max:$zone0_max min:$zone0_min avg:$zone0_avg"
+
+	dir=/sys/class/thermal/thermal_zone1
+	name=$(cat $dir/type)
+	temp=$(cat $dir/temp)
+	temp=$((temp / 100))
+	if (( temp > zone1_max )); then
+		zone1_max=$temp
+	fi
+	if (( temp < zone1_min )); then
+		zone1_min=$temp
+	fi
+	zone1_total=$((zone1_total + temp))
+	zone1_avg=$((zone1_total / count))
+	echo "$name"
+	echo "  $temp max:$zone1_max min:$zone1_min avg:$zone1_avg"
+
+	dir=/sys/class/thermal/thermal_zone2
+	name=$(cat $dir/type)
+	temp=$(cat $dir/temp)
+	temp=$((temp / 100))
+	if (( temp > zone2_max )); then
+		zone2_max=$temp
+	fi
+	if (( temp < zone2_min )); then
+		zone2_min=$temp
+	fi
+	zone2_total=$((zone2_total + temp))
+	zone2_avg=$((zone2_total / count))
+	echo "$name"
+	echo "  $temp max:$zone2_max min:$zone2_min avg:$zone2_avg"
+
+	echo -e "\e[11A"
+
+	((count++))
+	sleep $tick
+done
+
+
+

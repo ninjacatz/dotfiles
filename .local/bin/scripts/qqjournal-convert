@@ -1,0 +1,22 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+journal_path=/mnt/part/journal
+journal_converted_path=$HOME/Downloads/journal-converted
+
+$source_dir/qqmount part
+
+echo "Copying journals..."
+
+cp -R $journal_path/ $journal_converted_path
+
+$source_dir/qqjournal-convert.py $journal_converted_path
+
+read -p "Do you want to eject devices? ('y' or *) " answer
+
+if [ "$answer" = "y" ]; then
+	$source_dir/qqmount -u part
+fi
+
+echo "Done converting"

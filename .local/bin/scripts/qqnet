@@ -1,0 +1,212 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+vpn_path=$HOME/.config/openvpn/AirVPN_All-servers_UDP-443-Entry3.ovpn
+network_path=/var/lib/iwd
+
+ethernet () {
+	case $1 in
+		start)
+			if ! pgrep -x dhclient > /dev/null; then
+				sudo $source_dir/../qqsudo service networking start
+			else
+				echo "ethernet already running"
+			fi
+			;;
+		stop)
+			if pgrep -x dhclient > /dev/null; then
+				sudo $source_dir/../qqsudo service networking stop
+			else
+				echo "ethernet not running"
+			fi
+			;;
+	esac
+}
+
+wifi () {
+	case $1 in
+		start)
+			if ! pgrep -x iwd > /dev/null; then
+				sudo $source_dir/../qqsudo service iwd start
+			else
+				echo "wifi already running"
+			fi
+			;;
+		stop)
+			if pgrep -x iwd > /dev/null; then
+				sudo $source_dir/../qqsudo service iwd stop
+			else
+				echo "wifi not running"
+			fi
+			;;
+	esac
+}
+
+ssh () {
+	case $1 in
+		start)
+			if ! pgrep -x sshd > /dev/null; then
+				sudo $source_dir/../qqsudo service ssh start
+			else
+				echo "ssh already running"
+			fi
+			;;
+		stop)
+			if pgrep -x sshd > /dev/null; then
+				sudo $source_dir/../qqsudo service ssh stop
+			else
+				echo "ssh not running"
+			fi
+			;;
+	esac
+}
+
+vpn () {
+	case $1 in
+		start)
+			if ! pgrep -x openvpn > /dev/null; then
+				sudo $source_dir/../qqsudo openvpn $vpn_path
+			else
+				echo "vpn already running"
+			fi
+			;;
+		stop)
+			if pgrep -x openvpn > /dev/null; then
+				sudo $source_dir/../qqsudo pkill -x openvpn
+			else
+				echo "vpn not running"
+			fi
+			;;
+	esac
+}
+
+mac () {
+	case $1 in
+		start)
+			echo "Wifi mac randomization turned on"
+			sudo $source_dir/../qqsudo sed -i '/AddressRandom/s/^#//' /etc/iwd/main.conf
+			sudo $source_dir/../qqsudo macchanger -a eth0
+			touch /tmp/mac-on
+			;;
+		stop)
+			echo "Wifi mac randomization turned off"
+			sudo $source_dir/../qqsudo sed -i '/AddressRandom/ s/^#\?/#/' /etc/iwd/main.conf
+			sudo $source_dir/../qqsudo macchanger -p eth0
+			rm /tmp/mac-on
+			;;
+	esac
+}
+
+case $1 in
+	-wifi)
+		if pgrep -x iwd > /dev/null; then
+			echo "wifi already running"
+			exit 1
+		fi
+		vpn stop
+		ssh stop
+		ethernet stop
+		wifi start
+		# polybar boot disables wlan module if service not running
+		polybar-msg cmd restart > /dev/null
+		;;
+	-ethernet)
+		if pgrep -x dhclient > /dev/null; then
+			echo "ethernet already running"
+			exit 1
+		fi
+		vpn stop
+		ssh stop
+		wifi stop
+		ethernet start
+		;;
+	-stop)
+		vpn stop
+		ssh stop
+		wifi stop
+		ethernet stop
+		mac stop
+		;;
+	-ssh)
+		case $2 in
+			-start)
+				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
+					ssh start
+				else
+					echo "No network services running. Start a network service before enabling ssh"
+					exit 1
+				fi
+				;;
+			-stop)
+				ssh stop
+				;;
+			*)
+				echo "Invalid second argument (-start, -stop)"
+				exit 1
+				;;
+		esac
+		;;
+	-vpn)
+		case $2 in
+			-start)
+				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
+					vpn start
+				else
+					echo "No network services running. Start a network service before starting vpn"
+					exit 1
+				fi
+				;;
+			-stop)
+				vpn stop
+				;;
+			*)
+				echo "Invalid second argument (-start, -stop)"
+				exit 1
+				;;
+		esac
+		;;
+	-mac)
+		if ! pgrep -x dhclient > /dev/null && ! pgrep -x iwd > /dev/null; then
+			case $2 in
+				-start)
+					mac start
+					;;
+				-stop)
+					mac stop
+					;;
+				*)
+					echo "Invalid second argument (-start, -stop)"
+					exit 1
+					;;
+			esac
+		else
+			echo "A network service is running. Stop any network services before configuring mac addresses"
+			exit 1
+		fi
+		;;
+	-cli)
+		if pgrep -x iwd > /dev/null; then
+			iwctl station wlan0 get-networks
+			read -p "Enter network name: " network
+			iwctl station wlan0 connect $network
+		else
+			echo "Wifi service not running. Start wifi first"
+			exit 1
+		fi
+		;;
+	-trash-networks)
+		read -p "Are you sure you want to trash networks? ('y' or *) " input
+		if [ "$input" = "y" ]; then
+			sudo $source_dir/../qqsudo trash $network_path/*
+			echo "Trashed networks devices"
+		else
+			echo "Did not trash networks devices"
+		fi
+		;;
+	*)
+		echo "Invalid argument (-wifi, -ethernet, -stop, -ssh, -vpn, -mac, -cli, -trash-networks)"
+		exit 1
+		;;
+esac
+

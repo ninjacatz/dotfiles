@@ -1,0 +1,98 @@
+#!/bin/bash
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+# TODO: hide mouse instead of merely moving it when turning off trackpad?
+
+# device names
+trackpads=("SynPS/2 Synaptics TouchPad")
+trackpoints=("TPPS/2 IBM TrackPoint")
+mice=("Logitech M325" "Logitech G400s")
+
+case $1 in
+	-trackpad)
+		device_ids=()
+		for device in "${trackpads[@]}"; do
+			device_ids+=($(xinput list | grep "$device" | awk -F'=' '{print $2}' | awk '{print $1}'))
+		done
+		case $2 in
+			-start)
+				virtual_pointer_id=$(xinput list | awk -F '=' '/Virtual core pointer/ {print $2}' | awk '{print $1}')
+				for id in "${device_ids[@]}"; do
+					xinput enable $id
+					sleep 0.1
+					xinput reattach $id $virtual_pointer_id
+				done
+				echo "Trackpads enabled"
+				;;
+			-stop)
+				for id in "${device_ids[@]}"; do
+					xinput disable $id
+					xinput float $id
+				done
+				echo "Trackpads disabled"
+				;;
+			*)
+				echo "Invalid second argument (-start, -stop)"
+				exit 1
+				;;
+		esac
+		;;
+	-trackpoint)
+		device_ids=()
+		for device in "${trackpoints[@]}"; do
+			device_ids+=($(xinput list | grep "$device" | awk -F'=' '{print $2}' | awk '{print $1}'))
+		done
+		case $2 in
+			-start)
+				virtual_pointer_id=$(xinput list | awk -F '=' '/Virtual core pointer/ {print $2}' | awk '{print $1}')
+				for id in "${device_ids[@]}"; do
+					xinput enable $id
+					sleep 0.1
+					xinput reattach $id $virtual_pointer_id
+				done
+				echo "Trackpoints enabled"
+				;;
+			-stop)
+				for id in "${device_ids[@]}"; do
+					xinput disable $id
+					xinput float $id
+				done
+				echo "Trackpoints disabled"
+				;;
+			*)
+				echo "Invalid second argument (-start, -stop)"
+				exit 1
+				;;
+		esac
+		;;
+	-mouse)
+		device_ids=()
+		for device in "${mice[@]}"; do
+			device_ids+=($(xinput list | grep "$device" | awk -F'=' '{print $2}' | awk '{print $1}'))
+		done
+		case $2 in
+			-start)
+				for id in "${device_ids[@]}"; do
+					xinput enable $id
+				done
+				echo "Mice enabled"
+				;;
+			-stop)
+				for id in "${device_ids[@]}"; do
+					xinput disable $id
+				done
+				echo "Mice disabled"
+				;;
+			*)
+				echo "Invalid second argument (-start, -stop)"
+				exit 1
+				;;
+		esac
+		;;
+	*)
+		echo "Invalid argument (-trackpad, -trackpoint, -mouse)"
+		exit 1
+		;;
+esac
+
