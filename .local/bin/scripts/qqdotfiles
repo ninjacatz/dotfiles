@@ -32,7 +32,7 @@ if [[ "$1" == "commit" ]]; then
 	done
 	# check if there are changes to commit
 	if ! dotfiles_fn diff --cached --quiet; then
-		dotfiles_fn commit -m "Automated commit"
+		dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d')"
 	else
 		echo "No changes to commit"
 	fi
