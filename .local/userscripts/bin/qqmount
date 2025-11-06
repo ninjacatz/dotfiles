@@ -1,6 +1,9 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+
+# TODO: fix possibly empty umount variable so you can use set -u
 
 get_disk_path() {
 	while [ "$disk_path" == "" ]; do

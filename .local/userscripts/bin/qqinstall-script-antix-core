@@ -6,6 +6,7 @@ if [ $(id -u) -eq 0 ]; then
 fi
 
 # ----TO FIX:
+# userscripts not working in vifm (user and root)
 # starting wifi doesnt work the first time (key is doing something extra on its own?)
 # ~/.fltk installed by dillo
 # headphones not working
@@ -13,7 +14,6 @@ fi
 # numlock and scroll lock not showing up correctly in xset -q
 # how to get rid of antiX-cli-cc, fbsplash-antix?, isomount? (from antix)
 # properly spin down external devices?
-# mute audio and mute mic on startup?
 # cursors icons? (gtk2 and gtk3 config not changing anything)
 
 # To format the drive
@@ -155,6 +155,9 @@ conf_add_ow "$backups_home_dir"/.Xresources
 conf_add "$backups_home_dir"/.config/mimeapps.list
 root_ln ~/.config/mimeapps.list
 conf_add "$backups_home_dir"/.local/bin
+conf_add "$backups_home_dir"/.local/userscripts
+root_ln "$backups_home_dir"/.local/userscripts
+conf_add "$backups_home_dir"/.dotfiles
 
 conf_add "$backups_home_dir"/.themes
 root_ln ~/.themes

@@ -1,12 +1,20 @@
 #!/bin/bash
+set -euo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 move_value=80
 
-case $1 in
+is_floating() {
+	local node_json
+	node_json=$(bspc query -T -n focused 2>/dev/null || true)
+	[[ -z "$node_json" ]] && return 1  # no focused node
+	echo "$node_json" | jq -e '.client.state == "floating"' >/dev/null 2>&1
+}
+
+case "$1" in
 	-bar)
-		case $2 in
+		case "$2" in
 			-hide)
 				polybar-msg cmd hide && bspc config bottom_padding 0
 				;;
@@ -58,7 +66,7 @@ case $1 in
 		done
 
 		# Moving to new desktop
-		case $2 in
+		case "$2" in
 			-next)
 				bspc desktop -f "${occupied_desktops[$next_index]}"
 				;;
@@ -72,9 +80,9 @@ case $1 in
 		esac
 		;;
 	-select)
-		case $2 in
+		case "$2" in
 			west|east|north|south)
-				bspc node -f $2
+				bspc node -f "$2"
 				;;
 			*)
 				echo "Invalid second argument (west, east, north, south)"
@@ -83,9 +91,9 @@ case $1 in
 		esac
 		;;
 	-move)
-		case $2 in
+		case "$2" in
 			west)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -s west
 				else
 					bspc node -z right -$move_value 0
@@ -93,7 +101,7 @@ case $1 in
 				fi
 				;;
 			east)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -s east
 				else
 					bspc node -z right $move_value 0
@@ -101,7 +109,7 @@ case $1 in
 				fi
 				;;
 			north)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -s north
 				else
 					bspc node -z top 0 -$move_value
@@ -109,7 +117,7 @@ case $1 in
 				fi
 				;;
 			south)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -s south
 				else
 					bspc node -z top 0 $move_value
@@ -123,9 +131,9 @@ case $1 in
 		esac
 		;;
 	-size)
-		case $2 in
+		case "$2" in
 			left)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -z right -$move_value 0 || bspc node -z left -$move_value 0
 				else
 					bspc node -z right -$move_value 0
@@ -133,7 +141,7 @@ case $1 in
 				fi
 				;;
 			right)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -z right $move_value 0 || bspc node -z left $move_value 0
 				else
 					bspc node -z right $move_value 0
@@ -141,7 +149,7 @@ case $1 in
 				fi
 				;;
 			top)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -z top 0 -$move_value || bspc node -z bottom 0 -$move_value
 				else
 					bspc node -z top 0 -$move_value
@@ -149,7 +157,7 @@ case $1 in
 				fi
 				;;
 			bottom)
-				if ! bspc query -N -n focused | xargs -I{} bspc query -T -n {} | grep '"state":"floating"' > /dev/null; then
+				if ! is_floating; then
 					bspc node -z top 0 $move_value || bspc node -z bottom 0 $move_value
 				else
 					bspc node -z top 0 $move_value

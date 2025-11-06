@@ -1,6 +1,6 @@
 export EDITOR=vim
 
-export PATH="$PATH:$HOME/.local/bin/scripts"
+export PATH="$PATH:$HOME/.local/userscripts/bin:$HOME/.local/bin"
 
 # -----------
 # Prompt
