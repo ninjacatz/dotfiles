@@ -1,11 +1,10 @@
 #!/bin/bash
-set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 read -p "Push dotfile updates to GitHub? (y/N) " github_answer
 
-if [ "{$github_answer,,}" = "y" ]; then
+if [ "${github_answer,,}" = "y" ]; then
 	"$source_dir/qqdotfiles" commit
 	"$source_dir/qqdotfiles" push
 fi
@@ -22,7 +21,7 @@ sudo "$source_dir/../qqsudo" luckybackup -c --no-questions ext2-sync
 echo ""
 read -p "Do you want to eject devices? (y/N) " eject_answer
 
-if [ "{$eject_answer,,}" = "y" ]; then
+if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1
 	"$source_dir/qqmount" -u ext2
 	"$source_dir/qqmount" -u part
