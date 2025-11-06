@@ -2,6 +2,8 @@
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+# TODO: on t420, network blue key toggles wifi external to this script, may have to press twice
+
 vpn_path=$HOME/.config/openvpn/AirVPN_All-servers_UDP-443-Entry3.ovpn
 network_path=/var/lib/iwd
 

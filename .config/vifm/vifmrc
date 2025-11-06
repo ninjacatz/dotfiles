@@ -49,7 +49,7 @@ set vifminfo=chistory,shistory,phistory,fhistory,registers,bookmarks,bmarks
 " Set vifm to use bashrc
 set shell=/bin/bash\ --login
 " Set path
-let $PATH = expand('$HOME/.local/bin/scripts') . ':' . $PATH
+let $PATH = system('echo $PATH')
 
 " ---------------------------
 " BOOKMARKS

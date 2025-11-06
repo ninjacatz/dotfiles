@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 

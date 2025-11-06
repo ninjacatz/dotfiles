@@ -6,8 +6,6 @@ if [ $(id -u) -eq 0 ]; then
 fi
 
 # ----TO FIX:
-# userscripts not working in vifm (user and root)
-# starting wifi doesnt work the first time (key is doing something extra on its own?)
 # ~/.fltk installed by dillo
 # headphones not working
 # bleachbit and luckybackup as root not working from rofi

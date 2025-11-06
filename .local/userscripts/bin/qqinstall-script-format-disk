@@ -13,7 +13,7 @@ disk_name_root="${drive}p3"
 disk_name_part="${drive}p4"
 
 # Stop on any errors
-set -euo pipefail
+set -eo pipefail
 
 # Wipe disk
 wipefs -a /dev/"$disk_name"

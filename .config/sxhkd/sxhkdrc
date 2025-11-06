@@ -60,6 +60,8 @@ XF86PowerOff
 ############ 1 -> 0
 super + grave
 	~/.local/userscripts/bin/qqbspwm -desktop-occupied -next
+super + shift+ grave
+	~/.local/userscripts/bin/qqbspwm -desktop-occupied -prev
 super + {1,2,3,4}
 	bspc desktop -f {1,2,3,4}
 super + shift + {1,2,3,4}
