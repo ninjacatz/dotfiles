@@ -67,7 +67,7 @@ fi
 if [ "$umount" != "true" ]; then
 	if mountpoint "$dev_mnt_path" > /dev/null; then
 		echo "$dev already mounted"
-		exit 1
+		exit 0
 	fi
 fi
 
@@ -78,7 +78,7 @@ if [ "$umount" == "true" ]; then
 		success=true
 	else
 		echo "$dev not mounted"
-		exit 1
+		exit 0
 	fi
 	luks_disk_path=$(sudo $source_dir/../qqsudo cryptsetup status "$dev" | grep device: | awk '{print $2}')
 	if [ "$luks_disk_path" == "" ]; then
@@ -92,7 +92,7 @@ if [ "$umount" == "true" ]; then
 			success=true
 		else
 			echo "$dev already locked"
-			exit 1
+			exit 0
 		fi
 	fi
 	if [ "$success" == "true" ]; then
@@ -114,7 +114,7 @@ else
 		sudo $source_dir/../qqsudo mount $disk_path $dev_mnt_path || exit 1
 	else
 		echo "$dev already mounted"
-		exit 1
+		exit 0
 	fi
 	if ! find "$dev_mnt_path" -maxdepth 1 -user "$USER" > /dev/null; then
 		echo "mounted files are not owned by $USER"

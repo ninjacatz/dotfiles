@@ -1,21 +1,28 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-case $1 in
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-mode
+		start|ac|bat
+	-governor
+		performance|conservative
+EOF
+	exit 1
+}
+
+case "$1" in
 	-mode)
-		case $2 in
-			-default)
-				sudo $source_dir/../qqsudo tlp start
-				;;
-			-ac)
-				sudo $source_dir/../qqsudo tlp ac
-				;;
-			-battery)
-				sudo $source_dir/../qqsudo tlp bat
+		case "$2" in
+			start|ac|bat)
+				sudo "$source_dir/../qqsudo" tlp "$2"
 				;;
 			*)
-				echo "Invalid second argument (-default, -ac, -battery)"
+				usage
 				exit 1
 				;;
 		esac
@@ -24,19 +31,14 @@ case $1 in
 		cpu_cores=$(nproc)
 		cpu_cores=$((cpu_cores-1))
 
-		case $2 in
-			-performance)
-				for i in $(seq 0 $cpu_cores); do
-					sudo $source_dir/../qqsudo cpufreq-set -c $i -g performance
-				done
-				;;
-			-conservative)
-				for i in $(seq 0 $cpu_cores); do
-					sudo $source_dir/../qqsudo cpufreq-set -c $i -g conservative
+		case "$2" in
+			performance|conservative)
+				for i in $(seq 0 "$cpu_cores"); do
+					sudo "$source_dir/../qqsudo" cpufreq-set -c "$i" -g "$2"
 				done
 				;;
 			*)
-				echo "Invalid second argument (-performance, -conservative)"
+				usage
 				exit 1
 				;;
 		esac
@@ -45,7 +47,7 @@ case $1 in
 		cpufreq-info | awk -F '\"' '/may decide/ {print $2}'
 		;;
 	*)
-		echo "Invalid argument (-mode, -governor)"
+		usage
 		exit 1
 		;;
 esac

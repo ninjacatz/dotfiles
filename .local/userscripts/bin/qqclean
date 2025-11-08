@@ -3,49 +3,49 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-read -p "Do you want to delete ~/.wine? ('y' or *) " wine_input
+read -p "Do you want to delete ~/.wine? (y/N) " wine_answer
 
-bleachbit -c --preset
-sudo $source_dir/../qqsudo bleachbit -c --preset
-
-if [ "$wine_input" = "y" ]; then
+if [ "${wine_answer,,}" = "y" ]; then
 	rm -rf $HOME/.wine
 	rm -rf $HOME/.local/share/applications/wine
 	sudo $source_dir/../qqsudo rm -rf /root/.wine
 fi
 
+bleachbit -c --preset
+sudo $source_dir/../qqsudo bleachbit -c --preset
+
 # bash
-rm $HOME/.bash_history
-sudo $source_dir/../qqsudo rm /root/.bash_history
+rm "$HOME/.bash_history"
+sudo "$source_dir/../qqsudo" rm "/root/.bash_history"
 # vim
-rm $HOME/.vim/viminfo
-rm $HOME/.vim/.netrwhist
+rm "$HOME/.vim/viminfo"
+rm "$HOME/.vim/.netrwhist"
 # vifm
-rm $HOME/.config/vifm/vifminfo.json
+rm "$HOME/.config/vifm/vifminfo.json"
 # iwctl
-rm $HOME/.config/iwctl/history
+rm "$HOME/.config/iwctl/history"
 # other home directory
-rm $HOME/.lesshst
-sudo $source_dir/../qqsudo rm /root/.lesshst
-rm $HOME/.wget-hsts
-sudo $source_dir/../qqsudo rm /root/.wget-hsts
+rm "$HOME/.lesshst"
+sudo "$source_dir/../qqsudo" rm "/root/.lesshst"
+rm "$HOME/.wget-hsts"
+sudo "$source_dir/../qqsudo" rm "/root/.wget-hsts"
 # ssh
-rm $HOME/.ssh/known_hosts*
+rm "$HOME/.ssh/known_hosts"*
 # X session errors
-rm $HOME/.xsession-errors
+rm "$HOME/.xsession-errors"
 # zathura
-rm $HOME/.local/share/zathura/*
+rm "$HOME/.local/share/zathura/"*
 # cache
-rm $HOME/.cache
-sudo $source_dir/../qqsudo rm /root/.cache
+rm "$HOME/.cache"
+sudo "$source_dir/../qqsudo" rm "/root/.cache"
 # GIMP recent files (and others)
-rm $HOME/.local/share/recently-used.xbel
+rm "$HOME/.local/share/recently-used.xbel"
 # MPV saved video locations
-rm -f $HOME/.config/mpv/watch_later/*
+rm -f "$HOME/.config/mpv/watch_later/"*
 # Audacity recent files
-sed -i '/^file/d' $HOME/.config/audacity/audacity.cfg
+sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg"
 # OpenOffice recent files
-sed -i "/^<item oor:path=\"\/org.openoffice.Office.Histories/d" $HOME/.config/libreoffice/4/user/registrymodifications.xcu
+sed -i "/^<item oor:path=\"\/org.openoffice.Office.Histories/d" "$HOME/.config/libreoffice/4/user/registrymodifications.xcu"
 
 echo "Done cleaning"
 

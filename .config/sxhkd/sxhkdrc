@@ -12,9 +12,9 @@ Num_Lock
 XF86ScreenSaver
 	~/.local/userscripts/bin/qqpc -lock
 XF86Battery
-	~/.local/userscripts/bin/qqcpu -mode -default && ~/.local/userscripts/bin/qqcpu -governor -conservative
+	~/.local/userscripts/bin/qqcpu -mode start && ~/.local/userscripts/bin/qqcpu -governor conservative
 shift + XF86Battery
-	~/.local/userscripts/bin/qqcpu -mode -ac && ~/.local/userscripts/bin/qqcpu -governor -performance
+	~/.local/userscripts/bin/qqcpu -mode ac && ~/.local/userscripts/bin/qqcpu -governor performance
 XF86Sleep
 	~/.local/userscripts/bin/qqpc -suspend
 {_,shift + ,shift + ctrl + }XF86WLAN
@@ -141,7 +141,7 @@ super + {h,j,k,l}
 super + shift + {h,j,k,l}
 	~/.local/userscripts/bin/qqbspwm -move {west,south,north,east}
 super + semicolon
-	~/.local/userscripts/bin/qqbspwm -next-window
+	~/.local/userscripts/bin/qqbspwm -select next
 super + apostrophe
 	~/.local/userscripts/bin/qqbspwm -tiled
 super + Return

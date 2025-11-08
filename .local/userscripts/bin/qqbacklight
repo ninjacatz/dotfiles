@@ -3,7 +3,17 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-# TODO: on t420, backlight special key automatically changes internal backlight with or without script, causing both screens internal and external screens to change when script is run when when both screens are in use
+# TODO: on t420, backlight special key automatically changes internal backlight with or without script
+
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-internal|-external
+		-up|-down|-max|-min
+EOF
+	exit 1
+}
 
 # internal monitor backlight
 backlight_path="/sys/class/backlight/acpi_video0"
@@ -28,7 +38,7 @@ case "$1" in
 		increment=$external_backlight_increment
 		;;
 	*)
-		echo "Invalid argument (-internal, -external)"
+		usage
 		exit 1
 		;;
 esac
@@ -50,7 +60,7 @@ case "$2" in
 		total=$min
 		;;
 	*)
-		echo "Invalid second argument (-up, -down, -max, -min)"
+		usage
 		exit 1
 		;;
 esac

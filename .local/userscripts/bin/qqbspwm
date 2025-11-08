@@ -3,6 +3,27 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-bar
+		-hide|-show|-toggle
+	-fullscreen
+	-tiled
+	-floating
+	-desktop-occupied
+		-next|-prev
+	-select
+		west|east|north|south|next|prev
+	-move
+		west|east|north|south
+	-size
+		left|right|top|bottom
+EOF
+	exit 1
+}
+
 move_value=80
 
 is_floating() {
@@ -25,7 +46,7 @@ case "$1" in
 				polybar-msg cmd toggle && bspc config bottom_padding 0
 				;;
 			*)
-				echo "Invalid second argument (-hide, -show, -toggle)"
+				usage
 				exit 1
 		esac
 		;;
@@ -37,12 +58,6 @@ case "$1" in
 		;;
 	-floating)
 		bspc node -t floating
-		;;
-	-next-window)
-		bspc node -f next.local.!hidden.window
-		;;
-	-prev-window)
-		bspc node -f prev.local.!hidden.window
 		;;
 	-desktop-occupied)
 		case "$2" in
@@ -76,7 +91,7 @@ case "$1" in
 				bspc desktop -f "$target_desktop"
 				;;
 			*)
-				echo "Invalid second argument (-next, -prev)"
+				usage
 				exit 1
 				;;
 		esac
@@ -86,8 +101,11 @@ case "$1" in
 			west|east|north|south)
 				bspc node -f "$2"
 				;;
+			next|prev)
+				bspc node -f "$2".local.!hidden.window
+				;;
 			*)
-				echo "Invalid second argument (west, east, north, south)"
+				usage
 				exit 1
 				;;
 		esac
@@ -111,7 +129,7 @@ case "$1" in
 				fi
 				;;
 			*)
-				echo "Invalid second argument (west, east, north, south)"
+				usage
 				exit 1
 				;;
 			esac
@@ -137,13 +155,13 @@ case "$1" in
 				fi
 				;;
 			*)
-				echo "Invalid second argument (left, right, top, bottom)"
+				usage
 				exit 1
 				;;
 		esac
 		;;
 	*)
-		echo "Invalid argument (-bar, -fullscreen, -tiled, -floating, next-window, -prev-window, -desktop-occupied, -select, -move, -size)"
+		usage
 		exit 1
 		;;
 esac
