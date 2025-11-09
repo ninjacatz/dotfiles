@@ -20,6 +20,9 @@ if [[ -n "$SSH_CONNECTION" ]]; then
 fi
 PS1+="\w \[\e[0m\]>"
 
+# Set tab length to 4
+tabs 4
+
 # -----------
 # Alias and Safety checks
 # -----------

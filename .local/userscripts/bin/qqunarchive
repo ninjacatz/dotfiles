@@ -3,26 +3,26 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 for archive in "$@"; do
-    extension="${archive##*.}"
-    filepath="${archive%.*}"
+	extension="${archive##*.}"
+	filepath="${archive%.*}"
 
-    case $extension in
-        zip|pk3)
-            unzip "$archive" -d "$filepath"
-            ;;
-        rar)
-            mkdir -p "$filepath"
-            unrar x "$archive" "$filepath"
-            ;;
-        7z|ace)
-            7zz x "$archive" -o"$filepath"
-            ;;
-        tar|gz|xz|tgz|bz2|zst)
-            mkdir -p "$filepath"
-            tar xf "$archive" --directory="$filepath"
-            ;;
-        *)
-            echo "Invalid argument (unsupported archive): $archive"
-            ;;
-    esac
+	case $extension in
+		zip|pk3)
+			unzip "$archive" -d "$filepath"
+			;;
+		rar)
+			mkdir -p "$filepath"
+			unrar x "$archive" "$filepath"
+			;;
+		7z|ace)
+			7zz x "$archive" -o"$filepath"
+			;;
+		tar|gz|xz|tgz|bz2|zst)
+			mkdir -p "$filepath"
+			tar xf "$archive" --directory="$filepath"
+			;;
+		*)
+			echo "Invalid argument (unsupported archive): $archive"
+			;;
+	esac
 done

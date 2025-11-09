@@ -1,9 +1,20 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	vim|mpv
+		file
+EOF
+	exit 1
+}
+
 if ! [ -e "$2" ]; then
-	echo "Invalid second argument (valid file)"
+	usage
 	exit 1
 fi
 
@@ -15,19 +26,16 @@ if [ -z "$filetype" ]; then
 fi
 
 if grep -q "^$filetype=" "$HOME/.config/mimeapps.list"; then
-	echo "$filetype already in mimeapps.list"
+	echo "$filetype already in ~/.config/mimeapps.list"
 	exit 1
 fi
 
-case $1 in
-	-vim)
-		new_line="$filetype=vim.desktop"
-		;;
-	-mpv)
-		new_line="$filetype=mpv.desktop"
+case "$1" in
+	vim|mpv)
+		new_line="$filetype=$1.desktop"
 		;;
 	*)
-		echo "Invalid argument (-vim, -mpv)"
+		usage
 		exit 1
 		;;
 esac

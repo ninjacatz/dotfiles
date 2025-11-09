@@ -1,24 +1,36 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 # TODO: on t420, network blue key toggles wifi external to this script, may have to press twice
 
-vpn_path=$HOME/.config/openvpn/AirVPN_All-servers_UDP-443-Entry3.ovpn
-network_path=/var/lib/iwd
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-wifi|-ethernet|-stop|-cli|-trash-networks
+	-ssh|-vpn|-mac
+		-start|-stop
+EOF
+	exit 1
+}
+
+vpn_path="$HOME/.config/openvpn/AirVPN_All-servers_UDP-443-Entry3.ovpn"
+network_path="/var/lib/iwd"
 
 ethernet () {
-	case $1 in
+	case "$1" in
 		start)
 			if ! pgrep -x dhclient > /dev/null; then
-				sudo $source_dir/../qqsudo service networking start
+				sudo "$source_dir/../qqsudo" service networking start
 			else
 				echo "ethernet already running"
 			fi
 			;;
 		stop)
 			if pgrep -x dhclient > /dev/null; then
-				sudo $source_dir/../qqsudo service networking stop
+				sudo "$source_dir/../qqsudo" service networking stop
 			else
 				echo "ethernet not running"
 			fi
@@ -27,17 +39,17 @@ ethernet () {
 }
 
 wifi () {
-	case $1 in
+	case "$1" in
 		start)
 			if ! pgrep -x iwd > /dev/null; then
-				sudo $source_dir/../qqsudo service iwd start
+				sudo "$source_dir/../qqsudo" service iwd start
 			else
 				echo "wifi already running"
 			fi
 			;;
 		stop)
 			if pgrep -x iwd > /dev/null; then
-				sudo $source_dir/../qqsudo service iwd stop
+				sudo "$source_dir/../qqsudo" service iwd stop
 			else
 				echo "wifi not running"
 			fi
@@ -46,17 +58,17 @@ wifi () {
 }
 
 ssh () {
-	case $1 in
+	case "$1" in
 		start)
 			if ! pgrep -x sshd > /dev/null; then
-				sudo $source_dir/../qqsudo service ssh start
+				sudo "$source_dir/../qqsudo" service ssh start
 			else
 				echo "ssh already running"
 			fi
 			;;
 		stop)
 			if pgrep -x sshd > /dev/null; then
-				sudo $source_dir/../qqsudo service ssh stop
+				sudo "$source_dir/../qqsudo" service ssh stop
 			else
 				echo "ssh not running"
 			fi
@@ -65,17 +77,17 @@ ssh () {
 }
 
 vpn () {
-	case $1 in
+	case "$1" in
 		start)
 			if ! pgrep -x openvpn > /dev/null; then
-				sudo $source_dir/../qqsudo openvpn $vpn_path
+				sudo "$source_dir/../qqsudo" openvpn $vpn_path
 			else
 				echo "vpn already running"
 			fi
 			;;
 		stop)
 			if pgrep -x openvpn > /dev/null; then
-				sudo $source_dir/../qqsudo pkill -x openvpn
+				sudo "$source_dir/../qqsudo" pkill -x openvpn
 			else
 				echo "vpn not running"
 			fi
@@ -84,23 +96,23 @@ vpn () {
 }
 
 mac () {
-	case $1 in
+	case "$1" in
 		start)
 			echo "Wifi mac randomization turned on"
-			sudo $source_dir/../qqsudo sed -i '/AddressRandom/s/^#//' /etc/iwd/main.conf
-			sudo $source_dir/../qqsudo macchanger -a eth0
+			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/s/^#//' "/etc/iwd/main.conf"
+			sudo "$source_dir/../qqsudo" macchanger -a eth0
 			touch /tmp/mac-on
 			;;
 		stop)
 			echo "Wifi mac randomization turned off"
-			sudo $source_dir/../qqsudo sed -i '/AddressRandom/ s/^#\?/#/' /etc/iwd/main.conf
-			sudo $source_dir/../qqsudo macchanger -p eth0
+			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/ s/^#\?/#/' "/etc/iwd/main.conf"
+			sudo "$source_dir/../qqsudo" macchanger -p eth0
 			rm /tmp/mac-on
 			;;
 	esac
 }
 
-case $1 in
+case "$1" in
 	-wifi)
 		if pgrep -x iwd > /dev/null; then
 			echo "wifi already running"
@@ -131,7 +143,7 @@ case $1 in
 		mac stop
 		;;
 	-ssh)
-		case $2 in
+		case "$2" in
 			-start)
 				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
 					ssh start
@@ -144,13 +156,13 @@ case $1 in
 				ssh stop
 				;;
 			*)
-				echo "Invalid second argument (-start, -stop)"
+				usage
 				exit 1
 				;;
 		esac
 		;;
 	-vpn)
-		case $2 in
+		case "$2" in
 			-start)
 				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
 					vpn start
@@ -163,14 +175,14 @@ case $1 in
 				vpn stop
 				;;
 			*)
-				echo "Invalid second argument (-start, -stop)"
+				usage
 				exit 1
 				;;
 		esac
 		;;
 	-mac)
 		if ! pgrep -x dhclient > /dev/null && ! pgrep -x iwd > /dev/null; then
-			case $2 in
+			case "$2" in
 				-start)
 					mac start
 					;;
@@ -178,7 +190,7 @@ case $1 in
 					mac stop
 					;;
 				*)
-					echo "Invalid second argument (-start, -stop)"
+					usage
 					exit 1
 					;;
 			esac
@@ -191,23 +203,23 @@ case $1 in
 		if pgrep -x iwd > /dev/null; then
 			iwctl station wlan0 get-networks
 			read -p "Enter network name: " network
-			iwctl station wlan0 connect $network
+			iwctl station wlan0 connect "$network"
 		else
 			echo "Wifi service not running. Start wifi first"
 			exit 1
 		fi
 		;;
 	-trash-networks)
-		read -p "Are you sure you want to trash networks? ('y' or *) " input
-		if [ "$input" = "y" ]; then
-			sudo $source_dir/../qqsudo trash $network_path/*
+		read -p "Are you sure you want to trash networks? (y/N) " answer
+		if [ "${answer,,}" = "y" ]; then
+			sudo "$source_dir/../qqsudo" trash "$network_path"/*
 			echo "Trashed networks devices"
 		else
 			echo "Did not trash networks devices"
 		fi
 		;;
 	*)
-		echo "Invalid argument (-wifi, -ethernet, -stop, -ssh, -vpn, -mac, -cli, -trash-networks)"
+		usage
 		exit 1
 		;;
 esac

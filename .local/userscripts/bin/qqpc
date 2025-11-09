@@ -1,10 +1,20 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 # TODO: if you dont login after waking from suspend, the computer stays on
 
-xlock_font=-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-menu|-logout|-reboot|-shutdown|-lock|-suspend|-hibernate
+EOF
+	exit 1
+}
+
+xlock_font="-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*"
 
 if [ "$2" == "-notwithaudio" ]; then
 	# if audio is playing
@@ -14,7 +24,7 @@ if [ "$2" == "-notwithaudio" ]; then
 	fi
 fi
 
-case $1 in
+case "$1" in
 	-menu)
 		echo "l - Lock"
 		echo "k - Suspend"
@@ -23,81 +33,81 @@ case $1 in
 		echo "r - Reboot"
 		echo "L - Logout"
 		read -p "Select option: " selection
-		case $selection in
+		case "$selection" in
 			l)
-				$source_dir/qqpc -lock
+				"$source_dir/qqpc" -lock
 				;;
 			k)
-				$source_dir/qqpc -suspend
+				"$source_dir/qqpc" -suspend
 				;;
 			h)
-				$source_dir/qqpc -hibernate
+				"$source_dir/qqpc" -hibernate
 				;;
 			s)
-				$source_dir/qqpc -shutdown
+				"$source_dir/qqpc" -shutdown
 				;;
 			r)
-				$source_dir/qqpc -reboot
+				"$source_dir/qqpc" -reboot
 				;;
 			L)
-				$source_dir/qqpc -logout
+				"$source_dir/qqpc" -logout
 				;;
 			*)
 				echo "Invalid argument"
+				exit 1
 				;;
 		esac
 		;;
 	-logout)
-		$source_dir/qqnet -stop
-
-		pkill -KILL -u $USER
+		"$source_dir/qqnet" -stop
+		pkill -KILL -u "$USER"
 		;;
 	-reboot)
-		sudo $source_dir/../qqsudo reboot
+		sudo "$source_dir/../qqsudo" reboot
 		;;
 	-shutdown)
-		sudo $source_dir/../qqsudo shutdown -h now
+		sudo "$source_dir/../qqsudo" shutdown -h now
 		;;
 	-lock)
 		if pgrep -x xautolock > /dev/null; then
 			pkill -x xautolock
 		fi
 
-		$source_dir/qqvolume -mute -on
-		$source_dir/qqvolume -input -off
+		"$source_dir/qqvolume" -mute -on
+		"$source_dir/qqvolume" -input -off
 
 		# turn off thinklight
-		echo 0 | sudo $source_dir/../qqsudo tee /sys/class/leds/tpacpi::thinklight/brightness
+		echo 0 | sudo "$source_dir/../qqsudo" tee "/sys/class/leds/tpacpi::thinklight/brightness"
 
-		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font $xlock_font -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10
+		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10
 
 		# >> /tmp/file 2>&1 necessary for this to work when qqpc is triggered by xautolock program. dont know why
-		sh -c "$(awk '/xautolock -time/' ~/.config/bspwm/bspwmrc)" >> /tmp/qqpc-debug.log 2>&1
+		sh -c "$(awk '/xautolock -time/' "$HOME/.config/bspwm/bspwmrc")" >> /tmp/qqpc-debug.log 2>&1
 		;;
 	-suspend)
-		$source_dir/qqpc -lock &
+		"$source_dir/qqpc" -lock &
 
-		$source_dir/qqnet -stop
+		"$source_dir/qqnet" -stop
 
-		sudo $source_dir/../qqsudo pm-suspend
+		sudo "$source_dir/../qqsudo" pm-suspend
 
 		# turn on screen and simulate Return key press to trigger xlock
 		xset dpms force on
 		xdotool key BackSpace
 		;;
 	-hibernate)
-		$source_dir/qqpc -lock &
+		"$source_dir/qqpc" -lock &
 
-		$source_dir/qqnet -stop
+		"$source_dir/qqnet" -stop
 
-		sudo $source_dir/../qqsudo pm-hibernate
+		sudo "$source_dir/../qqsudo" pm-hibernate
 
 		# turn on screen and simulate Return key press to trigger xlock
 		xset dpms force on
 		xdotool key BackSpace
 		;;
 	*)
-		echo "Invalid argument (-menu, -logout, -reboot, -shutdown, -lock, -suspend, -hibernate)"
+		usage
 		exit 1
 		;;
 esac

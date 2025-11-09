@@ -4,7 +4,7 @@ pcm.!default {
 		pcm {
 			type hw
 			card 0
-			device 3
+			device 0
 		}
 		rate 48000
 	}

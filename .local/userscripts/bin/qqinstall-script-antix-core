@@ -259,6 +259,7 @@ qq_su_conf_add_ow "$backups_etc_dir"/init.d/cpufrequtils
 qq_apt_add ddccontrol
 qq_apt_add exfatprogs
 qq_apt_add ffmpeg
+qq_apt_add fonts-dejavu-extra
 qq_apt_add gcc-doc
 qq_apt_add gdb
 qq_apt_add gh

@@ -1,12 +1,16 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-if ! [[ $1 == *.md || $1 == *.MD ]]; then
-	echo "Invalid argument (.md or .MD file)"
+if ! [[ "${1,,}" == *.md ]]; then
+	echo "Invalid argument (markdown file)"
 	exit 1
 fi
 
-pandoc $1 > $1.html
-dillo $1.html
-rm $1.html
+pandoc "$1" > "$1".html
+librewolf "$1".html &
+(
+	sleep 20
+	rm "$1".html
+) &

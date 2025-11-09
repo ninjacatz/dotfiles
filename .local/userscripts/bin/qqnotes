@@ -1,8 +1,9 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-notes_path=/mnt/part/notes
+notes_path="/mnt/part/notes"
 
-$source_dir/qqmount part
-vim $notes_path
+"$source_dir/qqmount" part
+vim "$notes_path"
