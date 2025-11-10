@@ -1,93 +1,61 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-old_monitors=$(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}')
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-internal|-external|-external-1080p|-parents
+EOF
+	exit 1
+}
 
-case $1 in
+old_monitor=$(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}')
+
+case "$1" in
 	-internal)
-		new_monitors="LVDS-1"
+		new_monitor="LVDS-1"
 		xrandr \
-		--output $(echo "$new_monitors" | cut -d' ' -f1) --primary --mode 1920x1080 --rate 60.00 \
-		|| exit 1
-		$source_dir/qqvolume -output -default
+		--output "$new_monitor" --primary --mode 1920x1080 --rate 60.00
+		"$source_dir/qqvolume" -output -default
 		;;
 	-external)
-		new_monitors="DP-1"
+		new_monitor="DP-1"
 		xrandr \
-		--output $(echo "$new_monitors" | cut -d' ' -f1) --primary --mode 2560x1440 --rate 75.00 \
-		|| exit 1
-		$source_dir/qqvolume -output -displayport
+		--output "$new_monitor" --primary --mode 2560x1440 --rate 75.00
+		"$source_dir/qqvolume" -output -displayport
 		;;
 	-external-1080p)
-		new_monitors="DP-1"
+		new_monitor="DP-1"
 		xrandr \
-		--output $(echo "$new_monitors" | cut -d' ' -f1) --primary --mode 1920x1080 --rate 120.00 \
-		|| exit 1
-		$source_dir/qqvolume -output -displayport
-		;;
-	-internal-external)
-		new_monitors="LVDS-1 DP-1"
-		xrandr \
-		--output $(echo "$new_monitors" | cut -d' ' -f1) --primary --mode 1920x1080 --rate 60.00 \
-		--output $(echo "$new_monitors" | cut -d' ' -f2) --primary --mode 2560x1440 --rate 75.00 --above $(echo "$new_monitors" | cut -d' ' -f1) \
-		|| exit 1
-		$source_dir/qqvolume -output -displayport
+		--output "$new_monitor" --primary --mode 1920x1080 --rate 120.00
+		"$source_dir/qqvolume" -output -displayport
 		;;
 	-parents)
-		new_monitors="HDMI-1"
+		new_monitor="HDMI-1"
 		xrandr \
-		--output $(echo "$new_monitors" | cut -d' ' -f1) --primary --mode 1920x1080 --pos 0x0 --rotate normal \
-		|| exit 1
-		$source_dir/qqvolume -output -displayport
+		--output "$new_monitor" --primary --mode 1920x1080 --pos 0x0 --rotate normal
+		"$source_dir/qqvolume" -output -displayport
 		;;
 	*)
-		echo "Invalid argument (-internal, -external, -external-1080p, -parents)"
+		usage
 		exit 1
 		;;
 esac
 
-if [ "$new_monitors" != "$old_monitors" ]; then
-	bspc desktop 1 -n a
-	bspc desktop 2 -n b
-	bspc desktop 3 -n c
-	bspc desktop 4 -n d
-
-	monitor_count=$(echo "$new_monitors" | wc -w)
-	if [ "$monitor_count" == "1" ]; then
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f1) -d 1 2 3 4
-	elif [ "$monitor_count" == "2" ]; then
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f1) -d 1 2
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f2) -d 3 4
-	elif [ "$monitor_count" == "3" ]; then
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f1) -d 1 2
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f2) -d 3
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f3) -d 4
-	elif [ "$monitor_count" == "4" ]; then
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f1) -d 1
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f2) -d 2
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f3) -d 3
-		bspc monitor $(echo "$new_monitors" | cut -d' ' -f4) -d 4
-	else
-		echo "Too many monitors connected ($monitor_count). Desktops not set up"
-		skip="true"
-	fi
-
-	if [ "$skip" != "true" ]; then
-		bspc query -N -d a | while read -r id; do bspc node "$id" -d 1; done
-		bspc query -N -d b | while read -r id; do bspc node "$id" -d 2; done
-		bspc query -N -d c | while read -r id; do bspc node "$id" -d 3; done
-		bspc query -N -d d | while read -r id; do bspc node "$id" -d 4; done
-	fi
-
-	for monitor in $old_monitors; do
-		if [[ ! "$new_monitors" =~ "$monitor" ]]; then
-			xrandr --output "$monitor" --off
-			bspc monitor "$monitor" -r
-		fi
-	done
-
-	sudo -u $USER ~/.config/bspwm/bspwmrc &> /dev/null
+if [[ "$old_monitor" != "$new_monitor" ]]; then
+    bspc monitor "$old_monitor" -a temp_desktop
+	bspc desktop 1 --to-monitor "$new_monitor"
+	bspc desktop 2 --to-monitor "$new_monitor"
+	bspc desktop 3 --to-monitor "$new_monitor"
+	bspc desktop 4 --to-monitor "$new_monitor"
+	bspc desktop Desktop -r
+	bspc monitor "$old_monitor" -r
+	xrandr --output "$old_monitor" --off
+	sleep 2
+	"$HOME/.config/bspwm/bspwmrc"
 fi
 
 

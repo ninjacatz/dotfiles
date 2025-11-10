@@ -189,24 +189,27 @@ sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NO
 # Remove programs and upgrade
 # ##########################
 
-sudo apt update
-
-# antix-archive-keyring, antix-libs, apt-antix, live-kernel-updater, live-usb-maker, remaster-antix
 qq_apt_rm antix-goodies-core
 qq_apt_rm ceni
 qq_apt_rm chroot-rescue
 qq_apt_rm cli-aptix
+qq_apt_rm console-grid-gui
 qq_apt_rm desktop-defaults-core-antix
 sudo rm -rf "$HOME"/.conky*
 qq_apt_rm elinks
+qq_apt_rm live-kernel-updater
 qq_apt_rm mc mc-data
 qq_apt_rm nano
 sudo rm -rf "$HOME"/.nanorc
 sudo rm -rf /root/.nanorc
+qq_apt_rm pppoeconf
+qq_apt_rm remaster_antix
+sudo rm -rf /usr/local/share/live-files
 qq_apt_rm tmux
 qq_apt_rm vim-tiny
 
 sudo apt autopurge -y
+sudo apt update
 sudo apt upgrade -y
 
 # ##########################
@@ -339,6 +342,7 @@ qq_apt_add qbittorrent
 qq_conf_add "$backups_home_dir"/.config/qBittorrent
 qq_conf_add "$backups_home_dir"/.local/share/qBittorrent
 qq_apt_add rofi
+qq_conf_add "$backups_home_dir"/.config/rofi
 qq_conf_add "$backups_home_dir"/.local/share/applications
 qq_apt_add telegram-desktop
 qq_conf_add "$backups_home_dir"/.local/share/TelegramDesktop

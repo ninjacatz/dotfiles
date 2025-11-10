@@ -21,8 +21,8 @@ XF86Sleep
 	~/.local/userscripts/bin/qqnet -{wifi,ethernet,stop}
 XF86WebCam
 	guvcview
-{_,shift + ,shift + ctrl + }XF86Display
-	~/.local/userscripts/bin/qqscreen -{internal,external,internal-external}
+{_,shift + }XF86Display
+	~/.local/userscripts/bin/qqscreen -{internal,external}
 # XF86TouchpadToggle:
 {_,shift + }XF86Launch3
 	~/.local/userscripts/bin/qqdevice -trackpad -{stop,start}

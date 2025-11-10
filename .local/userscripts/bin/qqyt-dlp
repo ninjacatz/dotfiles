@@ -2,13 +2,23 @@
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-# Check if URL argument exists
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-audio|-video
+		"URL"
+EOF
+	exit 1
+}
+
+# check if URL argument exists
 if [ $# -ne 2 ]; then
-	echo "Invalid number of arguments (ex: qqyt-dlp -audio|-video \"URL\")"
+	usage
 	exit 1
 fi
 
-mkdir "$HOME"/Downloads/yt-dlp
+mkdir -p "$HOME"/Downloads/yt-dlp
 cd "$HOME"/Downloads/yt-dlp
 
 case "$1" in
@@ -21,7 +31,7 @@ case "$1" in
 		yt-dlp --cookies-from-browser firefox:"$HOME"/.librewolf --format "bestvideo[height<=1080]+bestaudio" --no-playlist "$2"
 		;;
 	*)
-		echo "Invalid argument (-audio, video)"
+		usage
 		exit 1
 		;;
 esac

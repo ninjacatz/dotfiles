@@ -1,59 +1,63 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-dpi=$(awk '/dpi:/ {print $2}' $HOME/.Xresources)
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-app|-game
+EOF
+	exit 1
+}
+
+dpi=$(awk '/dpi:/ {print $2}' "$HOME/.Xresources")
 font="jetbrains mono 13"
-flags="-dpi $dpi -disable-history -scroll-method 0 -no-fixed-num-lines"
+theme="$HOME/.config/rofi/themes/gruvbox-dark.rasi"
+flags=(-disable-history -scroll-method 1 -font "$font" -dpi "$dpi" -theme "$theme" -theme-str 'listview {lines: 10;}')
 
 case $1 in
 	-app)
-		modi="-drun-match-fields name -drun-display-format {name} -modi drun -show drun"
-
+		# "-drun-exclude-categories" flag not working (bad version of rofi), which is why the following junk is necessary
 		# make all desktop files with "Game" category have ONLY "Game" category
-		sudo $source_dir/../qqsudo sed -i '/Categories.*Game/ s/^Categories=.*$/Categories=Game/' /usr/share/applications/*
-
+		sudo "$source_dir/../qqsudo" sed -i '/Categories.*Game/ s/^Categories=.*$/Categories=Game/' /usr/share/applications/*
+		# collect all non-game categories, separated by commas
 		non_game_categories=$(grep "Categories=" /usr/share/applications/*.desktop | awk -F '=' '{print $2}' | tr ';' '\n' | grep -v '^$' | sort | uniq | grep -v Game | awk '{printf "%s%s", sep, $0; sep=","} END {print ""}')
 
-		rofi $flags -font "$font" \
-		-theme-str 'listview { lines: 10; }' \
-		-drun-categories $non_game_categories $modi
+		modi=(-drun-categories "$non_game_categories" -drun-match-fields name -drun-display-format '{name}' -modi drun -show drun -display-drun "App")
+
+		rofi "${flags[@]}" "${modi[@]}"
 		;;
 	-game)
-		lines=10
-
-		# find .desktop paths and names in order
-		paths=$(find ~/Games -maxdepth 2 -name "*.desktop")
-		names_and_paths=()
-		for path in $paths; do
-			name=$(grep -m1 '^Name=' "$path" | cut -d= -f2)
-			names_and_paths+=("$name|||$path")
-		done
-		mapfile -t names_and_paths < <(printf "%s\n" "${names_and_paths[@]}" | sort)
+		# find all .desktop files, extract name@exec_line, and sort them
+		names_and_execs=()
+		while IFS= read -r path; do
+			name=$(awk -F= '/^Name=/ {print $2}' "$path")
+			exec_line=$(awk -F= '/^Exec=/ {print $2}' "$path")
+			names_and_execs+=("$name@$(dirname "$path")${exec_line:1}")
+		done < <(find ~/Games -maxdepth 2 -name "*.desktop")
+		mapfile -t names_and_execs < <(printf "%s\n" "${names_and_execs[@]}" | sort)
 
 		# display names and select with rofi
 		rofi_selection=$(\
-		for name_and_path in "${names_and_paths[@]}"; do
-			echo "$name_and_path" | cut -d'|' -f1
+		for name_and_exec in "${names_and_execs[@]}"; do
+			echo "$name_and_exec" | cut -d'@' -f1
 		done \
-		| rofi $flags -font "$font" \
-		-theme-str "listview { lines: $lines; }" \
-		-dmenu -i -p Game)
+		| rofi "${flags[@]}" -dmenu -i -p "Game")
 
-		# match selected name with name in list and run exec line from desktop file
-		for name_and_path in "${names_and_paths[@]}"; do
-			name=$(echo "$name_and_path" | cut -d'|' -f1)
+		# match selected name with name in list and run exec_line part
+		for name_and_exec in "${names_and_execs[@]}"; do
+			name=$(echo "$name_and_exec" | cut -d'@' -f1)
 			if [[ "$name" == "$rofi_selection" ]]; then
-				path=$(echo "$name_and_path" | cut -d'|' -f4)
-				exec_line=$(grep '^Exec' "$path" | cut -d'=' -f 2-)
-				cd $(dirname $path)
+				exec_line=$(echo "$name_and_exec" | cut -d'@' -f2)
 				sh -c "$exec_line"
 				break
 			fi
 		done
 		;;
 	*)
-		echo "Invalid argument (-app, -game)"
+		usage
 		exit 1
 		;;
 esac

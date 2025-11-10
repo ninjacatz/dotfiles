@@ -2,6 +2,21 @@
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-up|-down|-min|-max
+	-mute
+		-on|-off|-toggle
+	-input
+		-on|-off|-toggle
+	-output
+		-default|-displayport
+EOF
+	exit 1
+}
+
 increment=5
 default_card="card 0"
 default_device="device 0"
@@ -9,12 +24,12 @@ dp_device="device 3"
 default_master="Master"
 dp_master="IEC958"
 
-case $1 in
+case "$1" in
 	-up)
-		amixer set "$default_master" $increment%+
+		amixer set "$default_master" "$increment%+"
 		;;
 	-down)
-		amixer set "$default_master" $increment%-
+		amixer set "$default_master" "$increment%-"
 		;;
 	-min)
 		amixer set "$default_master" 0%
@@ -23,7 +38,7 @@ case $1 in
 		amixer set "$default_master" 100%
 		;;
 	-mute)
-		case $2 in
+		case "$2" in
 			-on)
 				amixer set "$default_master" mute
 				amixer set "$dp_master",0 mute
@@ -33,7 +48,7 @@ case $1 in
 				amixer set "$dp_master",0 unmute
 				;;
 			-toggle)
-				current_dev=$(grep device ~/.asoundrc | awk '{print $2}')
+				current_dev=$(grep device "$HOME/.asoundrc" | awk '{print $2}')
 				if [ "$current_dev" == "0" ]; then
 					current_master="$default_master"
 				else
@@ -48,59 +63,59 @@ case $1 in
 				fi
 				;;
 			*)
-				echo "Invalid second argument (-on, -off, -toggle)"
+				usage
 				exit 1
 				;;
 		esac
 		;;
 	-input)
-		case $2 in
+		case "$2" in
 			-on)
 				amixer set Capture cap
-				sudo $source_dir/../qqsudo chmod 660 /dev/video0
+				sudo "$source_dir/../qqsudo" chmod 660 /dev/video0
 				;;
 			-off)
 				amixer set Capture nocap
-				sudo $source_dir/../qqsudo chmod 000 /dev/video0
+				sudo "$source_dir/../qqsudo" chmod 000 /dev/video0
 				;;
 			-toggle)
 				if amixer get Capture | grep "\[on\]" > /dev/null; then
 					amixer set Capture nocap
-					sudo $source_dir/../qqsudo chmod 000 /dev/video0
+					sudo "$source_dir/../qqsudo" chmod 000 /dev/video0
 				else
 					amixer set Capture cap
-					sudo $source_dir/../qqsudo chmod 660 /dev/video0
+					sudo "$source_dir/../qqsudo" chmod 660 /dev/video0
 				fi
 				;;
 			*)
-				echo "Invalid second argument (-on, -off, -toggle)"
+				usage
 				exit 1
 				;;
 		esac
 		;;
 	-output)
-		case $2 in
+		case "$2" in
 			-default)
-				sed -i "s/device .*/$default_device/" ~/.asoundrc
-				sed -i "s/card .*/$default_card/" ~/.asoundrc
-				sed -i "s/master-mixer = .*/master-mixer = $default_master/" ~/.config/polybar/config.ini
+				sed -i "s/device .*/$default_device/" "$HOME/.asoundrc"
+				sed -i "s/card .*/$default_card/" "$HOME/.asoundrc"
+				sed -i "s/master-mixer = .*/master-mixer = $default_master/" "$HOME/.config/polybar/config.ini"
 				polybar-msg cmd restart > /dev/null
 				;;
 			-displayport)
-				sed -i "s/device .*/$dp_device/" ~/.asoundrc
-				sed -i "s/card .*/$default_card/" ~/.asoundrc
-				sed -i "s/master-mixer = .*/master-mixer = $dp_master/" ~/.config/polybar/config.ini
+				sed -i "s/device .*/$dp_device/" "$HOME/.asoundrc"
+				sed -i "s/card .*/$default_card/" "$HOME/.asoundrc"
+				sed -i "s/master-mixer = .*/master-mixer = $dp_master/" "$HOME/.config/polybar/config.ini"
 				polybar-msg cmd restart > /dev/null
 				;;
 			*)
-				echo "Invalid second argument (-default, -displayport)"
+				usage
 				exit 1
 				;;
 		esac
 		echo "Changed audio to $(grep card ~/.asoundrc | tr -d '[:space:]') $(grep device ~/.asoundrc | tr -d '[:space:]')"
 		;;
 	*)
-		echo "Invalid argument (-up, -down, -min, -max, -mute, -input, -output)"
+		usage
 		exit 1
 		;;
 esac

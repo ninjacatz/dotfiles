@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
@@ -6,7 +7,7 @@ for archive in "$@"; do
 	extension="${archive##*.}"
 	filepath="${archive%.*}"
 
-	case $extension in
+	case "$extension" in
 		zip|pk3)
 			unzip "$archive" -d "$filepath"
 			;;
@@ -22,7 +23,8 @@ for archive in "$@"; do
 			tar xf "$archive" --directory="$filepath"
 			;;
 		*)
-			echo "Invalid argument (unsupported archive): $archive"
+			echo "Unsupported archive: $archive"
+			exit 1
 			;;
 	esac
 done

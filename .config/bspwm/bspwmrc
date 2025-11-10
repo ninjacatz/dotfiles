@@ -5,12 +5,8 @@
 # ---------------------------
 # BASIC CONFIG
 # ---------------------------
-# workspaces
-# if this is the first time bspwmrc is executed for a session
-startx_pid=$(pgrep -x startx)
-if [ ! -f "/tmp/bspwm-first-run-startx-$startx_pid" ]; then
-	bspc monitor -d 1 2 3 4
-fi
+bspc monitor -d 1 2 3 4
+
 bspc config border_width 10
 bspc config window_gap 0
 bspc config split_ratio 0.5
@@ -20,11 +16,9 @@ bspc config pointer_modifier mod4
 bspc config pointer_action1 move
 bspc config pointer_action2 resize_side
 
-# auto scheme
 bspc config automatic_scheme longest_side
 bspc config initial_polarity second_child
 
-# Colors
 bspc config normal_border_color "#202020"
 bspc config focused_border_color "#909090"
 bspc config active_border_color "#202020"
@@ -50,10 +44,7 @@ sxhkd &
 if pgrep -x polybar > /dev/null; then
 	pkill -x polybar
 fi
-polybar &>/dev/null &
-for m in $(polybar --list-monitors | cut -d":" -f1); do
-    MONITOR=$m polybar --reload example &
-done
+polybar &
 
 if pgrep -x picom > /dev/null; then
 	pkill -x picom
@@ -64,12 +55,10 @@ feh --bg-fill --random ~/Pictures/backgrounds/rotation/2560x1600-2959361-paintin
 
 # set capslock key to esc
 setxkbmap -option caps:escape_shifted_capslock &&
-# set capslock key to super
-# setxkbmap -option caps:super &&
 # set menu key to super_r
 xmodmap -e "keysym Menu = Super_R" &
 
-# Allow root to access the display
+# allow root to access the display
 xhost +SI:localuser:root
 
 # hide mouse after certain time
@@ -80,11 +69,3 @@ unclutter -idle 10 &
 
 # disable screen blanking
 xset dpms 0 0 0 && xset s 0 0 &
-
-# if this is the first time bspwmrc is executed for a session
-if [ ! -f "/tmp/bspwm-first-run-startx-$startx_pid" ]; then
-	xautolock -time 5 -detectsleep -locker "~/.local/bin/scripts/qqpc -lock -notwithaudio" &
-	touch "/tmp/bspwm-first-run-startx-$startx_pid" &
-	~/.local/bin/scripts/qqvolume -input -off
-fi
-
