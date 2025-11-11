@@ -4,6 +4,7 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 read -p "Push dotfile updates to GitHub? (y/N) " github_answer
+read -p "Do you want to delete ~/.wine? (y/N) " wine_answer
 read -p "Do you want to eject devices after backup? (y/N) " eject_answer
 
 if [ "${github_answer,,}" = "y" ]; then
@@ -15,7 +16,12 @@ fi
 "$source_dir/qqmount" ext2
 "$source_dir/qqmount" part
 
-"$source_dir/qqclean"
+
+if [ "${wine_answer,,}" = "y" ]; then
+	"$source_dir/qqclean" -delete-wine
+else
+	"$source_dir/qqclean"
+fi
 
 sudo "$source_dir/../qqsudo" luckybackup -c --no-questions default
 sudo "$source_dir/../qqsudo" luckybackup -c --no-questions ext2-sync

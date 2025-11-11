@@ -3,16 +3,19 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-read -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+# if no arguments supplied
+if [ "$#" -eq 0 ]; then
+	read -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+fi
 
-if [ "${wine_answer,,}" = "y" ]; then
-	rm -rf $HOME/.wine
-	rm -rf $HOME/.local/share/applications/wine
-	sudo $source_dir/../qqsudo rm -rf /root/.wine
+if [[ "${wine_answer,,}" = "y" || "$1" = "-delete-wine" ]]; then
+	rm -rf "$HOME"/.wine
+	rm -rf "$HOME"/.local/share/applications/wine
+	sudo "$source_dir/../qqsudo" rm -rf /root/.wine
 fi
 
 bleachbit -c --preset
-sudo $source_dir/../qqsudo bleachbit -c --preset
+sudo "$source_dir/../qqsudo" bleachbit -c --preset
 
 # bash
 rm -f "$HOME/.bash_history"
