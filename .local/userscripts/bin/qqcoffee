@@ -1,0 +1,30 @@
+#!/bin/bash
+set -eo pipefail
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+# TODO: if you dont login after waking from suspend, the computer stays on
+
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-on|-off
+EOF
+	exit 1
+}
+
+case "$1" in
+	-on)
+		pkill -x xautolock
+		rm /tmp/xautolock_on
+		;;
+	-off)
+		sh -c "$(awk '/xautolock -time/' "$HOME"/.config/bspwm/bspwmrc)"
+		touch /tmp/xautolock_on
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac

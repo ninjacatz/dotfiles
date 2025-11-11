@@ -236,7 +236,7 @@ qq_su_conf_add_ow "$backups_etc_dir"/iwd/main.conf
 qq_su_conf_add "$backups_var_dir"/lib/iwd
 
 qq_apt_add openvpn
-qq_conf_add "$backups_home_dir"/.config/openvpn
+qq_su_conf_add_ow "$backups_etc_dir"/openvpn
 sudo update-rc.d openvpn disable
 
 qq_apt_add ssh
@@ -270,6 +270,7 @@ qq_conf_add "$backups_home_dir"/.config/gh
 qq_apt_add git
 qq_conf_add "$backups_home_dir"/.gitconfig
 qq_apt_add imagemagick
+qq_apt_add inotify-tools
 qq_apt_add jq
 qq_apt_add lm-sensors
 qq_apt_add luckybackup

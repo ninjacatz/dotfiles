@@ -5,13 +5,14 @@ nmlk=$(cat /sys/class/leds/input0::numlock/brightness)
 scrlk=$(cat /sys/class/leds/input0::scrolllock/brightness)
 
 if [ "$capslk" = "1" ]; then
-	output="CapsLk"
+	output="CapsLk "
 fi
 if [ "$nmlk" = "1" ]; then
-	output="$output NmLk"
+	output="${output}NmLk "
 fi
 if [ "$scrlk" = "1" ]; then
-	output="$output ScrLk"
+	output="${output}ScrLk"
 fi
 
-echo $output
+output="$(printf '%s' "$output" | sed 's/[[:space:]]*$//')"
+echo "$output"

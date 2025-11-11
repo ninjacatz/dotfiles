@@ -112,7 +112,7 @@ case "$1" in
 				exit 1
 				;;
 		esac
-		echo "Changed audio to $(grep card ~/.asoundrc | tr -d '[:space:]') $(grep device ~/.asoundrc | tr -d '[:space:]')"
+		echo "Changed audio to $(grep -m1 card ~/.asoundrc | tr -d '[:space:]') $(grep device ~/.asoundrc | tr -d '[:space:]')"
 		;;
 	*)
 		usage

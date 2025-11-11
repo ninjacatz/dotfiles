@@ -21,8 +21,8 @@ XF86Sleep
 	~/.local/userscripts/bin/qqnet -{wifi,ethernet,stop}
 XF86WebCam
 	guvcview
-{_,shift + }XF86Display
-	~/.local/userscripts/bin/qqscreen -{internal,external}
+{_,shift + ,shift + ctrl + }XF86Display
+	~/.local/userscripts/bin/qqscreen -{internal,external,internal-external}
 # XF86TouchpadToggle:
 {_,shift + }XF86Launch3
 	~/.local/userscripts/bin/qqdevice -trackpad -{stop,start}
@@ -149,10 +149,8 @@ super + Return
 
 ############ Z -> M
 super + z
-super + x
-	pkill -x xautolock
-super + shift +x
-	sh -c "$(awk '/xautolock -time/' ~/.config/bspwm/bspwmrc)"
+super + {_, shift + }x
+	~/.local/userscripts/bin/qqcoffee -{on,off}
 super + c
 	alacritty --config-file ~/.config/alacritty/term.yml  -e ~/.local/userscripts/bin/qqcalendar
 super + {_, shift + }v

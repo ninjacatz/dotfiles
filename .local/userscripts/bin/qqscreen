@@ -3,40 +3,50 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+# NOTE: cannot have more than 4 monitors
+# NOTE: initial order of desktops inside switch statement indicates placement of desktops 1-4
+
 usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-internal|-external|-external-1080p|-parents
+	-internal|-external|-external-1080p|-internal-external|-parents
 EOF
 	exit 1
 }
 
-old_monitor=$(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}')
+old_monitors=($(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}'))
 
 case "$1" in
 	-internal)
-		new_monitor="LVDS-1"
+		new_monitors=("LVDS-1")
 		xrandr \
-		--output "$new_monitor" --primary --mode 1920x1080 --rate 60.00
+		--output "${new_monitors[0]}" --primary --mode 1920x1080 --rate 60.00
 		"$source_dir/qqvolume" -output -default
 		;;
 	-external)
-		new_monitor="DP-1"
+		new_monitors=("DP-1")
 		xrandr \
-		--output "$new_monitor" --primary --mode 2560x1440 --rate 75.00
+		--output "${new_monitors[0]}" --primary --mode 2560x1440 --rate 75.00
 		"$source_dir/qqvolume" -output -displayport
 		;;
 	-external-1080p)
-		new_monitor="DP-1"
+		new_monitors=("DP-1")
 		xrandr \
-		--output "$new_monitor" --primary --mode 1920x1080 --rate 120.00
+		--output "${new_monitors[0]}" --primary --mode 1920x1080 --rate 120.00
+		"$source_dir/qqvolume" -output -displayport
+		;;
+	-internal-external)
+		new_monitors=("LVDS-1" "DP-1")
+		xrandr \
+		--output "${new_monitors[0]}" --primary --mode 1920x1080 --rate 60.00 \
+		--output "${new_monitors[1]}" --mode 2560x1440 --rate 75.00 --above "${new_monitors[0]}"
 		"$source_dir/qqvolume" -output -displayport
 		;;
 	-parents)
-		new_monitor="HDMI-1"
+		new_monitors=("HDMI-1")
 		xrandr \
-		--output "$new_monitor" --primary --mode 1920x1080 --pos 0x0 --rotate normal
+		--output "${new_monitors[0]}" --primary --mode 1920x1080 --pos 0x0 --rotate normal
 		"$source_dir/qqvolume" -output -displayport
 		;;
 	*)
@@ -45,17 +55,55 @@ case "$1" in
 		;;
 esac
 
-if [[ "$old_monitor" != "$new_monitor" ]]; then
-    bspc monitor "$old_monitor" -a temp_desktop
-	bspc desktop 1 --to-monitor "$new_monitor"
-	bspc desktop 2 --to-monitor "$new_monitor"
-	bspc desktop 3 --to-monitor "$new_monitor"
-	bspc desktop 4 --to-monitor "$new_monitor"
-	bspc desktop Desktop -r
-	bspc monitor "$old_monitor" -r
-	xrandr --output "$old_monitor" --off
-	sleep 2
-	"$HOME/.config/bspwm/bspwmrc"
+# sort and find removed monitors
+mapfile -t old_monitors_sorted < <(printf "%s\n" "${old_monitors[@]}" | sort)
+mapfile -t new_monitors_sorted < <(printf "%s\n" "${new_monitors[@]}" | sort)
+mapfile -t monitors_removed < <(comm -23 \
+	<(printf "%s\n" "${old_monitors_sorted[@]}") \
+	<(printf "%s\n" "${new_monitors_sorted[@]}"))
+
+# add temp_desktop to any monitors being removed
+# the last desktop on a monitor cannot be removed, so an extra is needed
+count=0
+for removed_monitor in "${monitors_removed[@]}"; do
+	bspc monitor "$removed_monitor" -a "temp_desktop$count"
+	((count+=1))
+done
+
+# move desktops 1-4 based on new_monitors count
+if (( ${#new_monitors[@]} == 1 )); then
+	bspc desktop 1 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 2 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 3 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 4 --to-monitor "${new_monitors[0]}" || true
+elif (( ${#new_monitors[@]} == 2 )); then
+	bspc desktop 1 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 2 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 3 --to-monitor "${new_monitors[1]}" || true
+	bspc desktop 4 --to-monitor "${new_monitors[1]}" || true
+elif (( ${#new_monitors[@]} == 3 )); then
+	bspc desktop 1 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 2 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 3 --to-monitor "${new_monitors[1]}" || true
+	bspc desktop 4 --to-monitor "${new_monitors[2]}" || true
+elif (( ${#new_monitors[@]} == 4 )); then
+	bspc desktop 1 --to-monitor "${new_monitors[0]}" || true
+	bspc desktop 2 --to-monitor "${new_monitors[1]}" || true
+	bspc desktop 3 --to-monitor "${new_monitors[2]}" || true
+	bspc desktop 4 --to-monitor "${new_monitors[3]}" || true
 fi
+
+# remove automatically created desktops when new monitor is added
+if bspc query -D -d "Desktop" 2> /dev/null; then
+	bspc desktop Desktop -r
+fi
+
+# remove monitors with bspc and xrandr
+for removed_monitor in "${monitors_removed[@]}"; do
+	bspc monitor "$removed_monitor" -r
+	xrandr --output "$removed_monitor" --off
+done
+
+"$HOME/.config/bspwm/bspwmrc" &>/dev/null
 
 

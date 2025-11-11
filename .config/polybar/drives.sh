@@ -10,4 +10,5 @@ output=$(df -h | awk '
   }
 ')
 
-echo $output
+output="$(printf '%s' "$output" | sed 's/[[:space:]]*$//')"
+echo "$output"

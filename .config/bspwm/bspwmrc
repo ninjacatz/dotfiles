@@ -5,7 +5,13 @@
 # ---------------------------
 # BASIC CONFIG
 # ---------------------------
-bspc monitor -d 1 2 3 4
+if [ ! -f /tmp/bspwm_first_run ]; then
+	bspc monitor -d 1 2 3 4
+	xautolock -time 5 -detectsleep -locker "~/.local/userscript/bin/qqpc -lock -notwithaudio" &
+	~/.local/userscripts/bin/qqvolume -input -off
+
+	touch /tmp/bspwm_first_run
+fi
 
 bspc config border_width 10
 bspc config window_gap 0
@@ -28,10 +34,10 @@ bspc config presel_feedback_color "#909090"
 bspc config right_padding 0
 bspc config left_padding 0
 bspc config top_padding 0
-height=$(grep height ~/.config/polybar/config.ini | awk '{print $3}' | sed 's/pt//')
-dpi=$(grep dpi ~/.Xresources | awk '{print $2}')
+height=$(grep height "$HOME"/.config/polybar/config.ini | awk '{print $3}' | sed 's/pt//')
+dpi=$(grep dpi "$HOME"/.Xresources | awk '{print $2}')
 height_in_pixels=$(echo "$height * ($dpi / 72)" | bc -l | xargs printf "%.0f")
-bspc config bottom_padding $height_in_pixels
+bspc config bottom_padding "$height_in_pixels"
 
 # ---------------------------
 # STARTUP
@@ -44,14 +50,17 @@ sxhkd &
 if pgrep -x polybar > /dev/null; then
 	pkill -x polybar
 fi
-polybar &
+# make polybar show up on multiple monitors
+for monitor in $(polybar --list-monitors | cut -d":" -f1); do
+	MONITOR=$monitor polybar &
+done
 
 if pgrep -x picom > /dev/null; then
 	pkill -x picom
 fi
 picom &
 
-feh --bg-fill --random ~/Pictures/backgrounds/rotation/2560x1600-2959361-painting-ivan-aivazovsky-sea-ship-seagulls-waves-classic-art___landscape-nature-wallpapers.jpg &
+feh --bg-fill --random ~/Pictures/backgrounds/rotation/ivan-aivazovsky-ship-painting.jpg &
 
 # set capslock key to esc
 setxkbmap -option caps:escape_shifted_capslock &&
@@ -69,3 +78,172 @@ unclutter -idle 10 &
 
 # disable screen blanking
 xset dpms 0 0 0 && xset s 0 0 &
+
+# set key repeat delay and speed
+xset r rate 400 60 &
+#!/bin/sh
+
+# TODO: get rid of annoying polybar notice messages
+
+# ---------------------------
+# BASIC CONFIG
+# ---------------------------
+if [ ! -f /tmp/bspwm_first_run ]; then
+	bspc monitor -d 1 2 3 4
+	xautolock -time 5 -detectsleep -locker "~/.local/userscript/bin/qqpc -lock -notwithaudio" &
+	~/.local/userscripts/bin/qqvolume -input -off
+
+	touch /tmp/bspwm_first_run
+fi
+
+bspc config border_width 10
+bspc config window_gap 0
+bspc config split_ratio 0.5
+
+# pointer controls
+bspc config pointer_modifier mod4
+bspc config pointer_action1 move
+bspc config pointer_action2 resize_side
+
+bspc config automatic_scheme longest_side
+bspc config initial_polarity second_child
+
+bspc config normal_border_color "#202020"
+bspc config focused_border_color "#909090"
+bspc config active_border_color "#202020"
+bspc config presel_feedback_color "#909090"
+
+# fix padding when restarting
+bspc config right_padding 0
+bspc config left_padding 0
+bspc config top_padding 0
+height=$(grep height "$HOME"/.config/polybar/config.ini | awk '{print $3}' | sed 's/pt//')
+dpi=$(grep dpi "$HOME"/.Xresources | awk '{print $2}')
+height_in_pixels=$(echo "$height * ($dpi / 72)" | bc -l | xargs printf "%.0f")
+bspc config bottom_padding "$height_in_pixels"
+
+# ---------------------------
+# STARTUP
+# ---------------------------
+if pgrep -x sxhkd > /dev/null; then
+	pkill -x sxhkd
+fi
+sxhkd &
+
+if pgrep -x polybar > /dev/null; then
+	pkill -x polybar
+fi
+# make polybar show up on multiple monitors
+for monitor in $(polybar --list-monitors | cut -d":" -f1); do
+	MONITOR=$monitor polybar &
+done
+
+if pgrep -x picom > /dev/null; then
+	pkill -x picom
+fi
+picom &
+
+feh --bg-fill --random ~/Pictures/backgrounds/rotation/ivan-aivazovsky-ship-painting.jpg &
+
+# set capslock key to esc
+setxkbmap -option caps:escape_shifted_capslock &&
+# set menu key to super_r
+xmodmap -e "keysym Menu = Super_R" &
+
+# allow root to access the display
+xhost +SI:localuser:root
+
+# hide mouse after certain time
+if pgrep -x unclutter > /dev/null; then
+	pkill -x unclutter
+fi
+unclutter -idle 10 &
+
+# disable screen blanking
+xset dpms 0 0 0 && xset s 0 0 &
+
+# set key repeat delay and speed
+xset r rate 400 60 &
+#!/bin/sh
+
+# TODO: get rid of annoying polybar notice messages
+
+# ---------------------------
+# BASIC CONFIG
+# ---------------------------
+if [ ! -f /tmp/bspwm_first_run ]; then
+	bspc monitor -d 1 2 3 4
+	xautolock -time 5 -detectsleep -locker "~/.local/userscript/bin/qqpc -lock -notwithaudio" &
+	~/.local/userscripts/bin/qqvolume -input -off
+
+	touch /tmp/bspwm_first_run
+fi
+
+bspc config border_width 10
+bspc config window_gap 0
+bspc config split_ratio 0.5
+
+# pointer controls
+bspc config pointer_modifier mod4
+bspc config pointer_action1 move
+bspc config pointer_action2 resize_side
+
+bspc config automatic_scheme longest_side
+bspc config initial_polarity second_child
+
+bspc config normal_border_color "#202020"
+bspc config focused_border_color "#909090"
+bspc config active_border_color "#202020"
+bspc config presel_feedback_color "#909090"
+
+# fix padding when restarting
+bspc config right_padding 0
+bspc config left_padding 0
+bspc config top_padding 0
+height=$(grep height "$HOME"/.config/polybar/config.ini | awk '{print $3}' | sed 's/pt//')
+dpi=$(grep dpi "$HOME"/.Xresources | awk '{print $2}')
+height_in_pixels=$(echo "$height * ($dpi / 72)" | bc -l | xargs printf "%.0f")
+bspc config bottom_padding "$height_in_pixels"
+
+# ---------------------------
+# STARTUP
+# ---------------------------
+if pgrep -x sxhkd > /dev/null; then
+	pkill -x sxhkd
+fi
+sxhkd &
+
+if pgrep -x polybar > /dev/null; then
+	pkill -x polybar
+fi
+# make polybar show up on multiple monitors
+for monitor in $(polybar --list-monitors | cut -d":" -f1); do
+	MONITOR=$monitor polybar &
+done
+
+if pgrep -x picom > /dev/null; then
+	pkill -x picom
+fi
+picom &
+
+feh --bg-fill --random ~/Pictures/backgrounds/rotation/ivan-aivazovsky-ship-painting.jpg &
+
+# set capslock key to esc
+setxkbmap -option caps:escape_shifted_capslock &&
+# set menu key to super_r
+xmodmap -e "keysym Menu = Super_R" &
+
+# allow root to access the display
+xhost +SI:localuser:root
+
+# hide mouse after certain time
+if pgrep -x unclutter > /dev/null; then
+	pkill -x unclutter
+fi
+unclutter -idle 10 &
+
+# disable screen blanking
+xset dpms 0 0 0 && xset s 0 0 &
+
+# set key repeat delay and speed
+xset r rate 400 50 &

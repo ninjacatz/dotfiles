@@ -16,7 +16,6 @@ EOF
 	exit 1
 }
 
-vpn_path="$HOME/.config/openvpn/AirVPN_All-servers_UDP-443-Entry3.ovpn"
 network_path="/var/lib/iwd"
 
 ethernet () {
@@ -69,6 +68,7 @@ ssh () {
 		stop)
 			if pgrep -x sshd > /dev/null; then
 				sudo "$source_dir/../qqsudo" service ssh stop
+				pkill -x ssh-agent
 			else
 				echo "ssh not running"
 			fi
@@ -80,14 +80,14 @@ vpn () {
 	case "$1" in
 		start)
 			if ! pgrep -x openvpn > /dev/null; then
-				sudo "$source_dir/../qqsudo" openvpn $vpn_path
+				sudo "$source_dir/../qqsudo" service openvpn start
 			else
 				echo "vpn already running"
 			fi
 			;;
 		stop)
 			if pgrep -x openvpn > /dev/null; then
-				sudo "$source_dir/../qqsudo" pkill -x openvpn
+				sudo "$source_dir/../qqsudo" service openvpn stop
 			else
 				echo "vpn not running"
 			fi
@@ -101,13 +101,13 @@ mac () {
 			echo "Wifi mac randomization turned on"
 			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/s/^#//' "/etc/iwd/main.conf"
 			sudo "$source_dir/../qqsudo" macchanger -a eth0
-			touch /tmp/mac-on
+			touch /tmp/mac_on
 			;;
 		stop)
 			echo "Wifi mac randomization turned off"
 			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/ s/^#\?/#/' "/etc/iwd/main.conf"
 			sudo "$source_dir/../qqsudo" macchanger -p eth0
-			rm /tmp/mac-on
+			rm /tmp/mac_on
 			;;
 	esac
 }

@@ -1,17 +1,22 @@
 #!/bin/sh
 
 gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
-if [ $gov != "conservative" ]; then
-	output="${gov%${gov#???}}"
-fi
 modefile="/var/run/tlp/manual_mode"
-if [ -f $modefile ]; then
-	mode=$(cat $modefile)
-	if [ $mode = "0" ]; then
-		output="$output ac"
+
+output=""
+
+if [ "$gov" != "conservative" ]; then
+	output="${gov%${gov#???}} "
+fi
+
+if [ -f "$modefile" ]; then
+	mode=$(cat "$modefile")
+	if [ "$mode" = "0" ]; then
+		output="${output}ac"
 	else
-		output="$output bat"
+		output="${output}bat"
 	fi
 fi
 
-echo $output
+output="$(printf '%s' "$output" | sed 's/[[:space:]]*$//')"
+echo "$output"

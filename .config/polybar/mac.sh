@@ -4,4 +4,4 @@ if [ -e /tmp/mac-on ]; then
 	output="mac"
 fi
 
-echo $output
+echo "$output"
