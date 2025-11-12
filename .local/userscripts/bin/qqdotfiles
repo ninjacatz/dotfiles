@@ -21,6 +21,8 @@ dotfiles=(
 
 exclude=(
 	".vim/viminfo"
+	".vim/autoload"
+	".vim/plugged"
 	".config/mpv/watch_later"
 	".config/sxhkd/acpi-lid"
 	".config/vifm/vifminfo*"
@@ -45,9 +47,6 @@ if [[ "$1" == "commit" ]]; then
 	for file in "${dotfiles[@]}"; do
 		dotfiles_fn add "$file"
 	done
-	# for file in "${exclude[@]}"; do
-		# dotfiles_fn rm -r --cached "$file"
-	# done
 	# check if there are changes to commit
 	if ! dotfiles_fn diff --cached --quiet; then
 		dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
