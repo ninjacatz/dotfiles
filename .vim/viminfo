@@ -21,7 +21,7 @@ $
 
 # Command Line History (newest to oldest):
 :q
-|2,0,1762917451,,"q"
+|2,0,1762917574,,"q"
 :e .config/mpv/scripts/rename.lua
 |2,0,1762915855,,"e .config/mpv/scripts/rename.lua"
 :e .config/polybar/
@@ -238,10 +238,22 @@ $
 # Debug Line History (newest to oldest):
 
 # Registers:
-""0	LINE	0
+"0	LINE	0
+	/home/qq/.vim/viminfo
+	/home/qq/.config/mpv/watch_later
+	/home/qq/.config/sxhkd/acpi-lid
+	/home/qq/.config/vifm/vifminfo*
 	/home/qq/.config/vifm/vifm-help.txt
-|3,1,0,1,1,0,1762917196,"/home/qq/.config/vifm/vifm-help.txt"
-"1	LINE	0
+|3,0,0,1,5,0,1762917559,"/home/qq/.vim/viminfo","/home/qq/.config/mpv/watch_later","/home/qq/.config/sxhkd/acpi-lid","/home/qq/.config/vifm/vifminfo*","/home/qq/.config/vifm/vifm-help.txt"
+""1	LINE	0
+	# git ls-files --others --exclude-from=.git/info/exclude
+	# Lines that start with '#' are comments.
+	# For a project mostly in C, the following would be a good set of
+	# exclude patterns (uncomment them if you want to use them):
+	# *.[oa]
+	# *~
+|3,1,1,1,6,0,1762917572,"# git ls-files --others --exclude-from=.git/info/exclude","# Lines that start with '#' are comments.","# For a project mostly in C, the following would be a good set of","# exclude patterns (uncomment them if you want to use them):","# *.[oa]","# *~"
+"2	LINE	0
 	
 	#!/bin/bash
 	
@@ -274,35 +286,32 @@ $
 	
 	# Call the function to update .gitignore
 	gitignore_fn
-|3,0,1,1,32,0,1762916369,"","#!/bin/bash","","gitignore=(","    \"$HOME/.config/mpv/watch_later\"","    # Add more files or directories here if needed",")","","dotfiles_fn() {","    git --git-dir=\"$HOME/.dotfiles/\" --work-tree=\"$HOME\" \"$@\"","}","","gitignore_fn() {","    for file in \"${gitignore[@]}\"; do","        # Check if the file is already in the .gitignore","        if ! grep -Fxq \"$file\" \"$HOME/.gitignore\"; then",>55
+|3,0,2,1,32,0,1762916369,"","#!/bin/bash","","gitignore=(","    \"$HOME/.config/mpv/watch_later\"","    # Add more files or directories here if needed",")","","dotfiles_fn() {","    git --git-dir=\"$HOME/.dotfiles/\" --work-tree=\"$HOME\" \"$@\"","}","","gitignore_fn() {","    for file in \"${gitignore[@]}\"; do","        # Check if the file is already in the .gitignore","        if ! grep -Fxq \"$file\" \"$HOME/.gitignore\"; then",>55
 |<"            # If the file isn't in .gitignore, add it","            echo \"$file\" >> \"$HOME/.gitignore\"","            echo \"Added $file to .gitignore\"","        else","            echo \"$file is already in .gitignore\"","        fi","    done","","    # Stage the .gitignore changes and commit them to the repository","    dotfiles_fn add \"$HOME/.gitignore\"","    dotfiles_fn commit -m \"Update .gitignore with new files\"","    dotfiles_fn push origin master","}","",>42
 |<"# Call the function to update .gitignore","gitignore_fn"
-"2	LINE	0
-	noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
-|3,0,2,1,1,0,1762915392,"noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always \"\" {} +<Left><Left><Left><Left><Left><Left>"
 "3	LINE	0
 	noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
-|3,0,3,1,1,0,1762915375,"noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always \"\" {} +<Left><Left><Left><Left><Left><Left>"
+|3,0,3,1,1,0,1762915392,"noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always \"\" {} +<Left><Left><Left><Left><Left><Left>"
 "4	LINE	0
-	
-|3,0,4,1,1,0,1762914774,""
+	noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
+|3,0,4,1,1,0,1762915375,"noremap <Space>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always \"\" {} +<Left><Left><Left><Left><Left><Left>"
 "5	LINE	0
+	
+|3,0,5,1,1,0,1762914774,""
+"6	LINE	0
 	fileviewer *.jpg,*.png shellpic %c
 	
 	noremap <Space>w :!fim %<CR>
-|3,0,5,1,3,0,1762914773,"fileviewer *.jpg,*.png shellpic %c","","noremap <Space>w :!fim %<CR>"
-"6	LINE	0
-	noremap <Space>w :set wrap!<cr>
-|3,0,6,1,1,0,1762914659,"noremap <Space>w :set wrap!<cr>"
+|3,0,6,1,3,0,1762914773,"fileviewer *.jpg,*.png shellpic %c","","noremap <Space>w :!fim %<CR>"
 "7	LINE	0
-	
-|3,0,7,1,1,0,1762914644,""
+	noremap <Space>w :set wrap!<cr>
+|3,0,7,1,1,0,1762914659,"noremap <Space>w :set wrap!<cr>"
 "8	LINE	0
 	
-|3,0,8,1,1,0,1762914630,""
+|3,0,8,1,1,0,1762914644,""
 "9	LINE	0
-	fileviewer *.jpg,*.png shellpic %c
-|3,0,9,1,1,0,1762914629,"fileviewer *.jpg,*.png shellpic %c"
+	
+|3,0,9,1,1,0,1762914630,""
 "j	CHAR	0
 	jjjjjjjjjjjj
 |3,0,19,0,1,0,1762904892,"jjjjjjjjjjjj"
@@ -313,36 +322,128 @@ $
 # File marks:
 'A  244  20  ~/.vim/vimrc
 |4,65,244,20,1762906971,"~/.vim/vimrc"
-'0  5  13  ~/.gitignore
-|4,48,5,13,1762917451,"~/.gitignore"
-'1  25  0  ~/.vim/viminfo
-|4,49,25,0,1762916692,"~/.vim/viminfo"
-'2  92  0  ~/.vim/autoload/plug.vim
-|4,50,92,0,1762916667,"~/.vim/autoload/plug.vim"
-'3  1  0  ~/.config/sxhkd/acpi-lid
-|4,51,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
-'4  1  0  ~/.config/sxhkd/acpi-lid
-|4,52,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
-'5  4  27  ~/.config/sxhkd/acpi-lid
-|4,53,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
-'6  4  27  ~/.config/sxhkd/acpi-lid
-|4,54,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
-'7  4  27  ~/.config/sxhkd/acpi-lid
-|4,55,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
+'0  1  0  ~/.dotfiles/info/exclude
+|4,48,1,0,1762917574,"~/.dotfiles/info/exclude"
+'1  1  0  ~/.dotfiles/info/.gitignore
+|4,49,1,0,1762917561,"~/.dotfiles/info/.gitignore"
+'2  5  19  ~/.gitignore
+|4,50,5,19,1762917534,"~/.gitignore"
+'3  5  13  ~/.gitignore
+|4,51,5,13,1762917451,"~/.gitignore"
+'4  25  0  ~/.vim/viminfo
+|4,52,25,0,1762916692,"~/.vim/viminfo"
+'5  92  0  ~/.vim/autoload/plug.vim
+|4,53,92,0,1762916667,"~/.vim/autoload/plug.vim"
+'6  1  0  ~/.config/sxhkd/acpi-lid
+|4,54,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
+'7  1  0  ~/.config/sxhkd/acpi-lid
+|4,55,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
 '8  4  27  ~/.config/sxhkd/acpi-lid
 |4,56,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
-'9  1  0  ~/.gitignore
-|4,57,1,0,1762916371,"~/.gitignore"
+'9  4  27  ~/.config/sxhkd/acpi-lid
+|4,57,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
 
 # Jumplist (newest first):
+-'  1  0  ~/.dotfiles/info/exclude
+|4,39,1,0,1762917574,"~/.dotfiles/info/exclude"
+-'  6  0  ~/.dotfiles/info/exclude
+|4,39,6,0,1762917562,"~/.dotfiles/info/exclude"
+-'  1  0  ~/.dotfiles/info/.gitignore
+|4,39,1,0,1762917561,"~/.dotfiles/info/.gitignore"
+-'  1  0  ~/.dotfiles/info/.gitignore
+|4,39,1,0,1762917561,"~/.dotfiles/info/.gitignore"
+-'  5  19  ~/.gitignore
+|4,39,5,19,1762917534,"~/.gitignore"
+-'  5  19  ~/.gitignore
+|4,39,5,19,1762917534,"~/.gitignore"
+-'  5  19  ~/.gitignore
+|4,39,5,19,1762917534,"~/.gitignore"
+-'  5  19  ~/.gitignore
+|4,39,5,19,1762917534,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762917461,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762917461,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762917461,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762917461,"~/.gitignore"
 -'  5  13  ~/.gitignore
 |4,39,5,13,1762917451,"~/.gitignore"
+-'  5  13  ~/.gitignore
+|4,39,5,13,1762917451,"~/.gitignore"
+-'  5  13  ~/.gitignore
+|4,39,5,13,1762917451,"~/.gitignore"
+-'  5  13  ~/.gitignore
+|4,39,5,13,1762917451,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762916953,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762916953,"~/.gitignore"
+-'  1  0  ~/.gitignore
+|4,39,1,0,1762916953,"~/.gitignore"
 -'  1  0  ~/.gitignore
 |4,39,1,0,1762916953,"~/.gitignore"
 -'  25  0  ~/.vim/viminfo
 |4,39,25,0,1762916692,"~/.vim/viminfo"
 -'  25  0  ~/.vim/viminfo
 |4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  25  0  ~/.vim/viminfo
+|4,39,25,0,1762916692,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
+-'  1  0  ~/.vim/viminfo
+|4,39,1,0,1762916686,"~/.vim/viminfo"
 -'  1  0  ~/.vim/viminfo
 |4,39,1,0,1762916686,"~/.vim/viminfo"
 -'  1  0  ~/.vim/viminfo
@@ -355,6 +456,62 @@ $
 |4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
 -'  92  0  ~/.vim/autoload/plug.vim
 |4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
+-'  92  0  ~/.vim/autoload/plug.vim
+|4,39,92,0,1762916667,"~/.vim/autoload/plug.vim"
 -'  1  0  ~/.vim/autoload/plug.vim
 |4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
 -'  1  0  ~/.vim/autoload/plug.vim
@@ -363,184 +520,46 @@ $
 |4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
 -'  1  0  ~/.vim/autoload/plug.vim
 |4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916490,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916479,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  4  27  ~/.config/sxhkd/acpi-lid
-|4,39,4,27,1762916472,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.config/sxhkd/acpi-lid
-|4,39,1,0,1762916452,"~/.config/sxhkd/acpi-lid"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  1  0  ~/.gitignore
-|4,39,1,0,1762916371,"~/.gitignore"
--'  83  11  ~/.config/mpv/scripts/rename.lua
-|4,39,83,11,1762915896,"~/.config/mpv/scripts/rename.lua"
--'  83  11  ~/.config/mpv/scripts/rename.lua
-|4,39,83,11,1762915896,"~/.config/mpv/scripts/rename.lua"
--'  83  11  ~/.config/mpv/scripts/rename.lua
-|4,39,83,11,1762915896,"~/.config/mpv/scripts/rename.lua"
--'  83  11  ~/.config/mpv/scripts/rename.lua
-|4,39,83,11,1762915896,"~/.config/mpv/scripts/rename.lua"
--'  83  11  ~/.config/mpv/scripts/rename.lua
-|4,39,83,11,1762915896,"~/.config/mpv/scripts/rename.lua"
--'  83  11  ~/.config/mpv/scripts/rename.lua
-|4,39,83,11,1762915896,"~/.config/mpv/scripts/rename.lua"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
+-'  1  0  ~/.vim/autoload/plug.vim
+|4,39,1,0,1762916660,"~/.vim/autoload/plug.vim"
 
 # History of marks within files (newest to oldest):
 
+> ~/.dotfiles/info/exclude
+	*	1762917573	0
+	"	1	0
+	.	6	0
+	+	6	0
+
+> ~/.dotfiles/info/.gitignore
+	*	1762917560	0
+	"	1	0
+
 > ~/.gitignore
-	*	1762917449	0
-	"	5	13
+	*	1762917533	0
+	"	5	19
 	.	1	0
 	+	1	0
 
