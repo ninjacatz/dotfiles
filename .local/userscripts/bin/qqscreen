@@ -98,6 +98,7 @@ if bspc query -D -d "Desktop" 2> /dev/null; then
 fi
 
 # remove monitors with bspc and xrandr
+# any temp_desktop created in removed monitors are automatically deleted
 for removed_monitor in "${monitors_removed[@]}"; do
 	bspc monitor "$removed_monitor" -r
 	xrandr --output "$removed_monitor" --off

@@ -263,7 +263,7 @@ noremap <Leader>S :vsplit<CR>
 noremap <Leader>d :bd<CR>
 noremap <Leader>D :bd!<CR>
 noremap <Leader>f :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/vifm.yml -e vifm %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
-noremap <Leader>g :tags<CR>:tag<Space>
+" noremap <Leader>g GitGutter git diff
 noremap <Leader>h <C-w><C-h>
 noremap <C-h> :tabprevious<CR>
 noremap <Leader>j <C-w><C-j>
@@ -293,8 +293,8 @@ noremap <Leader>M :tabnew **/
 noremap <Leader>, :norm<Space>
 nnoremap <Leader>. :%s///g<Left><Left><Left>
 xnoremap <Leader>. :s///g<Left><Left><Left>
-noremap <Leader>> :args **/*<CR>:argdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
-noremap <Leader>/ :!find . -type f -size -$((256*256))c -exec grep -rn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
+noremap <Leader>> :bufdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
+noremap <Leader>/ :!find . -type f -size -$((256*256))c -exec grep -irn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
 
 " ---------------------------
 " SNIPPETS
@@ -324,6 +324,8 @@ Plug 'preservim/nerdcommenter'
 Plug 'ervandew/supertab'
 " linters and lsp
 Plug 'dense-analysis/ale'
+" git indicators in gutter
+Plug 'airblade/vim-gitgutter'
 " Colorscheme
 Plug 'lifepillar/vim-gruvbox8'
 call plug#end()
@@ -351,18 +353,26 @@ let g:ale_lint_delay=200
 " disable error text at end of line
 let g:ale_virtualtext_cursor=0
 noremap <Leader>e :ALEDetail<CR>
-
+" linters
 let g:ale_linters_explicit=1
 let g:ale_linters = {
 \	'sh': ['shellcheck'],
 \	'python': ['flake8'],
 \	'c': ['gcc'],
 \}
-
+" fixers
 let g:ale_fix_on_save=1
 let g:ale_fixers = {
 \	'*': ['remove_trailing_lines'],
 \}
+
+" GitGutter
+let g:gitgutter_update_interval=1000
+" disable all keymaps
+let g:gitgutter_map_keys=0
+" will not overwrite ALE signs in gutter
+let g:gitgutter_sign_allow_clobber=0
+noremap <Leader>g :GitGutterDiffOrig<CR>
 
 " Colorschemes based on window class
 let window_class = system("xprop -id $(xdotool getactivewindow) | awk -F '\"' '/WM_CLASS/ {print $2}'")

@@ -263,14 +263,8 @@ qq_apt_add ddccontrol
 qq_apt_add exfatprogs
 qq_apt_add ffmpeg
 qq_apt_add fonts-dejavu-extra
-qq_apt_add gcc-doc
-qq_apt_add gdb
-qq_apt_add gh
 qq_conf_add "$backups_home_dir"/.config/gh
-qq_apt_add git
-qq_conf_add "$backups_home_dir"/.gitconfig
 qq_apt_add imagemagick
-qq_apt_add inotify-tools
 qq_apt_add jq
 qq_apt_add lm-sensors
 qq_apt_add luckybackup
@@ -281,7 +275,6 @@ qq_apt_add pandoc
 qq_apt_add pm-utils
 qq_apt_add scrot
 qq_apt_add socat
-qq_apt_add splint
 qq_apt_add tldr
 qq_apt_add trash-cli
 qq_apt_add tree
@@ -305,6 +298,11 @@ qq_apt_add zip unzip rar unrar 7zip zstd
 # Programming Tools (No GUI)
 # ##########################
 qq_apt_add flake8
+qq_apt_add gcc-doc
+qq_apt_add gdb
+qq_apt_add gh
+qq_apt_add git
+qq_conf_add "$backups_home_dir"/.gitconfig
 qq_apt_add shellcheck
 
 # ##########################
