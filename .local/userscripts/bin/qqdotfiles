@@ -3,10 +3,6 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-dotfiles_fn() {
-	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
-}
-
 dotfiles=(
 	"$HOME/.gitignore"
 	"$HOME/.asoundrc"
@@ -32,13 +28,23 @@ gitignore=(
 	"$HOME/.config/vifm/vifm-help.txt"
 )
 
+dotfiles_fn() {
+	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
+}
+
+gitignore_fn() {
+	for file in "${gitignore[@]}"; do
+		if ! grep -Fxq "$file" "$HOME/.gitignore"; then
+			echo "$file" >> "$HOME/.gitignore"
+		fi
+	done
+}
+
 # if the command is 'commit', add all files and only commit if there are changes
 if [[ "$1" == "commit" ]]; then
+	gitignore_fn
 	for file in "${dotfiles[@]}"; do
 		dotfiles_fn add "$file"
-	done
-	for file in "${gitignore[@]}"; do
-		dotfiles_fn rm -r --cached "$file"
 	done
 	# check if there are changes to commit
 	if ! dotfiles_fn diff --cached --quiet; then
