@@ -7,27 +7,41 @@ dotfiles=(
 	"$HOME/.asoundrc"
 	"$HOME/.bashrc"
 	"$HOME/README.md"
-	"$HOME/.vim/vimrc"
-	"$HOME/.vim/snippets"
-	"$HOME/.config/alacritty/alacritty.yml"
-	"$HOME/.config/bspwm/bspwmrc"
-	"$HOME/.config/mpv/mpv.conf"
-	"$HOME/.config/mpv/input.conf"
-	"$HOME/.config/mpv/scripts"
+	"$HOME/.vim"
+	"$HOME/.config/alacritty"
+	"$HOME/.config/bspwm"
+	"$HOME/.config/mpv"
 	"$HOME/.config/polybar"
-	"$HOME/.config/sxhkd/sxhkdrc"
-	"$HOME/.config/vifm/vifmrc"
-	"$HOME/.config/zathura/zathurarc"
+	"$HOME/.config/sxhkd"
+	"$HOME/.config/vifm"
+	"$HOME/.config/zathura"
 	"$HOME/.config/mimeapps.list"
 	"$HOME/.local/userscripts"
 )
 
+gitignore=(
+	"$HOME/.vim/viminfo"
+	"$HOME/.config/mpv/watch_later"
+	"$HOME/.config/sxhkd/acpi-lid"
+	"$HOME/.config/vifm/vifminfo*"
+	"$HOME/.config/vifm/vifm-help.txt"
+)
+
 dotfiles_fn() {
-	git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME "$@"
+	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
+}
+
+gitignore_fn() {
+	for file in "${gitignore[@]}"; do
+		if ! grep -Fxq "$file" "$HOME/.gitignore"; then
+			echo "$file" >> "$HOME/.gitignore"
+		fi
+	done
 }
 
 # if the command is 'commit', add all files and only commit if there are changes
 if [[ "$1" == "commit" ]]; then
+	gitignore_fn
 	for file in "${dotfiles[@]}"; do
 		dotfiles_fn add "$file"
 	done

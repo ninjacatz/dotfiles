@@ -9,7 +9,6 @@ Usage: ${0##*/}
 Options:
 	-screenshot|-screencrop|-mic|-screen|-screen-mic
 EOF
-	exit 1
 }
 
 create_file_path () {

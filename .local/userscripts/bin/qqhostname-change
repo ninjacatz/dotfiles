@@ -5,17 +5,17 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 echo "WARNING: This script will force a reboot or logout"
 
-read -p "Would you like to set your own hostname? (y/N) " custom_hostname_answer
+read -r -p "Would you like to set your own hostname? (y/N) " custom_hostname_answer
 
 if [ "${custom_hostname_answer,,}" = "y" ]; then
-	read -p "Set hostname: " new_hostname
+	read -r -p "Set hostname: " new_hostname
 else
-	names=($(cat "$source_dir/../qqhostnames"))
+	names=("$(cat "$source_dir/../qqhostnames")")
 	random_index=$((RANDOM % ${#names[@]}))
 	new_hostname="${names[$random_index]}"
 fi
 
-read -p "Would you like to reboot? (N is logout) (y/N) " reboot_answer
+read -r -p "Would you like to reboot? (N is logout) (y/N) " reboot_answer
 
 # check if hostname is valid
 pattern='^[a-zA-Z0-9\-]+$'

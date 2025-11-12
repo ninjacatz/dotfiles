@@ -10,7 +10,6 @@ Options:
 	vim|mpv
 		file
 EOF
-	exit 1
 }
 
 if ! [ -e "$2" ]; then

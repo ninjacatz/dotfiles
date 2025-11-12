@@ -9,7 +9,6 @@ Usage: ${0##*/}
 Options:
 	-app|-game
 EOF
-	exit 1
 }
 
 dpi=$(awk '/dpi:/ {print $2}' "$HOME/.Xresources")

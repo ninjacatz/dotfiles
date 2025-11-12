@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
@@ -9,7 +10,6 @@ Options:
 	-audio|-video
 		"URL"
 EOF
-	exit 1
 }
 
 # check if URL argument exists

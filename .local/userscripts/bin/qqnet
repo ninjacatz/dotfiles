@@ -13,7 +13,6 @@ Options:
 	-ssh|-vpn|-mac
 		-start|-stop
 EOF
-	exit 1
 }
 
 network_path="/var/lib/iwd"
@@ -202,7 +201,7 @@ case "$1" in
 	-cli)
 		if pgrep -x iwd > /dev/null; then
 			iwctl station wlan0 get-networks
-			read -p "Enter network name: " network
+			read -r -p "Enter network name: " network
 			iwctl station wlan0 connect "$network"
 		else
 			echo "Wifi service not running. Start wifi first"
@@ -210,7 +209,7 @@ case "$1" in
 		fi
 		;;
 	-trash-networks)
-		read -p "Are you sure you want to trash networks? (y/N) " answer
+		read -r -p "Are you sure you want to trash networks? (y/N) " answer
 		if [ "${answer,,}" = "y" ]; then
 			sudo "$source_dir/../qqsudo" trash "$network_path"/*
 			echo "Trashed networks devices"

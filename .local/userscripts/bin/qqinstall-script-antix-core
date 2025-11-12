@@ -1,13 +1,13 @@
 #!/bin/bash
 
-if [ $(id -u) -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ]; then
 	echo "Run as user"
 	exit 1
 fi
 
 sudo echo ""
-read -p "Must be connected to the internet. Press enter to continue"
-read -p "WARNING: If running script for the second time (or more), make sure backups have been completed, or no important changes have been made. Press enter to continue"
+read -r -p "Must be connected to the internet. Press enter to continue"
+read -r -p "WARNING: If running script for the second time (or more), make sure backups have been completed, or no important changes have been made. Press enter to continue"
 
 # Save the error messages
 errors_file="$HOME/qqinstall-output.txt"
@@ -86,7 +86,7 @@ qq_su_conf_add_ow() {
 }
 
 qq_root_ln() {
-	trim=$(echo "$1" | sed "s|/home/$USER/||")
+	trim="${1#/home/"$USER"/}"
 	link="/root/$trim"
 	if sudo [ ! -L "$link" ]; then
 		echo "qq_root_ln: Linking $1"
@@ -106,14 +106,14 @@ backups_home_dir="$backups_dir/home/$USER"
 backups_etc_dir="$backups_dir/etc"
 backups_root_dir="$backups_dir/root"
 backups_var_dir="$backups_dir/var"
-backups_usr_share_dir="$backups_dir/usr/share"
+# backups_usr_share_dir="$backups_dir/usr/share"
 
 echo "qq: Mounting ext1"
 sudo mkdir /mnt/ext1
 while ! mount | grep -q /mnt/ext1; do
 	lsblk
 	echo -n "Name of ext1: "
-	read device
+	read -r device
 	if [ -b "/dev/$device" ]; then
 		sudo cryptsetup luksOpen "/dev/$device" ext1
 		sudo mount /dev/mapper/ext1 /mnt/ext1
@@ -166,7 +166,7 @@ qq_su_conf_add_ow "$backups_etc_dir"/default/grub
 # sudo update-grub
 
 echo "qq: Adding user to input group"
-sudo usermod -aG input $USER
+sudo usermod -aG input "$USER"
 
 echo "qq: Setting up ufw"
 sudo ufw enable
@@ -300,6 +300,12 @@ qq_apt_add xautolock
 qq_apt_add xinput
 qq_apt_add yt-dlp
 qq_apt_add zip unzip rar unrar 7zip zstd
+
+# ##########################
+# Programming Tools (No GUI)
+# ##########################
+qq_apt_add flake8
+qq_apt_add shellcheck
 
 # ##########################
 # Install Programs (GUI)

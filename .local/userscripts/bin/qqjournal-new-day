@@ -9,7 +9,7 @@ journal_path="/mnt/part/journal"
 
 # if no arguments supplied
 if [ "$#" -eq 0 ]; then
-	read -p "Today=0 Yesterday=1 TwoDaysAgo=2 etc. : " days_ago
+	read -r -p "Today=0 Yesterday=1 TwoDaysAgo=2 etc. : " days_ago
 else
 	days_ago="$1"
 fi

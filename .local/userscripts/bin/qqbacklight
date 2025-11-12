@@ -12,7 +12,6 @@ Options:
 	-internal|-external
 		-up|-down|-max|-min
 EOF
-	exit 1
 }
 
 # internal monitor backlight
@@ -33,7 +32,7 @@ case "$1" in
 		increment=$backlight_increment
 		;;
 	-external)
-		read backlight max <<< "$(ddccontrol -r "$external_backlight_address" dev:"$external_backlight_device" | awk -F '[/ ]' '/^Control/ {print $4, $5; exit}')"
+		read -r backlight max <<< "$(ddccontrol -r "$external_backlight_address" dev:"$external_backlight_device" | awk -F '[/ ]' '/^Control/ {print $4, $5; exit}')"
 		min=0
 		increment=$external_backlight_increment
 		;;

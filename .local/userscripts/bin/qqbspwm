@@ -21,7 +21,6 @@ Options:
 	-size
 		left|right|top|bottom
 EOF
-	exit 1
 }
 
 move_value=80
@@ -62,7 +61,7 @@ case "$1" in
 	-desktop-occupied)
 		case "$2" in
 			-next|-prev)
-				desktops=( $(bspc query -D -d .occupied --names) )
+				desktops=("$(bspc query -D -d .occupied --names)")
 				current=$(bspc query -D -d focused --names)
 
 				current_index=-1

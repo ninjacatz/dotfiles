@@ -12,10 +12,9 @@ Usage: ${0##*/}
 Options:
 	-internal|-external|-external-1080p|-internal-external|-parents
 EOF
-	exit 1
 }
 
-old_monitors=($(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}'))
+old_monitors=("$(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}')")
 
 case "$1" in
 	-internal)
@@ -105,5 +104,3 @@ for removed_monitor in "${monitors_removed[@]}"; do
 done
 
 "$HOME/.config/bspwm/bspwmrc" &>/dev/null
-
-

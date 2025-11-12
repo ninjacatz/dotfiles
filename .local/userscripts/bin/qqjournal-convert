@@ -14,7 +14,7 @@ cp -r "$journal_path/" "$journal_converted_path"
 
 "$source_dir/qqjournal-convert.py" "$journal_converted_path"
 
-read -p "Do you want to eject devices? (y/N) " eject_answer
+read -r -p "Do you want to eject devices? (y/N) " eject_answer
 
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u part

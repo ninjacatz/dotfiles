@@ -9,7 +9,6 @@ Usage: ${0##*/}
 Options:
 	-play-pause|-stop|-rewind|-forward|-seek-rewind|-seek-forward
 EOF
-	exit 1
 }
 
 case $1 in
@@ -38,14 +37,14 @@ case $1 in
 esac
 
 # if currently focused window is mpv, perform function on only currently focused window
-focused_window_class=$(xprop -id $(bspc query -N -n focused) | awk '/WM_CLASS/ {print $4}')
+focused_window_class="$(xprop -id "$(bspc query -N -n focused)" | awk '/WM_CLASS/ {print $4}')"
 if [ "$focused_window_class" = '"mpv"' ]; then
-	focused_window_pid=$(xprop -id $(bspc query -N -n focused) | awk '/_NET_WM_PID/ {print $3}')
+	focused_window_pid="$(xprop -id "$(bspc query -N -n focused)" | awk '/_NET_WM_PID/ {print $3}')"
 	mpv_pid=$focused_window_pid
 # otherwise, perform function on only the first opened mpv window (smallest pid)
 else
 	smallest_pid=999999
-	if ! [ -z "$( ls -A '/tmp/mpvSockets' )" ]; then
+	if find /tmp/mpvSockets -mindepth 1 | read -r; then
 		for i in /tmp/mpvSockets/*; do
 			i=$(basename "$i")
 			if [[ "$smallest_pid" -gt "$i" ]]; then

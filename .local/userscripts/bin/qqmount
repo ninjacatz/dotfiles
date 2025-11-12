@@ -11,13 +11,12 @@ Options:
 	-u
 		part|int|*
 EOF
-	exit 1
 }
 
 get_disk_path() {
 	while [ "$disk_path" == "" ]; do
 		lsblk
-		read -p "Name of $1: " disk
+		read -r -p "Name of $1: " disk
 		if [ -b /dev/"$disk" ]; then
 			disk_path="/dev/$disk"
 		fi
@@ -27,7 +26,7 @@ get_disk_path() {
 get_mnt_path() {
 	while [ "$dev" == "" ]; do
 		lsblk
-		read -p "Name of $1: " mount_dir
+		read -r -p "Name of $1: " mount_dir
 		if mountpoint /mnt/"$mount_dir" > /dev/null; then
 			dev="$mount_dir"
 			dev_mnt_path="/mnt/$mount_dir"

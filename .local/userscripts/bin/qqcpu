@@ -12,7 +12,6 @@ Options:
 	-governor
 		performance|conservative
 EOF
-	exit 1
 }
 
 case "$1" in

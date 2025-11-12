@@ -5,7 +5,7 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 # if no arguments supplied
 if [ "$#" -eq 0 ]; then
-	read -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+	read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
 fi
 
 if [[ "${wine_answer,,}" = "y" || "$1" = "-delete-wine" ]]; then
@@ -51,4 +51,3 @@ sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg"
 sed -i "/^<item oor:path=\"\/org.openoffice.Office.Histories/d" "$HOME/.config/libreoffice/4/user/registrymodifications.xcu"
 
 echo "Done cleaning"
-

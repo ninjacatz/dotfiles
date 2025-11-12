@@ -1,8 +1,5 @@
-## TODO
-# implement actual scroll lock functionality
 Scroll_Lock
 Num_Lock
-	alacritty
 
 ## KEYBINDS YOU CANT GET RID OF
 # ctrl + Alt + F1 - F3 -> tty

@@ -11,14 +11,13 @@ Usage: ${0##*/}
 Options:
 	-menu|-logout|-reboot|-shutdown|-lock|-suspend|-hibernate
 EOF
-	exit 1
 }
 
 xlock_font="-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*"
 
 if [ "$2" == "-notwithaudio" ]; then
 	# if audio is playing
-	if [ $(grep -r "RUNNING" /proc/asound | wc -l) -ne 0 ]; then
+	if [ "$(grep -r "RUNNING" /proc/asound | wc -l)" -ne 0 ]; then
 		echo "Audio is playing"
 		exit 0
 	fi
@@ -32,7 +31,7 @@ case "$1" in
 		echo "s - Shutdown"
 		echo "r - Reboot"
 		echo "L - Logout"
-		read -p "Select option: " selection
+		read -r -p "Select option: " selection
 		case "$selection" in
 			l)
 				"$source_dir/qqpc" -lock
@@ -109,5 +108,3 @@ case "$1" in
 		exit 1
 		;;
 esac
-
-

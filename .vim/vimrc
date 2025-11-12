@@ -69,7 +69,7 @@ set statusline+=%{TildePath()}%f\ %m%r%w%=%{FileType()}%L
 set title
 set titlestring=%F\ %{&modified?'[+]\ ':''}-\ Vim
 
-" Set cursor to line in insert mode
+" Set cursor to line in insert mode, and block in command mode
 autocmd InsertEnter * silent execute "!echo -ne '\e[5 q'"
 autocmd InsertLeave * silent execute "!echo -ne '\e[2 q'"
 " Remove intro message
@@ -96,7 +96,7 @@ filetype plugin on
 filetype indent on
 " Enable syntax highlighting
 syntax on
-" Use default anguage-specific completions with omni complete
+" Use default language-specific completions with omni complete
 set omnifunc=syntaxcomplete#Complete
 " Set completeopt (auto complete menu) settings
 set completeopt=menuone,longest
@@ -104,20 +104,22 @@ set completeopt=menuone,longest
 set wildmenu wildignorecase
 " set wildmode=list:longest,full
 set wildmode=longest:full,full
+" Set tab to trigger wildmenu completion (no need to press enter)
+set wildcharm=<Tab>
 " wildmenu display options
 set wildoptions=pum
 " Files to ignore when using wildmenu such as :e <Tab>
 set wildignore+=
-" Show commands as they are being typed (doesnt do anyting?)
+" Show commands as they are being typed
 set showcmd
 " Sign column (beside line numbers)
-set signcolumn=no
+set signcolumn=yes
 " Vertical and horizontal split settings
 set splitbelow splitright
 " Enable whitespace chars and define them
 set list listchars=tab:»·,extends:>,precedes:<,space:·
-" Never show tabline
-set showtabline=0
+" Show tabline at top if multiple tabs open
+set showtabline=1
 " Prevent netrw from ever loading
 let g:loaded_netrw = 1
 let g:loaded_netrwPlugin = 1
@@ -152,26 +154,34 @@ function! RenameFile()
 	let old_name = expand('%:t')
 	let old_file_path = expand('%:p')
 	let old_path = expand('%:p:h')
-	if filereadable(old_file_path)
-		let new_name = input('Rename ' . old_name . ' to ')
-		if new_name == ''
-			echoerr 'No new file name provided'
-			return
-		endif
-		let new_file_path = old_path . '/' . new_name
 
-		if !filereadable(new_file_path) && !isdirectory(new_file_path)
-			execute 'silent !cp' old_file_path new_file_path
-			execute 'e' new_file_path
-			execute 'bd' old_file_path
-			execute 'silent !trash' old_file_path
-			execute 'redraw!'
-		else
-			echoerr 'New file name already exists'
-		endif
-	else
+	if !filereadable(old_file_path)
 		echoerr 'Current buffer is not readable file'
+		return
 	endif
+
+	let new_name = input('Rename ' . old_name . ' to ')
+	if new_name == ''
+		echoerr 'No new file name provided'
+		return
+	endif
+
+	let new_file_path = old_path . '/' . new_name
+
+	if filereadable(new_file_path) || isdirectory(new_file_path)
+		echoerr "New file name already exists"
+		return
+	endif
+
+	try
+		call rename(old_file_path, new_file_path)
+	catch /./
+		echoerr "Failed to rename file"
+		return
+	endtry
+
+	execute 'e' fnameescape(new_file_path)
+	execute 'bd' bufname(old_file_path)
 endfunction
 
 " ---------------------------
@@ -186,13 +196,10 @@ set ttimeoutlen=0
 " Clear highlights on pressing <Esc> in normal mode
 nnoremap <silent> <Esc> :nohlsearch<CR>
 
-" Set '%%<Space>' to expand to directory of current file
-cnoremap <expr> %% fnameescape(expand('%:p:h'))
-
-" Enter and '\' when wildmenu open accepts and closes menu instead of newline (emulates zsh)
+" Enter and '\' when wildmenu open accepts and closes menu instead of newline
 cnoremap <expr> <CR> wildmenumode() ? "\<C-y>" : "<CR>"
 cnoremap <expr> / wildmenumode() ? "\<C-y>" : "/"
-" Enter and '\' when completion menu open accepts and closes menu instead of newline (emulates zsh)
+" Enter and '\' when completion menu open accepts and closes menu instead of newline
 inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "<CR>"
 inoremap <expr> / pumvisible() ? "\<C-y>" : "/"
 
@@ -215,12 +222,12 @@ noremap <Leader><Space> :map<CR>
 " noremap <Leader>1
 " noremap <Leader>2
 " noremap <Leader>3
-noremap <Leader>4 :%!xxd<CR>:set ft=xxd<CR>
-noremap <Leader>$ :%!xxd -r<CR>:set ft=<CR>
+" noremap <Leader>4
 " noremap <Leader>5
 " noremap <Leader>6
 " noremap <Leader>7
 " noremap <Leader>8
+" resizing splits
 noremap <Leader>9 10<C-w><
 noremap <Leader>0 10<C-w>>
 noremap <Leader>- 3<C-w>-
@@ -234,7 +241,7 @@ noremap <Leader>q :q<CR>
 noremap <Leader>Q :q!<CR>
 noremap <Leader>w :w<CR>
 noremap <Leader>W :w!<CR>
-" noremap <Leader>e ALE LSP COMMANDS
+" noremap <Leader>e ALE error detail
 noremap <Leader>r :silent call RenameFile()<CR>
 noremap <Leader>t :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
 noremap <Leader>y :browse oldfiles<CR>
@@ -315,6 +322,8 @@ call plug#begin()
 Plug 'preservim/nerdcommenter'
 " Tab to trigger context sensitive autocomplete when typing word
 Plug 'ervandew/supertab'
+" linters and lsp
+Plug 'dense-analysis/ale'
 " Colorscheme
 Plug 'lifepillar/vim-gruvbox8'
 call plug#end()
@@ -334,6 +343,26 @@ let g:NERDCreateDefaultMappings=0
 " create space around comments
 let NERDSpaceDelims=1
 map <Leader>c :call nerdcommenter#Comment(0,"toggle")<CR>
+
+" ALE
+let g:ale_lint_on_text_changed='never'
+let g:ale_lint_on_save=1
+let g:ale_lint_delay=200
+" disable error text at end of line
+let g:ale_virtualtext_cursor=0
+noremap <Leader>e :ALEDetail<CR>
+
+let g:ale_linters_explicit=1
+let g:ale_linters = {
+\	'sh': ['shellcheck'],
+\	'python': ['flake8'],
+\	'c': ['gcc'],
+\}
+
+let g:ale_fix_on_save=1
+let g:ale_fixers = {
+\	'*': ['remove_trailing_lines'],
+\}
 
 " Colorschemes based on window class
 let window_class = system("xprop -id $(xdotool getactivewindow) | awk -F '\"' '/WM_CLASS/ {print $2}'")

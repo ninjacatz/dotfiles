@@ -3,11 +3,11 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-echo Current DPI: $(awk '/dpi:/ {print $2}' "$HOME/.Xresources")
+echo "Current DPI: $(awk '/dpi:/ {print $2}' "$HOME/.Xresources")"
 
 # if no arguments supplied
 if [ "$#" -eq 0 ]; then
-	read -p "DPI (96|1, 144|1.5, 192|2): " input
+	read -r -p "DPI (96|1, 144|1.5, 192|2): " input
 else
 	input="$1"
 fi

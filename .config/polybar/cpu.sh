@@ -6,7 +6,7 @@ modefile="/var/run/tlp/manual_mode"
 output=""
 
 if [ "$gov" != "conservative" ]; then
-	output="${gov%${gov#???}} "
+	output="${gov%"${gov#???}"} "
 fi
 
 if [ -f "$modefile" ]; then

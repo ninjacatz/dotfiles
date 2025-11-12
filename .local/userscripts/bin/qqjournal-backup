@@ -5,17 +5,15 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 journal_path="/mnt/part/journal"
 journal_converted_path="$HOME/Downloads/journal-converted"
-journal_attach_path="$HOME/Downloads"
 journal_ext1_path="/mnt/ext1/journal"
-journal_ext2_path="/mnt/ext2/journal"
 
 if [ ! -d "$journal_converted_path" ]; then
 	echo "Converted journals not found"
 	exit 1
 fi
 
-read -p "Would you like to trash old journals? (y/N) " trash_answer
-read -p "Do you want to eject devices when done? (y/N) " eject_answer
+read -r -p "Would you like to trash old journals? (y/N) " trash_answer
+read -r -p "Do you want to eject devices when done? (y/N) " eject_answer
 
 "$source_dir/qqmount" ext1
 "$source_dir/qqmount" ext2

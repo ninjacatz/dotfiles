@@ -1,10 +1,5 @@
 " vim: filetype=vim :
 
-" TODO LIST
-" Enable mouse (ONLY WORKS IN 0.13) set mouse=a
-" Set title to something different (not possible now)
-" Fix space remapping
-
 " ---------------------------
 " BASIC CONFIG
 " ---------------------------
@@ -12,6 +7,8 @@
 filetype * xdg-open 2>/dev/null &
 " Set default program to open files with if none set in xdg
 " set vicmd=vim
+" Enable mouse (requires version 0.13)
+" set mouse=a
 " Uses vifm operations instead of standard utilities like 'cp'
 set syscalls
 " Enable dotfiles
@@ -97,11 +94,15 @@ nnoremap '= :cd /mnt/ext2<CR>
 " ---------------------------
 " THEMING
 " ---------------------------
-colorscheme gruvbox
+if $DISPLAY != ''
+	colorscheme gruvbox
+else
+	colorscheme Default
+endif
 " Allow transparency
-" hi Win guibg=NONE ctermbg=NONE
-" hi Border guibg=NONE ctermbg=NONE
-" hi CmdLine guibg=NONE ctermbg=NONE
+hi Win guibg=NONE ctermbg=NONE
+hi Border guibg=NONE ctermbg=NONE
+hi CmdLine guibg=NONE ctermbg=NONE
 " Show directory preview by default
 view!
 " No wrapping in previews
@@ -150,17 +151,15 @@ noremap <Space><BS> :source $HOME/.config/vifm/vifmrc<CR>
 " Q -> P
 noremap <Space>q :q<CR>
 noremap <Space>Q :q!<CR>
-noremap <Space>w :view<CR>
-noremap <Space>W :only<CR>
 noremap <Space>e :!nohup alacritty --config-file $HOME/.config/alacritty/vim.yml --class vim -e vim %d > /dev/null 2>&1 &<CR>
 noremap <Space>t :!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %d > /dev/null 2>&1 &<CR>
 noremap <Space>y :history<CR>
 noremap <Space>i :help<Space>
+noremap <Space>o :find *
 noremap <Space>\ :cd<Space>
 
 " A -> L
-noremap <Space>s :split<CR>
-noremap <Space>S :vsplit<CR>
+noremap <Space>s :sort<CR>
 noremap <C-h> :tabprevious<CR>
 noremap <C-l> :tabnext<CR>
 noremap <Space>; :!
@@ -169,12 +168,10 @@ noremap <Space>' :marks<CR>
 noremap <Space>" :registers<CR>
 
 " Z -> M
-noremap <Space>z :sort<CR>
 noremap <Space>x :tabc<CR>
-noremap <Space>n :touch<Space>
-noremap <Space>N :mkdir<Space>
 noremap <Space>m :tabnew<Space>
 noremap <Space>M :tabnew **/
-noremap <Space>/ :find *
+noremap <Space>, :norm<Space>
+nnoremap <Space>. :%s///g<Left><Left><Left>
+vnoremap <Space>. :s///g<Left><Left><Left>
 noremap <Space>? :grep<Space>
-

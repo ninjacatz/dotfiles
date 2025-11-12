@@ -8,7 +8,7 @@ iphone_download_path="$HOME/Downloads/iphone"
 
 sudo "$source_dir/../qqsudo" service usbmuxd restart
 
-read -p "Press enter when iPhone is connected..."
+read -r -p "Press enter when iPhone is connected..."
 
 # to mount iphone
 sudo "$source_dir/../qqsudo" ifuse $iphone_mnt_path
