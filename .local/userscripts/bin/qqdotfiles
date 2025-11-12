@@ -47,6 +47,9 @@ if [[ "$1" == "commit" ]]; then
 	for file in "${dotfiles[@]}"; do
 		dotfiles_fn add "$file"
 	done
+	for file in "${exclude[@]}"; do
+		dotfiles_fn rm -r --cached "$HOME/$file" || true
+	done
 	# check if there are changes to commit
 	if ! dotfiles_fn diff --cached --quiet; then
 		dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
