@@ -48,7 +48,7 @@ if [[ "$1" == "commit" ]]; then
 		dotfiles_fn add "$file"
 	done
 	for file in "${exclude[@]}"; do
-		if git ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
+		if dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
 			dotfiles_fn rm -r --cached "$HOME/$file"
 		fi
 	done
