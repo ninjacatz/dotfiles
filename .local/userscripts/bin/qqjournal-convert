@@ -6,6 +6,8 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 journal_path="/mnt/part/journal"
 journal_converted_path="$HOME/Downloads/journal-converted"
 
+read -r -p "Do you want to eject devices when done? (y/N) " eject_answer
+
 "$source_dir/qqmount" part
 
 echo "Copying journals..."
@@ -13,8 +15,6 @@ echo "Copying journals..."
 cp -r "$journal_path/" "$journal_converted_path"
 
 "$source_dir/qqjournal-convert.py" "$journal_converted_path"
-
-read -r -p "Do you want to eject devices? (y/N) " eject_answer
 
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u part

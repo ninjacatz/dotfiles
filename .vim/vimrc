@@ -5,7 +5,8 @@ set nocompatible
 set clipboard=unnamedplus
 set belloff=all
 set updatetime=250
-set swapfile dir=~/.cache
+set swapfile
+set directory=/tmp//
 set viminfo+=n~/.vim/viminfo history=1000
 set encoding=utf-8 fileformat=unix
 set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
@@ -26,17 +27,19 @@ set hidden
 set backspace=indent,eol,start
 " When changing words (cw) include hyphens
 set iskeyword+=-
-" Set path for :find to search current dir all subdir
-set path=**
 " Set vim to use bashrc
 set shell=/bin/bash\ --login
+" Recursive search with :find command
+set path=**
+" Set grep command
+set grepprg=grep\ -irnHI
 " Set path
 let $PATH = substitute(system('echo $PATH'), '\n', '', 'g')
 
 " ---------------------------
 " VISUAL TWEAKS
 " ---------------------------
-" Status bar
+" Status line
 " Always show status bar
 set laststatus=2
 set statusline=
@@ -183,6 +186,16 @@ function! RenameFile()
 	execute 'e' fnameescape(new_file_path)
 	execute 'bd' bufname(old_file_path)
 endfunction
+" Searching with grep and copen
+function! SearchWithGrep()
+	let pattern = input('grep -irnHI ')
+	if pattern == ''
+		return
+	endif
+	silent execute 'grep ' . pattern
+	copen
+	redraw!
+endfunction
 
 " ---------------------------
 " KEYMAPS
@@ -248,7 +261,7 @@ noremap <Leader>y :browse oldfiles<CR>
 noremap <Leader>Y :browse history<CR>
 noremap <Leader>u :changes<CR>
 noremap <Leader>i :help<Space>
-noremap <Leader>o :find<Space>
+noremap <Leader>o :find *
 noremap <Leader>p "0p
 noremap <Leader>[ :set autochdir<CR>
 noremap <Leader>] :cd %:p:h<CR>:set noautochdir<CR>
@@ -287,14 +300,14 @@ noremap <Leader>X :tabc!<CR>
 noremap <Leader>v :tabs<CR>:tabn<Space>
 noremap <Leader>b :ls<CR>:b<Space>
 noremap <Leader>n :e<Space>
-noremap <Leader>N :e **/
+noremap <Leader>N :e **/*
 noremap <Leader>m :tabnew<Space>
 noremap <Leader>M :tabnew **/
 noremap <Leader>, :norm<Space>
 nnoremap <Leader>. :%s///g<Left><Left><Left>
 xnoremap <Leader>. :s///g<Left><Left><Left>
 noremap <Leader>> :bufdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
-noremap <Leader>/ :!find . -type f -size -$((256*256))c -exec grep -irn --color=always "" {} +<Left><Left><Left><Left><Left><Left>
+nnoremap <Leader>/ :call SearchWithGrep()<CR>
 
 " ---------------------------
 " SNIPPETS

@@ -13,8 +13,6 @@ filetype * xdg-open 2>/dev/null &
 set syscalls
 " Enable dotfiles
 set dotfiles
-" Case insensitive autocomplete
-set caseoptions=p
 " Set trash and trashdir
 set trash
 set trashdir="$HOME/.local/share/Trash/files"
@@ -31,12 +29,17 @@ set vimhelp
 " Do not autorun executable files
 set norunexec
 " Ignore case unless capital letter
-set ignorecase
-set smartcase
+set ignorecase smartcase
 " Don't highlight search results automatically
 set nohlsearch
 " Use increment searching (search while typing)
 set incsearch
+" Case insensitive autocomplete
+set caseoptions=p
+" Case insensitive :find command
+set findprg="find %s -iname %p"
+" Case insensitive :grep command
+set grepprg="grep -irnHI %i %a %s"
 " Try to leave some space from cursor to upper/lower border in lists
 set scrolloff=8
 " Don't do too many requests to slow file systems
@@ -83,7 +86,7 @@ mark M /mnt/ext1/backups/home/qq/Music
 mark g /home/qq/Games
 mark G /mnt/ext1/backups/home/qq/Games
 
-mark 8 /home/qq/.local/bin/scripts
+mark 8 /home/qq/.local/userscripts/bin
 mark 9 /home/qq/Documents/antiX-guides
 mark 0 /etc
 nnoremap '[ :cd /mnt/part<CR>
@@ -155,7 +158,7 @@ noremap <Space>e :!nohup alacritty --config-file $HOME/.config/alacritty/vim.yml
 noremap <Space>t :!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %d > /dev/null 2>&1 &<CR>
 noremap <Space>y :history<CR>
 noremap <Space>i :help<Space>
-noremap <Space>o :find *
+noremap <Space>o :find **<Left>
 noremap <Space>\ :cd<Space>
 
 " A -> L
@@ -174,4 +177,4 @@ noremap <Space>M :tabnew **/
 noremap <Space>, :norm<Space>
 nnoremap <Space>. :%s///g<Left><Left><Left>
 vnoremap <Space>. :s///g<Left><Left><Left>
-noremap <Space>? :grep<Space>
+noremap <Space>/ :grep<Space>

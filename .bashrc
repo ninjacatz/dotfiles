@@ -7,7 +7,7 @@ export PATH="$PATH:$HOME/.local/userscripts/bin:$HOME/.local/bin"
 # -----------
 # Adds title
 PS1="\[\033]0;\w - Bash\007\]"
-PS1+="\[\e[36m\]"
+PS1+="\[\e[36m\][\h] "
 if [[ $EUID -eq 0 ]]; then
 	if [[ $HOME == '/root' ]]; then
 		PS1+="(root) "
@@ -33,7 +33,3 @@ alias grep='grep --color=always'
 alias sudo='sudo '
 alias cp='cp -i'
 alias mv='mv -i'
-
-
-
-

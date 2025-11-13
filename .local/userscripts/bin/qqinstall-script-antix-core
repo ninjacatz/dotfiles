@@ -7,7 +7,7 @@ fi
 
 sudo echo ""
 read -r -p "Must be connected to the internet. Press enter to continue"
-read -r -p "WARNING: If running script for the second time (or more), make sure backups have been completed, or no important changes have been made. Press enter to continue"
+read -r -p "WARNING: If running script for the second time (or more), make sure backups have been completed (many files will be overwritten). Press enter to continue"
 
 # Save the error messages
 errors_file="$HOME/qqinstall-output.txt"
@@ -109,7 +109,7 @@ backups_var_dir="$backups_dir/var"
 # backups_usr_share_dir="$backups_dir/usr/share"
 
 echo "qq: Mounting ext1"
-sudo mkdir /mnt/ext1
+sudo mkdir -p /mnt/ext1
 while ! mount | grep -q /mnt/ext1; do
 	lsblk
 	echo -n "Name of ext1: "
@@ -122,7 +122,7 @@ while ! mount | grep -q /mnt/ext1; do
 done
 
 echo "qq: Creating directories"
-sudo mkdir /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6
+sudo mkdir -p /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6
 mkdir -p "$HOME"/.config "$HOME"/.local/share
 sudo mkdir -p /root/.config /root/.local/share
 
@@ -134,36 +134,16 @@ qq_root_ln "$HOME"/.bashrc
 qq_conf_add_ow "$backups_home_dir"/.profile
 sudo rm -rf /root/.profile
 qq_root_ln "$HOME"/.profile
-qq_conf_add "$backups_home_dir"/.asoundrc
 qq_conf_add_ow "$backups_home_dir"/.Xresources
 qq_conf_add "$backups_home_dir"/.config/mimeapps.list
 qq_root_ln "$HOME"/.config/mimeapps.list
 qq_conf_add "$backups_home_dir"/.local/bin
 qq_conf_add "$backups_home_dir"/.local/userscripts
 qq_root_ln "$backups_home_dir"/.local/userscripts
-qq_conf_add "$backups_home_dir"/.dotfiles
-
-qq_conf_add "$backups_home_dir"/.themes
-qq_root_ln "$HOME"/.themes
-qq_conf_add "$backups_home_dir"/.local/share/fonts
-qq_root_ln "$HOME"/.local/share/fonts
-qq_conf_add "$backups_home_dir"/.local/share/icons
-qq_root_ln "$HOME"/.local/share/icons
-qq_conf_add "$backups_home_dir"/.config/gtk-3.0
-qq_root_ln "$HOME"/.config/gtk-3.0
-qq_conf_add "$backups_home_dir"/.config/gtk-2.0
-qq_root_ln "$HOME"/.config/gtk-2.0
-qq_conf_add "$backups_home_dir"/.gtkrc-2.0
-qq_root_ln "$HOME"/.gtkrc-2.0
-
 qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
 qq_su_conf_add_ow "$backups_etc_dir"/inputrc
 qq_su_conf_add_ow "$backups_etc_dir"/inittab
 sudo init q
-qq_su_conf_add_ow "$backups_etc_dir"/fstab
-qq_su_conf_add_ow "$backups_etc_dir"/default/keyboard
-qq_su_conf_add_ow "$backups_etc_dir"/default/grub
-# sudo update-grub
 
 echo "qq: Adding user to input group"
 sudo usermod -aG input "$USER"
@@ -174,21 +154,27 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow ssh
 
-echo "qq: Disabling startup services"
-sudo update-rc.d networking disable
+echo "qq: Adding qqsudo to sudoers"
+sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
 
-echo "qq: Fixing broken keys"
+echo "qq: Adding t420 specific configs"
+qq_conf_add "$backups_home_dir"/.asoundrc
+qq_conf_add "$backups_home_dir"/.dotfiles
+qq_su_conf_add_ow "$backups_etc_dir"/fstab
+qq_su_conf_add_ow "$backups_etc_dir"/default/keyboard
+qq_su_conf_add_ow "$backups_etc_dir"/default/grub
+sudo update-grub
+
+echo "qq: Fixing broken keys (t420 specific)"
 qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
 sudo udevadm hwdb --update
 sudo udevadm trigger /dev/input/event4
-
-echo "qq: Adding qqsudo to sudoers"
-sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
 
 # ##########################
 # Remove programs and upgrade
 # ##########################
 
+echo "qq: Removing programs"
 qq_apt_rm antix-goodies-core
 qq_apt_rm ceni
 qq_apt_rm chroot-rescue
@@ -208,47 +194,29 @@ sudo rm -rf /usr/local/share/live-files
 qq_apt_rm tmux
 qq_apt_rm vim-tiny
 
+echo "qq: Upgrading system"
 sudo apt autopurge -y
 sudo apt update
 sudo apt upgrade -y
 
 # ##########################
-# Install Xorg and WM
-# ##########################
-
-qq_apt_add xorg
-qq_apt_add xserver-xorg-video-intel
-qq_apt_add xdotool xlockmore xzoom
-qq_apt_add dbus dbus-x11
-
-qq_apt_add bspwm
-qq_conf_add "$backups_home_dir"/.config/bspwm
-qq_conf_add "$backups_home_dir"/.config/sxhkd
-qq_apt_add polybar
-qq_conf_add "$backups_home_dir"/.config/polybar
-
-# ##########################
 # Install Networking Software
 # ##########################
 
+echo "qq: Installing networking software"
 qq_apt_add iwd
 qq_su_conf_add_ow "$backups_etc_dir"/iwd/main.conf
 qq_su_conf_add "$backups_var_dir"/lib/iwd
-
 qq_apt_add openvpn
 qq_su_conf_add_ow "$backups_etc_dir"/openvpn
 sudo update-rc.d openvpn disable
-
 qq_apt_add ssh
-qq_conf_add_ow "$backups_home_dir"/.ssh
-sudo rm -rf /root/.ssh
-qq_root_ln "$HOME"/.ssh
-sudo update-rc.d ssh disable
 
 # ##########################
 # Install Programs (No GUI)
 # ##########################
 
+echo "qq: Installing programs (no-gui)"
 qq_apt_add acpid
 qq_su_conf_add "$backups_etc_dir"/acpi/events/lidbtn
 qq_apt_add bc
@@ -262,7 +230,6 @@ qq_su_conf_add_ow "$backups_etc_dir"/init.d/cpufrequtils
 qq_apt_add ddccontrol
 qq_apt_add exfatprogs
 qq_apt_add ffmpeg
-qq_apt_add fonts-dejavu-extra
 qq_conf_add "$backups_home_dir"/.config/gh
 qq_apt_add imagemagick
 qq_apt_add jq
@@ -273,12 +240,10 @@ qq_apt_add macchanger
 qq_apt_add mesa-utils
 qq_apt_add pandoc
 qq_apt_add pm-utils
-qq_apt_add scrot
 qq_apt_add socat
 qq_apt_add tldr
 qq_apt_add trash-cli
 qq_apt_add tree
-qq_apt_add unclutter-xfixes
 qq_apt_add usbmuxd ifuse
 qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
 sudo update-rc.d usbmuxd defaults
@@ -289,7 +254,6 @@ qq_apt_add vim-gtk3
 qq_conf_add "$backups_home_dir"/.vim
 qq_root_ln "$HOME"/.vim
 qq_apt_add wodim
-qq_apt_add xautolock
 qq_apt_add xinput
 qq_apt_add yt-dlp
 qq_apt_add zip unzip rar unrar 7zip zstd
@@ -297,6 +261,8 @@ qq_apt_add zip unzip rar unrar 7zip zstd
 # ##########################
 # Programming Tools (No GUI)
 # ##########################
+
+echo "qq: Installing programming tools (no-gui)"
 qq_apt_add flake8
 qq_apt_add gcc-doc
 qq_apt_add gdb
@@ -306,9 +272,39 @@ qq_conf_add "$backups_home_dir"/.gitconfig
 qq_apt_add shellcheck
 
 # ##########################
+# Install Xorg and WM
+# ##########################
+
+echo "qq: Installing Xorg and WM"
+qq_apt_add xorg
+qq_apt_add xserver-xorg-video-intel
+qq_apt_add xdotool xlockmore xzoom
+qq_apt_add dbus dbus-x11
+qq_apt_add bspwm
+qq_conf_add "$backups_home_dir"/.config/bspwm
+qq_conf_add "$backups_home_dir"/.config/sxhkd
+qq_apt_add polybar
+qq_conf_add "$backups_home_dir"/.config/polybar
+
+echo "qq: Adding gui-only configs"
+qq_conf_add "$backups_home_dir"/.themes
+qq_root_ln "$HOME"/.themes
+qq_conf_add "$backups_home_dir"/.local/share/fonts
+qq_root_ln "$HOME"/.local/share/fonts
+qq_conf_add "$backups_home_dir"/.local/share/icons
+qq_root_ln "$HOME"/.local/share/icons
+qq_conf_add "$backups_home_dir"/.config/gtk-3.0
+qq_root_ln "$HOME"/.config/gtk-3.0
+qq_conf_add "$backups_home_dir"/.config/gtk-2.0
+qq_root_ln "$HOME"/.config/gtk-2.0
+qq_conf_add "$backups_home_dir"/.gtkrc-2.0
+qq_root_ln "$HOME"/.gtkrc-2.0
+
+# ##########################
 # Install Programs (GUI)
 # ##########################
 
+echo "qq: Installing gui programs"
 qq_apt_add alacritty
 qq_conf_add "$backups_home_dir"/.config/alacritty
 qq_root_ln "$HOME"/.config/alacritty
@@ -318,6 +314,7 @@ qq_conf_add "$backups_home_dir"/.local/share/audacity
 qq_apt_add dillo
 qq_conf_add "$backups_home_dir"/.dillo
 qq_apt_add feh
+qq_apt_add fonts-dejavu-extra
 qq_apt_add galculator
 qq_conf_add "$backups_home_dir"/.config/galculator
 qq_apt_add gimp
@@ -349,8 +346,11 @@ qq_conf_add "$backups_home_dir"/.local/share/qBittorrent
 qq_apt_add rofi
 qq_conf_add "$backups_home_dir"/.config/rofi
 qq_conf_add "$backups_home_dir"/.local/share/applications
+qq_apt_add scrot
 qq_apt_add telegram-desktop
 qq_conf_add "$backups_home_dir"/.local/share/TelegramDesktop
+qq_apt_add unclutter-xfixes
+qq_apt_add xautolock
 qq_apt_add zathura
 qq_conf_add "$backups_home_dir"/.config/zathura
 
@@ -358,33 +358,30 @@ qq_conf_add "$backups_home_dir"/.config/zathura
 # Copy/Install Games
 # ##########################
 
+echo "qq: Adding game files"
 qq_conf_add "$backups_home_dir"/Games
 
+echo "qq: Installing game programs"
+qq_apt_add dosbox
+qq_apt_add mednaffe
+qq_apt_add mupen64plus-qt
+qq_apt_add scummvm
 # wine games
 qq_apt_add wine
 qq_apt_add wine32:i386
 qq_apt_add libvulkan1:i386
 qq_apt_add libgl1:i386
 qq_apt_add libxrandr2:i386
-
 # for goldsrc engine
 qq_apt_add libcrypt1:i386
-
 # for jedi outcast singleplayer
 qq_apt_add libjpeg8
-
-qq_apt_add dosbox
-
-qq_apt_add mednaffe
-
-qq_apt_add mupen64plus-qt
-
-qq_apt_add scummvm
 
 # ##########################
 # Copy documents
 # ##########################
 
+echo "qq: Adding all documents"
 qq_conf_add "$backups_home_dir"/Videos
 qq_conf_add "$backups_home_dir"/Music
 qq_conf_add "$backups_home_dir"/Pictures
@@ -396,14 +393,24 @@ qq_conf_add "$backups_home_dir"/Downloads
 # Extra
 # ##########################
 
-# set default terminal
+echo "qq: Setting default terminal (gui-only)"
 sudo update-alternatives --config x-terminal-emulator
 
-# unmount ext1
+echo "qq: Disabling startup services"
+sudo update-rc.d networking disable
+sudo update-rc.d ssh disable
+
+echo "qq: Linking ssh directory"
+# Done at the end in case installing a server
+qq_conf_add_ow "$backups_home_dir"/.ssh
+sudo rm -rf /root/.ssh
+qq_root_ln "$HOME"/.ssh
+
+echo "qq: Unmounting ext1"
 if mount | grep -q /mnt/ext1; then
 	sudo umount /dev/mapper/ext1
 	sudo cryptsetup luksClose /dev/mapper/ext1
 	echo "qq: ext1 unmounted"
 fi
 
-echo "qq: done installing!"
+echo "qq: Done installing!"

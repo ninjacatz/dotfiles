@@ -61,7 +61,7 @@ case "$1" in
 	-desktop-occupied)
 		case "$2" in
 			-next|-prev)
-				desktops=("$(bspc query -D -d .occupied --names)")
+				mapfile -t desktops < <(bspc query -D -d .occupied --names)
 				current=$(bspc query -D -d focused --names)
 
 				current_index=-1

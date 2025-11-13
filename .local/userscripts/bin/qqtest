@@ -1,0 +1,17 @@
+#!/bin/bash
+set -eo pipefail
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+echo "qq: Mounting ext1"
+sudo mkdir -p /mnt/ext1
+while ! mount | grep -q /mnt/ext1; do
+	lsblk
+	echo -n "Name of ext1: "
+	read -r device
+	if [ -b "/dev/$device" ]; then
+		sudo cryptsetup luksOpen "/dev/$device" ext1
+		sudo mount /dev/mapper/ext1 /mnt/ext1
+		echo "qq: Done mounting ext1"
+	fi
+done

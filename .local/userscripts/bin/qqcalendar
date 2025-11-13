@@ -5,5 +5,5 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 calendar_path="/mnt/part/calendar"
 
-"$source_dir/qqmount part"
+"$source_dir/qqmount" part
 calcurse -D "$calendar_path"
