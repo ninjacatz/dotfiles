@@ -16,7 +16,7 @@ EOF
 case "$1" in
 	-on)
 		pkill -x xautolock
-		rm /tmp/xautolock_on
+		rm -f /tmp/xautolock_on
 		;;
 	-off)
 		sh -c "$(awk '/xautolock -time/' "$HOME"/.config/bspwm/bspwmrc)"

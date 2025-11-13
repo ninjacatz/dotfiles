@@ -99,14 +99,14 @@ mac () {
 		start)
 			echo "Wifi mac randomization turned on"
 			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/s/^#//' "/etc/iwd/main.conf"
-			sudo "$source_dir/../qqsudo" macchanger -a eth0
+			sudo "$source_dir/../qqsudo" macchanger -a eth0 || true
 			touch /tmp/mac_on
 			;;
 		stop)
 			echo "Wifi mac randomization turned off"
 			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/ s/^#\?/#/' "/etc/iwd/main.conf"
-			sudo "$source_dir/../qqsudo" macchanger -p eth0
-			rm /tmp/mac_on
+			sudo "$source_dir/../qqsudo" macchanger -p eth0 || true
+			rm -f /tmp/mac_on
 			;;
 	esac
 }
@@ -115,7 +115,7 @@ case "$1" in
 	-wifi)
 		if pgrep -x iwd > /dev/null; then
 			echo "wifi already running"
-			exit 1
+			exit 0
 		fi
 		vpn stop
 		ssh stop
@@ -127,7 +127,7 @@ case "$1" in
 	-ethernet)
 		if pgrep -x dhclient > /dev/null; then
 			echo "ethernet already running"
-			exit 1
+			exit 0
 		fi
 		vpn stop
 		ssh stop
@@ -148,7 +148,7 @@ case "$1" in
 					ssh start
 				else
 					echo "No network services running. Start a network service before enabling ssh"
-					exit 1
+					exit 0
 				fi
 				;;
 			-stop)
@@ -167,7 +167,7 @@ case "$1" in
 					vpn start
 				else
 					echo "No network services running. Start a network service before starting vpn"
-					exit 1
+					exit 0
 				fi
 				;;
 			-stop)
@@ -195,7 +195,7 @@ case "$1" in
 			esac
 		else
 			echo "A network service is running. Stop any network services before configuring mac addresses"
-			exit 1
+			exit 0
 		fi
 		;;
 	-cli)
@@ -205,7 +205,7 @@ case "$1" in
 			iwctl station wlan0 connect "$network"
 		else
 			echo "Wifi service not running. Start wifi first"
-			exit 1
+			exit 0
 		fi
 		;;
 	-trash-networks)
@@ -222,4 +222,3 @@ case "$1" in
 		exit 1
 		;;
 esac
-

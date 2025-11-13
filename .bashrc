@@ -2,6 +2,11 @@ export EDITOR=vim
 
 export PATH="$PATH:$HOME/.local/userscripts/bin:$HOME/.local/bin"
 
+# suppress output for non-interactive sessions (needed for scp)
+if [[ ! $- =~ i ]]; then
+	return
+fi
+
 # -----------
 # Prompt
 # -----------

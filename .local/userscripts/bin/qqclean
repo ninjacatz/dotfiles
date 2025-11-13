@@ -46,8 +46,8 @@ rm -f "$HOME/.local/share/recently-used.xbel"
 # MPV saved video locations
 rm -f "$HOME/.config/mpv/watch_later/"*
 # Audacity recent files
-sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg"
+sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg" || true
 # OpenOffice recent files
-sed -i "/^<item oor:path=\"\/org.openoffice.Office.Histories/d" "$HOME/.config/libreoffice/4/user/registrymodifications.xcu"
+sed -i "/^<item oor:path=\"\/org.openoffice.Office.Histories/d" "$HOME/.config/libreoffice/4/user/registrymodifications.xcu" || true
 
 echo "Done cleaning"

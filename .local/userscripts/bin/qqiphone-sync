@@ -48,7 +48,7 @@ if [ "$(find "$iphone_download_path" -maxdepth 1 -type f -name '*.HEIC' -print -
 		filename=$(basename "$file")
 		filename="${filename%.*}"
 		convert "$file" "$iphone_download_path/${filename}.png"
-		rm "$file"
+		rm -f "$file"
 	done
 fi
 

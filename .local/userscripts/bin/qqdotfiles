@@ -3,6 +3,26 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	git|home-server-sync
+EOF
+}
+
+dotfiles_fn() {
+	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
+}
+
+exclude_fn() {
+	for file in "${exclude[@]}"; do
+		if ! grep -Fxq "$file" "$HOME/.dotfiles/info/exclude"; then
+			echo "$file" >> "$HOME/.dotfiles/info/exclude"
+		fi
+	done
+}
+
 dotfiles=(
 	"$HOME/.asoundrc"
 	"$HOME/.bashrc"
@@ -19,6 +39,7 @@ dotfiles=(
 	"$HOME/.local/userscripts"
 )
 
+# files to exclude from git repo
 exclude=(
 	".vim/viminfo"
 	".vim/autoload"
@@ -29,36 +50,62 @@ exclude=(
 	".config/vifm/vifm-help.txt"
 )
 
-dotfiles_fn() {
-	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
-}
+# files to exclude from home-server
+exclude_server=(
+	"$HOME/.asoundrc"
+	"$HOME/README.md"
+	"$HOME/.config/alacritty"
+	"$HOME/.config/bspwm"
+	"$HOME/.config/mpv"
+	"$HOME/.config/polybar"
+	"$HOME/.config/sxhkd"
+	"$HOME/.config/zathura"
+)
+dotfiles_server=()
+for file1 in "${dotfiles[@]}"; do
+    found=false
+    for file2 in "${exclude_server[@]}"; do
+        if [[ "$file1" == "$file2" ]]; then
+            found=true
+            break
+        fi
+    done
+    if ! $found; then
+		dotfiles_server+=("$file1")
+    fi
+done
 
-exclude_fn() {
-	for file in "${exclude[@]}"; do
-		if ! grep -Fxq "$file" "$HOME/.dotfiles/info/exclude"; then
-			echo "$file" >> "$HOME/.dotfiles/info/exclude"
+case "$1" in
+	git)
+		# if the command is 'commit', add all files, remove exluded files, and only commit if there are changes
+		if [[ "$2" == "commit" ]]; then
+			exclude_fn
+			for file in "${dotfiles[@]}"; do
+				dotfiles_fn add "$file"
+			done
+			for file in "${exclude[@]}"; do
+				if dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
+					dotfiles_fn rm -r --cached "$HOME/$file"
+				fi
+			done
+			# check if there are changes to commit
+			if ! dotfiles_fn diff --cached --quiet; then
+				dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
+			else
+				echo "No changes to commit"
+			fi
+		# otherwise, pass all arguments directly to git
+		else
+			dotfiles_fn "$@"
 		fi
-	done
-}
-
-# if the command is 'commit', add all files and only commit if there are changes
-if [[ "$1" == "commit" ]]; then
-	exclude_fn
-	for file in "${dotfiles[@]}"; do
-		dotfiles_fn add "$file"
-	done
-	for file in "${exclude[@]}"; do
-		if dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
-			dotfiles_fn rm -r --cached "$HOME/$file"
-		fi
-	done
-	# check if there are changes to commit
-	if ! dotfiles_fn diff --cached --quiet; then
-		dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
-	else
-		echo "No changes to commit"
-	fi
-# otherwise, pass all arguments directly to git
-else
-	dotfiles_fn "$@"
-fi
+		;;
+	home-server-sync)
+		for file in "${dotfiles_server[@]}"; do
+			rsync -av --exclude='.git' -r "$file" home-server:"$(dirname "$file")"
+		done
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac

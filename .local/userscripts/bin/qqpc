@@ -60,8 +60,8 @@ case "$1" in
 	-logout)
 		"$source_dir/qqnet" -stop
 		"$source_dir/qqcoffee" -off
-		rm /tmp/bspwm_first_run
-		pkill -u "$USER"
+		rm -f /tmp/bspwm_first_run
+		pkill -KILL -u "$USER"
 		;;
 	-reboot)
 		sudo "$source_dir/../qqsudo" reboot
