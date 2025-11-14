@@ -51,6 +51,9 @@ if [ -e "$HOME/.wine" ];then
 	wine reg add 'HKCU\Control Panel\Desktop' -v LogPixels -t REG_DWORD -d "$dpi" /f
 fi
 
+# change mpv user-input scale
+sed -i "s/^\(\s*scale\s*=\s*\)[0-9.]\+/\1 $ui_scale/" "$HOME"/.config/mpv/scripts/user-input.lua
+
 # change dillo font factor
 sed -i s/"font_factor=.*"/"font_factor=$ui_scale"/ "$HOME/.dillo/dillorc"
 
@@ -62,6 +65,6 @@ sed -i s/"Xft.dpi:.*"/"Xft.dpi: $dpi"/ "$xresources_file"
 xrdb "$xresources_file"
 
 # refresh wm
-"$HOME/.config/bspwm/bspwmrc"
+"$HOME/.config/bspwm/bspwmrc" &>/dev/null
 
 echo "DPI is set to $dpi"

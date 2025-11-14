@@ -63,16 +63,16 @@ exclude_server=(
 )
 dotfiles_server=()
 for file1 in "${dotfiles[@]}"; do
-    found=false
-    for file2 in "${exclude_server[@]}"; do
-        if [[ "$file1" == "$file2" ]]; then
-            found=true
-            break
-        fi
-    done
-    if ! $found; then
+	found=false
+	for file2 in "${exclude_server[@]}"; do
+		if [[ "$file1" == "$file2" ]]; then
+			found=true
+			break
+		fi
+	done
+	if ! $found; then
 		dotfiles_server+=("$file1")
-    fi
+	fi
 done
 
 case "$1" in
@@ -101,8 +101,10 @@ case "$1" in
 		;;
 	home-server-sync)
 		for file in "${dotfiles_server[@]}"; do
-			rsync -av --exclude='.git' -r "$file" home-server:"$(dirname "$file")"
+			rsync -av --exclude '.vim/swap' --exclude 'viminfo' --exclude 'vifminfo*' "$file" home-server:"$(dirname "$file")"
 		done
+		# also sync ~/.local/bin
+		rsync -av ~/.local/bin home-server:~/.local
 		;;
 	*)
 		usage

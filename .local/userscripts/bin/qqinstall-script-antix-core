@@ -122,7 +122,7 @@ while ! mount | grep -q /mnt/ext1; do
 done
 
 echo "qq: Creating directories"
-sudo mkdir -p /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6
+sudo mkdir -p /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6 /mnt/nfs
 mkdir -p "$HOME"/.config "$HOME"/.local/share
 sudo mkdir -p /root/.config /root/.local/share
 
@@ -142,6 +142,7 @@ qq_conf_add "$backups_home_dir"/.local/userscripts
 qq_root_ln "$backups_home_dir"/.local/userscripts
 qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
 qq_su_conf_add_ow "$backups_etc_dir"/inputrc
+qq_su_conf_add_ow "$backups_etc_dir"/resolv.conf
 qq_su_conf_add_ow "$backups_etc_dir"/inittab
 sudo init q
 
@@ -152,7 +153,6 @@ echo "qq: Setting up ufw"
 sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow ssh
 
 echo "qq: Adding qqsudo to sudoers"
 sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
@@ -183,6 +183,7 @@ qq_apt_rm console-grid-gui
 qq_apt_rm desktop-defaults-core-antix
 sudo rm -rf "$HOME"/.conky*
 qq_apt_rm elinks
+qq_apt_rm isomount
 qq_apt_rm live-kernel-updater
 qq_apt_rm mc mc-data
 qq_apt_rm nano
@@ -211,6 +212,7 @@ qq_apt_add openvpn
 qq_su_conf_add_ow "$backups_etc_dir"/openvpn
 sudo update-rc.d openvpn disable
 qq_apt_add ssh
+# ssh configs added at bottom of script
 
 # ##########################
 # Install Programs (No GUI)
@@ -234,19 +236,15 @@ qq_conf_add "$backups_home_dir"/.config/gh
 qq_apt_add imagemagick
 qq_apt_add jq
 qq_apt_add lm-sensors
-qq_apt_add luckybackup
-qq_su_conf_add "$backups_root_dir"/.luckyBackup
 qq_apt_add macchanger
 qq_apt_add mesa-utils
+qq_apt_add nfs-common
 qq_apt_add pandoc
 qq_apt_add pm-utils
 qq_apt_add socat
 qq_apt_add tldr
 qq_apt_add trash-cli
 qq_apt_add tree
-qq_apt_add usbmuxd ifuse
-qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
-sudo update-rc.d usbmuxd defaults
 qq_apt_add vifm
 qq_conf_add "$backups_home_dir"/.config/vifm
 qq_root_ln "$HOME"/.config/vifm
@@ -333,6 +331,9 @@ qq_conf_add "$backups_home_dir"/.librewolf
 qq_conf_add "$backups_home_dir"/.mozilla
 qq_conf_add "$backups_home_dir"/.local/share/tridactyl
 
+qq_apt_add luckybackup
+qq_su_conf_add "$backups_root_dir"/.luckyBackup
+
 # monero (appimage)
 qq_conf_add "$backups_home_dir"/.bitmonero
 
@@ -400,11 +401,18 @@ echo "qq: Disabling startup services"
 sudo update-rc.d networking disable
 sudo update-rc.d ssh disable
 
-echo "qq: Linking ssh directory"
+echo "qq: Installing ssh"
 # Done at the end in case installing a server
 qq_conf_add_ow "$backups_home_dir"/.ssh
 sudo rm -rf /root/.ssh
 qq_root_ln "$HOME"/.ssh
+sudo ufw allow ssh
+
+echo "qq: Installing usbmuxd"
+# Done at the end in case installing a server
+qq_apt_add usbmuxd ifuse
+qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
+sudo update-rc.d usbmuxd defaults
 
 echo "qq: Unmounting ext1"
 if mount | grep -q /mnt/ext1; then

@@ -93,15 +93,12 @@ nnoremap '[ :cd /mnt/part<CR>
 nnoremap '] :cd /mnt/int<CR>
 nnoremap '- :cd /mnt/ext1<CR>
 nnoremap '= :cd /mnt/ext2<CR>
+nnoremap '\ :cd /mnt/nfs<CR>
 
 " ---------------------------
 " THEMING
 " ---------------------------
-if $DISPLAY != ''
-	colorscheme gruvbox
-else
-	colorscheme Default
-endif
+colorscheme gruvbox
 " Allow transparency
 hi Win guibg=NONE ctermbg=NONE
 hi Border guibg=NONE ctermbg=NONE

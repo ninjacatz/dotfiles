@@ -6,7 +6,7 @@ set clipboard=unnamedplus
 set belloff=all
 set updatetime=250
 set swapfile
-set directory=/tmp//
+set directory=~/.vim/swap
 set viminfo+=n~/.vim/viminfo history=1000
 set encoding=utf-8 fileformat=unix
 set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab

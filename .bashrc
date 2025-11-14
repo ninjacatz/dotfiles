@@ -2,7 +2,7 @@ export EDITOR=vim
 
 export PATH="$PATH:$HOME/.local/userscripts/bin:$HOME/.local/bin"
 
-# suppress output for non-interactive sessions (needed for scp)
+# suppress output for non-interactive sessions (needed for scp/rsync)
 if [[ ! $- =~ i ]]; then
 	return
 fi
@@ -12,7 +12,8 @@ fi
 # -----------
 # Adds title
 PS1="\[\033]0;\w - Bash\007\]"
-PS1+="\[\e[36m\][\h] "
+# Begin prompt
+PS1+="\[\e[36m\][\[\e[96m\]\h\[\e[36m\]] "
 if [[ $EUID -eq 0 ]]; then
 	if [[ $HOME == '/root' ]]; then
 		PS1+="(root) "
@@ -31,6 +32,17 @@ tabs 4
 # -----------
 # Alias
 # -----------
+# sudo vim --> sudo -E vim
+# sudo vifm --> sudo -E vifm
+sudo() {
+	if [ "$1" = "vim" ]; then
+		command sudo -E "$@"
+	elif [ "$1" = "vifm" ]; then
+		command sudo -E "$@"
+	else
+		command sudo "$@"
+	fi
+}
 # enable color support of commands
 alias ls='ls --color=auto --group-directories-first'
 alias grep='grep --color=always'

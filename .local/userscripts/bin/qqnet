@@ -20,18 +20,10 @@ network_path="/var/lib/iwd"
 ethernet () {
 	case "$1" in
 		start)
-			if ! pgrep -x dhclient > /dev/null; then
-				sudo "$source_dir/../qqsudo" service networking start
-			else
-				echo "ethernet already running"
-			fi
+			sudo "$source_dir/../qqsudo" service networking start
 			;;
 		stop)
-			if pgrep -x dhclient > /dev/null; then
-				sudo "$source_dir/../qqsudo" service networking stop
-			else
-				echo "ethernet not running"
-			fi
+			sudo "$source_dir/../qqsudo" service networking stop
 			;;
 	esac
 }
@@ -39,18 +31,10 @@ ethernet () {
 wifi () {
 	case "$1" in
 		start)
-			if ! pgrep -x iwd > /dev/null; then
-				sudo "$source_dir/../qqsudo" service iwd start
-			else
-				echo "wifi already running"
-			fi
+			sudo "$source_dir/../qqsudo" service iwd start
 			;;
 		stop)
-			if pgrep -x iwd > /dev/null; then
-				sudo "$source_dir/../qqsudo" service iwd stop
-			else
-				echo "wifi not running"
-			fi
+			sudo "$source_dir/../qqsudo" service iwd stop
 			;;
 	esac
 }

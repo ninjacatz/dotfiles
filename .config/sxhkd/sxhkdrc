@@ -96,7 +96,7 @@ super + w
 super + shift + w
 	dillo
 super + {_, shift + }e
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e {vim,sudo vim /root}
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e {vim,sudo -E vim /root}
 super + r
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqrecord -screen-mic"
 super + shift + r
@@ -121,7 +121,9 @@ super + bracketright
 super + shift + bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u int; sleep 3"
 super + backslash
-	~/.local/userscripts/bin/qqbspwm -floating
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -mount; sleep 3"
+super + shift + backslash
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -umount; sleep 3"
 
 ############ A -> L
 super + a
@@ -130,7 +132,7 @@ super + {_, shift + }s
 super + d
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqdpi; sleep 3"
 super + {_, shift + }f
-	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo vifm /root}
+	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo -E vifm /root}
 super + {_, shift + }g
 	~/.local/userscripts/bin/qqnet -mac -{start,stop}
 super + {h,j,k,l}
@@ -157,11 +159,12 @@ super + b
 super + {_, shift + }n
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e ~/.local/userscripts/bin/{qqnotes,qqjournal}
 super + m
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u; sleep 3"
 super + comma
 super + {_, shift + }period
 	~/.local/userscripts/bin/qqbspwm -bar -{hide,show}
 super + slash
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u; sleep 3"
+	~/.local/userscripts/bin/qqbspwm -floating
 
 ############ OTHER
 super + {_, shift + }space

@@ -1,0 +1,38 @@
+#!/bin/bash
+set -eo pipefail
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-mount|-umount
+EOF
+}
+
+home_server_ip="192.168.1.100"
+
+case "$1" in
+	-mount)
+		if ! mountpoint /mnt/nfs > /dev/null; then
+			echo "mounting nfs..."
+			sudo "$source_dir/../qqsudo" mount "$home_server_ip":/srv/nfs /mnt/nfs
+			echo "success"
+		else
+			echo "nfs already mounted"
+		fi
+		;;
+	-umount)
+		if mountpoint /mnt/nfs > /dev/null; then
+			echo "unmounting nfs..."
+			sudo "$source_dir/../qqsudo" umount /mnt/nfs
+			echo "success"
+		else
+			echo "nfs not mounted"
+		fi
+		;;
+	*)
+		usage
+		exit 1
+esac
