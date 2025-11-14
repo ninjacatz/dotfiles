@@ -96,7 +96,7 @@ case "$1" in
 			fi
 		# otherwise, pass all arguments directly to git
 		else
-			dotfiles_fn "$@"
+			dotfiles_fn "${@:2}"
 		fi
 		;;
 	home-server-sync)
