@@ -114,6 +114,8 @@ case "$1" in
 		fi
 		# backup notes from nfs to part
 		rsync -av --delete /mnt/nfs/notes/ /mnt/part/notes/
+		# backup calendar from nfs to part
+		rsync -av --delete /mnt/nfs/calendar/ /mnt/part/calendar/
 		# backup antiX-guides from part to nfs
 		rsync -av --delete ~/Documents/antiX-guides/ /mnt/nfs/antiX-guides/
 	;;
