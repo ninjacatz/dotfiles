@@ -104,4 +104,4 @@ for removed_monitor in "${monitors_removed[@]}"; do
 	xrandr --output "$removed_monitor" --off
 done
 
-"$HOME/.config/bspwm/bspwmrc" &>/dev/null
+bspc wm -r

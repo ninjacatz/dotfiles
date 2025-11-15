@@ -192,7 +192,8 @@ function! SearchWithGrep()
 	if pattern == ''
 		return
 	endif
-	silent execute 'grep ' . pattern
+	let quoted_pattern = shellescape(pattern)
+	silent execute 'grep ' . quoted_pattern
 	copen
 	redraw!
 endfunction

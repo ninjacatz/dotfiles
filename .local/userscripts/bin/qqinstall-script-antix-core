@@ -112,7 +112,7 @@ echo "qq: Mounting ext1"
 sudo mkdir -p /mnt/ext1
 while ! mount | grep -q /mnt/ext1; do
 	lsblk
-	echo -n "Name of ext1: "
+	echo -n "Partition of ext1: "
 	read -r device
 	if [ -b "/dev/$device" ]; then
 		sudo cryptsetup luksOpen "/dev/$device" ext1
@@ -123,6 +123,7 @@ done
 
 echo "qq: Creating directories"
 sudo mkdir -p /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6 /mnt/nfs
+sudo chown "$USER":"$USER" /mnt/*
 mkdir -p "$HOME"/.config "$HOME"/.local/share
 sudo mkdir -p /root/.config /root/.local/share
 
@@ -142,7 +143,7 @@ qq_conf_add "$backups_home_dir"/.local/userscripts
 qq_root_ln "$backups_home_dir"/.local/userscripts
 qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
 qq_su_conf_add_ow "$backups_etc_dir"/inputrc
-qq_su_conf_add_ow "$backups_etc_dir"/resolv.conf
+qq_su_conf_add_ow "$backups_etc_dir"/resolvconf/resolv.conf.d/head
 qq_su_conf_add_ow "$backups_etc_dir"/inittab
 sudo init q
 
@@ -241,6 +242,7 @@ qq_apt_add mesa-utils
 qq_apt_add nfs-common
 qq_apt_add pandoc
 qq_apt_add pm-utils
+qq_apt_add sshfs
 qq_apt_add socat
 qq_apt_add tldr
 qq_apt_add trash-cli

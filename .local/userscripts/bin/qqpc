@@ -13,7 +13,7 @@ Options:
 EOF
 }
 
-xlock_font="-*-helvetica-*-r-*-*-48-*-*-*-*-*-*-*"
+xlock_font=-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*
 
 if [ "$2" == "-notwithaudio" ]; then
 	# if audio is playing

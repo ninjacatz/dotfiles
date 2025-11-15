@@ -121,9 +121,9 @@ super + bracketright
 super + shift + bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u int; sleep 3"
 super + backslash
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -mount; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -mount home-server; sleep 3"
 super + shift + backslash
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -umount; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -umount home-server; sleep 3"
 
 ############ A -> L
 super + a

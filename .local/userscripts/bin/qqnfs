@@ -8,29 +8,81 @@ usage () {
 Usage: ${0##*/}
 Options:
 	-mount|-umount
+		ssh-config
+			
 EOF
 }
 
-home_server_ip="192.168.1.100"
+# if 2nd argument not supplied
+if [[ -z "$2" ]]; then
+	usage
+	exit 1
+fi
+
+ssh "$2" "cat > ~/mount_nfs.sh" <<-EOF
+	set -eo pipefail
+	sudo ~/.local/userscripts/qqsudo service nfs-kernel-server start > /dev/null
+	if ! sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
+		echo "unlocking nfs..."
+		sudo ~/.local/userscripts/qqsudo cryptsetup luksOpen /dev/sdb3 nfs
+		success=true
+	else
+		echo "nfs already unlocked"
+	fi
+	if ! mountpoint /srv/nfs > /dev/null; then
+		echo "mounting nfs..."
+		sudo ~/.local/userscripts/qqsudo mount /dev/mapper/nfs /srv/nfs
+		success=true
+	else
+		echo "nfs already mounted"
+	fi
+	if [ "\$success" = "true" ]; then
+		echo "success"
+	fi
+EOF
+
+ssh "$2" "cat > ~/umount_nfs.sh" <<-EOF
+	set -eo pipefail
+	sudo ~/.local/userscripts/qqsudo service nfs-kernel-server stop > /dev/null
+	if mountpoint /srv/nfs > /dev/null; then
+		echo "unmounting nfs..."
+		sudo ~/.local/userscripts/qqsudo umount /srv/nfs
+		success=true
+	else
+		echo "nfs not mounted"
+	fi
+	if sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
+		echo "locking nfs..."
+		sudo ~/.local/userscripts/qqsudo cryptsetup luksClose nfs
+		success=true
+	else
+		echo "nfs already locked"
+	fi
+	if [ "\$success" = "true" ]; then
+		echo "success"
+	fi
+EOF
 
 case "$1" in
 	-mount)
+		ssh -t "$2" "bash ~/mount_nfs.sh" 2>/dev/null
 		if ! mountpoint /mnt/nfs > /dev/null; then
-			echo "mounting nfs..."
-			sudo "$source_dir/../qqsudo" mount "$home_server_ip":/srv/nfs /mnt/nfs
+			echo "mounting nfs via sshfs..."
+			nohup sshfs "$2":/srv/nfs /mnt/nfs >/dev/null 2>&1 &
 			echo "success"
 		else
-			echo "nfs already mounted"
+			echo "nfs already mounted via sshfs"
 		fi
 		;;
 	-umount)
 		if mountpoint /mnt/nfs > /dev/null; then
-			echo "unmounting nfs..."
-			sudo "$source_dir/../qqsudo" umount /mnt/nfs
+			echo "unmounting nfs via sshfs..."
+			fusermount -u /mnt/nfs
 			echo "success"
 		else
-			echo "nfs not mounted"
+			echo "nfs not mounted via sshfs"
 		fi
+		ssh -t "$2" "bash ~/umount_nfs.sh" 2>/dev/null
 		;;
 	*)
 		usage

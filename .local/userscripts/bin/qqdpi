@@ -64,7 +64,7 @@ sed -i s/"Xft.dpi:.*"/"Xft.dpi: $dpi"/ "$xresources_file"
 #replace old Xresources file with current version
 xrdb "$xresources_file"
 
-# refresh wm
-"$HOME/.config/bspwm/bspwmrc" &>/dev/null
-
 echo "DPI is set to $dpi"
+
+# refresh wm
+bspc wm -r

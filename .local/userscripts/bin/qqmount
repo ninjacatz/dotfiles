@@ -16,7 +16,7 @@ EOF
 get_disk_path() {
 	while [ "$disk_path" == "" ]; do
 		lsblk
-		read -r -p "Name of $1: " disk
+		read -r -p "Partition of $1: " disk
 		if [ -b /dev/"$disk" ]; then
 			disk_path="/dev/$disk"
 		fi
@@ -26,7 +26,7 @@ get_disk_path() {
 get_mnt_path() {
 	while [ "$dev" == "" ]; do
 		lsblk
-		read -r -p "Name of $1: " mount_dir
+		read -r -p "Directory to unmount: " mount_dir
 		if mountpoint /mnt/"$mount_dir" > /dev/null; then
 			dev="$mount_dir"
 			dev_mnt_path="/mnt/$mount_dir"
@@ -52,7 +52,7 @@ case "$1" in
 	*)
 		if [ -z "$1" ]; then
 			if [ "$umount" == "true" ]; then
-				get_mnt_path "directory to unmount"
+				get_mnt_path
 			else
 				usage
 				exit 1
@@ -82,7 +82,7 @@ fi
 if [ "$umount" == "true" ]; then
 	if mountpoint "$dev_mnt_path" > /dev/null; then
 		echo "unmounting $dev..."
-		sudo "$source_dir/../qqsudo" umount "$dev_mnt_path" || exit 1
+		sudo "$source_dir/../qqsudo" umount "$dev_mnt_path"
 		success=true
 	else
 		echo "$dev not mounted"
@@ -96,7 +96,7 @@ if [ "$umount" == "true" ]; then
 	if sudo "$source_dir/../qqsudo" cryptsetup isLuks "$luks_disk_path" 2> /dev/null; then
 		if sudo "$source_dir/../qqsudo" cryptsetup status "$dev" > /dev/null; then
 			echo "locking $dev..."
-			sudo "$source_dir/../qqsudo" cryptsetup luksClose /dev/mapper/"$dev" || exit 1
+			sudo "$source_dir/../qqsudo" cryptsetup luksClose /dev/mapper/"$dev"
 			success=true
 		else
 			echo "$dev already locked"
@@ -111,7 +111,8 @@ else
 	if sudo "$source_dir/../qqsudo" cryptsetup isLuks "$disk_path" 2> /dev/null; then
 		if ! sudo "$source_dir/../qqsudo" cryptsetup status "$dev" > /dev/null; then
 			echo "unlocking $dev..."
-			sudo "$source_dir/../qqsudo" cryptsetup luksOpen "$disk_path" "$dev" || exit 1
+			sudo "$source_dir/../qqsudo" cryptsetup luksOpen "$disk_path" "$dev"
+			success=true
 		else
 			echo "$dev already unlocked"
 		fi
@@ -119,7 +120,8 @@ else
 	fi
 	if ! mountpoint "$dev_mnt_path" > /dev/null; then
 		echo "mounting $dev..."
-		sudo "$source_dir/../qqsudo" mount "$disk_path" "$dev_mnt_path" || exit 1
+		sudo "$source_dir/../qqsudo" mount "$disk_path" "$dev_mnt_path"
+		success=true
 	else
 		echo "$dev already mounted"
 		exit 0
@@ -128,5 +130,7 @@ else
 		echo "mounted files are not owned by $USER"
 		# sudo chown -R "$USER":"$USER" "$dev_mnt_path"
 	fi
-	echo "success"
+	if [ "$success" == "true" ]; then
+		echo "success"
+	fi
 fi

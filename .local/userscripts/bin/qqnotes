@@ -3,7 +3,7 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-notes_path="/mnt/part/notes"
+notes_path="/mnt/nfs/notes"
 
-"$source_dir/qqmount" part
+"$source_dir/qqnfs" -mount home-server
 vim "$notes_path"

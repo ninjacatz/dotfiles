@@ -105,9 +105,20 @@ case "$1" in
 		done
 		# also sync ~/.local/bin
 		rsync -av ~/.local/bin home-server:~/.local
-		;;
-	*)
-		usage
-		exit 1
-		;;
+		# sync notes to home server if nfs and part are open
+		if ! mountpoint -q /mnt/part; then
+			"$source_dir/qqmount" part
+		fi
+		if ! mountpoint -q /mnt/nfs; then
+			"$source_dir/qqnfs" -mount home-server
+		fi
+		# backup notes from nfs to part
+		rsync -av --delete /mnt/nfs/notes/ /mnt/part/notes/
+		# backup antiX-guides from part to nfs
+		rsync -av --delete ~/Documents/antiX-guides/ /mnt/nfs/antiX-guides/
+	;;
+*)
+	usage
+	exit 1
+	;;
 esac
