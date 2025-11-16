@@ -51,5 +51,8 @@ rm -f "$HOME/.config/mpv/watch_later/"*
 sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg" || true
 # OpenOffice recent files
 sed -i "/^<item oor:path=\"\/org.openoffice.Office.Histories/d" "$HOME/.config/libreoffice/4/user/registrymodifications.xcu" || true
+# Soulseek downloads and chats
+# rm -rf "$HOME/.soulseek/Soulseek Downloads"/*
+# rm -rf "$HOME/.soulseek/Soulseek Chat Logs"/*
 
 echo "Done cleaning"

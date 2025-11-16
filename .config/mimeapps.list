@@ -60,3 +60,4 @@ text/x-c=vim.desktop
 image/heic=mpv.desktop
 application/javascript=vim.desktop
 text/x-Algol68=vim.desktop
+audio/flac=mpv.desktop
