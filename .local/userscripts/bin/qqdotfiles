@@ -11,11 +11,11 @@ Options:
 EOF
 }
 
-dotfiles_fn() {
+git_dotfiles_fn() {
 	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
 }
 
-dotfiles=(
+git_dotfiles=(
 	"$HOME/.asoundrc"
 	"$HOME/.bashrc"
 	"$HOME/README.md"
@@ -31,8 +31,7 @@ dotfiles=(
 	"$HOME/.local/userscripts"
 )
 
-# files to exclude from git repo
-exclude=(
+git_exclude=(
 	".vim/autoload"
 	".vim/plugged"
 	".vim/swap"
@@ -43,77 +42,54 @@ exclude=(
 	".config/vifm/vifm-help.txt"
 )
 
-# additional files to exclude from home server sync
-exclude_server=(
-	"/home/qq/README.md"
-	".asoundrc"
-	".config/alacritty"
-	".config/bspwm"
-	".config/mpv"
-	".config/polybar"
-	".config/sxhkd"
-	".config/zathura"
+home_server_dotfiles=(
+	"$HOME/.bashrc"
+	"$HOME/.vim/autoload"
+	"$HOME/.vim/plugged"
+	"$HOME/.vim/snippets"
+	"$HOME/.vim/vimrc"
+	"$HOME/.config/vifm/colors"
+	"$HOME/.config/vifm/scripts"
+	"$HOME/.config/vifm/vifmrc"
+	"$HOME/.config/mimeapps.list"
+	"$HOME/.local/userscripts"
+	"$HOME/.local/bin"
 )
-
-rsync_exclude=()
-for file in "${exclude[@]}"; do
-	rsync_exclude+=("--exclude=$file")
-done
-for file in "${exclude_server[@]}"; do
-	rsync_exclude+=("--exclude=$file")
-done
-
-# dotfiles_server=()
-# for file1 in "${dotfiles[@]}"; do
-	# found=false
-	# for file2 in "${exclude_server[@]}"; do
-		# if [[ "$file1" == "$file2" ]]; then
-			# found=true
-			# break
-		# fi
-	# done
-	# if ! $found; then
-		# dotfiles_server+=("$file1")
-	# fi
-# done
 
 case "$1" in
 	git)
 		if [[ "$2" == "commit" ]]; then
 			# add excluded files to ~/.dotfiles/info/exclude
-			for file in "${exclude[@]}"; do
+			for file in "${git_exclude[@]}"; do
 				if ! grep -Fxq "$file" "$HOME/.dotfiles/info/exclude"; then
 					echo "$file" >> "$HOME/.dotfiles/info/exclude"
 				fi
 			done
 			# remove any excluded files (if they were added before defined in ~/.dotfiles/info/exclude)
-			for file in "${exclude[@]}"; do
-				if dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
-					dotfiles_fn rm -r --cached "$HOME/$file"
+			for file in "${git_exclude[@]}"; do
+				if git_dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
+					git_dotfiles_fn rm -r --cached "$HOME/$file"
 				fi
 			done
 			# add all dotfiles
-			for file in "${dotfiles[@]}"; do
-				dotfiles_fn add "$file"
+			for file in "${git_dotfiles[@]}"; do
+				git_dotfiles_fn add "$file"
 			done
 			# check if there are changes to commit and then commit them
-			if ! dotfiles_fn diff --cached --quiet; then
-				dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
+			if ! git_dotfiles_fn diff --cached --quiet; then
+				git_dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
 			else
 				echo "No changes to commit"
 			fi
 		# otherwise, pass all arguments directly to git
 		else
-			dotfiles_fn "${@:2}"
+			git_dotfiles_fn "${@:2}"
 		fi
 		;;
 	home-server-sync)
-		# rsync -avn ${rsync_exclude[@]} ~/.local/bin "${dotfiles[@]}" home-server:~
-		for file in "${dotfiles[@]}"; do
-			rsync -avn "${rsync_exclude[*]}" "$file" home-server:"$(dirname "$file")"
+		for file in "${home_server_dotfiles[@]}"; do
+			rsync -avn "$file" home-server:"$(dirname "$file")"
 		done
-		# also sync ~/.local/bin
-		# rsync -av ~/.local/bin home-server:~/.local
 	;;
 *)
 	usage
