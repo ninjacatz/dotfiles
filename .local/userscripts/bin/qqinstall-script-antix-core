@@ -322,7 +322,7 @@ qq_conf_add "$backups_home_dir"/.config/GIMP
 qq_apt_add guvcview
 qq_apt_add libreoffice
 qq_conf_add "$backups_home_dir"/.config/libreoffice
-
+# librewolf (extrepo)
 qq_apt_add extrepo
 if ! dpkg-query -l | grep librewolf > /dev/null; then
 	sudo extrepo enable librewolf
@@ -331,11 +331,8 @@ fi
 qq_apt_add librewolf
 qq_conf_add "$backups_home_dir"/.librewolf
 qq_conf_add "$backups_home_dir"/.mozilla
-qq_conf_add "$backups_home_dir"/.local/share/tridactyl
-
 # monero (appimage)
 qq_conf_add "$backups_home_dir"/.bitmonero
-
 qq_apt_add mpv
 qq_conf_add "$backups_home_dir"/.config/mpv
 qq_root_ln "$HOME"/.config/mpv
@@ -347,6 +344,8 @@ qq_apt_add rofi
 qq_conf_add "$backups_home_dir"/.config/rofi
 qq_conf_add "$backups_home_dir"/.local/share/applications
 qq_apt_add scrot
+# soulseek (appimage)
+qq_conf_add "$backups_home_dir"/.soulseek
 qq_apt_add telegram-desktop
 qq_conf_add "$backups_home_dir"/.local/share/TelegramDesktop
 qq_apt_add unclutter-xfixes
@@ -404,7 +403,6 @@ echo "qq: Installing ssh"
 # Done at the end in case installing a server
 qq_conf_add_ow "$backups_home_dir"/.ssh
 sudo rm -rf /root/.ssh
-qq_root_ln "$HOME"/.ssh
 sudo ufw allow ssh
 
 echo "qq: Installing usbmuxd"
