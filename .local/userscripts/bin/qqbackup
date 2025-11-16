@@ -20,12 +20,6 @@ fi
 "$source_dir/qqmount" part
 "$source_dir/qqnfs" -mount home-server
 
-# do this before qqclean to prevent confirming fingerprint via ssh
-echo "----------------------------------------------"
-echo "SYNCING DOTFILES TO HOME SERVER"
-echo "----------------------------------------------"
-"$source_dir/qqdotfiles" home-server-sync
-
 echo "----------------------------------------------"
 echo "CLEANING SYSTEM"
 echo "----------------------------------------------"
@@ -35,6 +29,10 @@ else
 	"$source_dir/qqclean"
 fi
 
+echo "----------------------------------------------"
+echo "SYNCING DOTFILES TO HOME SERVER"
+echo "----------------------------------------------"
+"$source_dir/qqdotfiles" home-server-sync
 echo "----------------------------------------------"
 echo "BACKING UP NFS"
 echo "----------------------------------------------"
