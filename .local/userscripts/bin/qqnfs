@@ -19,59 +19,38 @@ if [[ -z "$2" ]]; then
 	exit 1
 fi
 
-ssh "$2" "cat > ~/mount_nfs.sh" <<-EOF
-	set -eo pipefail
-	sudo ~/.local/userscripts/qqsudo service nfs-kernel-server start > /dev/null
-	if ! sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
-		echo "unlocking nfs..."
-		sudo ~/.local/userscripts/qqsudo cryptsetup luksOpen /dev/sdb3 nfs
-		success=true
-	else
-		echo "nfs already unlocked"
-	fi
-	if ! mountpoint /srv/nfs > /dev/null; then
-		echo "mounting nfs..."
-		sudo ~/.local/userscripts/qqsudo mount /dev/mapper/nfs /srv/nfs
-		success=true
-	else
-		echo "nfs already mounted"
-	fi
-	if [ "\$success" = "true" ]; then
-		echo "success"
-	fi
-EOF
-
-ssh "$2" "cat > ~/umount_nfs.sh" <<-EOF
-	set -eo pipefail
-	sudo ~/.local/userscripts/qqsudo service nfs-kernel-server stop > /dev/null
-	if mountpoint /srv/nfs > /dev/null; then
-		echo "unmounting nfs..."
-		sudo ~/.local/userscripts/qqsudo umount /srv/nfs
-		success=true
-	else
-		echo "nfs not mounted"
-	fi
-	if sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
-		echo "locking nfs..."
-		sudo ~/.local/userscripts/qqsudo cryptsetup luksClose nfs
-		success=true
-	else
-		echo "nfs already locked"
-	fi
-	if [ "\$success" = "true" ]; then
-		echo "success"
-	fi
-EOF
-
 case "$1" in
 	-mount)
+		if mountpoint /mnt/nfs > /dev/null; then
+			echo "nfs already mounted via sshfs"
+			exit 0
+		fi
+		ssh "$2" "cat > ~/mount_nfs.sh" <<-EOF
+			set -eo pipefail
+			sudo ~/.local/userscripts/qqsudo service nfs-kernel-server start > /dev/null
+			if ! sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
+				echo "unlocking nfs..."
+				sudo ~/.local/userscripts/qqsudo cryptsetup luksOpen /dev/sdb3 nfs
+				success=true
+			else
+				echo "nfs already unlocked"
+			fi
+			if ! mountpoint /srv/nfs > /dev/null; then
+				echo "mounting nfs..."
+				sudo ~/.local/userscripts/qqsudo mount /dev/mapper/nfs /srv/nfs
+				success=true
+			else
+				echo "nfs already mounted"
+			fi
+			if [ "\$success" = "true" ]; then
+				echo "success"
+			fi
+		EOF
 		ssh -t "$2" "bash ~/mount_nfs.sh" 2>/dev/null
 		if ! mountpoint /mnt/nfs > /dev/null; then
 			echo "mounting nfs via sshfs..."
 			nohup sshfs "$2":/srv/nfs /mnt/nfs >/dev/null 2>&1 &
 			echo "success"
-		else
-			echo "nfs already mounted via sshfs"
 		fi
 		;;
 	-umount)
@@ -81,7 +60,29 @@ case "$1" in
 			echo "success"
 		else
 			echo "nfs not mounted via sshfs"
+			exit 0
 		fi
+		ssh "$2" "cat > ~/umount_nfs.sh" <<-EOF
+			set -eo pipefail
+			sudo ~/.local/userscripts/qqsudo service nfs-kernel-server stop > /dev/null
+			if mountpoint /srv/nfs > /dev/null; then
+				echo "unmounting nfs..."
+				sudo ~/.local/userscripts/qqsudo umount /srv/nfs
+				success=true
+			else
+				echo "nfs not mounted"
+			fi
+			if sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
+				echo "locking nfs..."
+				sudo ~/.local/userscripts/qqsudo cryptsetup luksClose nfs
+				success=true
+			else
+				echo "nfs already locked"
+			fi
+			if [ "\$success" = "true" ]; then
+				echo "success"
+			fi
+		EOF
 		ssh -t "$2" "bash ~/umount_nfs.sh" 2>/dev/null
 		;;
 	*)

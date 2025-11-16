@@ -4,33 +4,69 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 read -r -p "Push dotfile updates to GitHub? (y/N) " github_answer
-read -r -p "Sync files with home-server? (y/N) " server_sync_answer
 read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
 read -r -p "Do you want to eject devices after backup? (y/N) " eject_answer
 
 if [ "${github_answer,,}" = "y" ]; then
+	echo "----------------------------------------------"
+	echo "PUSHING DOTFILES TO GITHUB"
+	echo "----------------------------------------------"
 	"$source_dir/qqdotfiles" git commit
 	"$source_dir/qqdotfiles" git push
 fi
 
-
 "$source_dir/qqmount" ext1
 "$source_dir/qqmount" ext2
 "$source_dir/qqmount" part
+"$source_dir/qqnfs" -mount home-server
 
-if [ "${server_sync_answer,,}" = "y" ]; then
-	"$source_dir/qqnfs" -mount home-server
-	"$source_dir/qqdotfiles" home-server-sync
-fi
+# do this before qqclean to prevent confirming fingerprint via ssh
+echo "----------------------------------------------"
+echo "SYNCING DOTFILES TO HOME SERVER"
+echo "----------------------------------------------"
+"$source_dir/qqdotfiles" home-server-sync
 
+echo "----------------------------------------------"
+echo "CLEANING SYSTEM"
+echo "----------------------------------------------"
 if [ "${wine_answer,,}" = "y" ]; then
 	"$source_dir/qqclean" -delete-wine
 else
 	"$source_dir/qqclean"
 fi
 
-sudo "$source_dir/../qqsudo" luckybackup -c --no-questions default
-sudo "$source_dir/../qqsudo" luckybackup -c --no-questions ext2-sync
+echo "----------------------------------------------"
+echo "BACKING UP NFS"
+echo "----------------------------------------------"
+rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
+echo "----------------------------------------------"
+echo "BACKING UP PART"
+echo "----------------------------------------------"
+rsync -av --delete /mnt/part/ /mnt/ext1/backups/part/
+echo "----------------------------------------------"
+echo "BACKING UP HOME"
+echo "----------------------------------------------"
+rsync -av --delete "$HOME"/ /mnt/ext1/backups/disk/"$HOME"/
+echo "----------------------------------------------"
+echo "BACKING UP ETC"
+echo "----------------------------------------------"
+sudo "$source_dir/../qqsudo" rsync -av --delete /etc/ /mnt/ext1/backups/disk/etc/
+echo "----------------------------------------------"
+echo "BACKING UP VAR"
+echo "----------------------------------------------"
+sudo "$source_dir/../qqsudo" rsync -av --delete /var/ /mnt/ext1/backups/disk/var/
+echo "----------------------------------------------"
+echo "BACKING UP ROOT"
+echo "----------------------------------------------"
+sudo "$source_dir/../qqsudo" rsync -av --delete /root/ /mnt/ext1/backups/disk/root/
+echo "----------------------------------------------"
+echo "BACKING UP USR/SHARE"
+echo "----------------------------------------------"
+sudo "$source_dir/../qqsudo" rsync -av --delete /usr/share/ /mnt/ext1/backups/disk/usr/share/
+echo "----------------------------------------------"
+echo "BACKING UP JOURNALS"
+echo "----------------------------------------------"
+rsync -av --delete /mnt/ext1/journal/ /mnt/ext2/journal/
 
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1

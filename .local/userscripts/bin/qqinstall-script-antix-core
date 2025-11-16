@@ -333,9 +333,6 @@ qq_conf_add "$backups_home_dir"/.librewolf
 qq_conf_add "$backups_home_dir"/.mozilla
 qq_conf_add "$backups_home_dir"/.local/share/tridactyl
 
-qq_apt_add luckybackup
-qq_su_conf_add "$backups_root_dir"/.luckyBackup
-
 # monero (appimage)
 qq_conf_add "$backups_home_dir"/.bitmonero
 

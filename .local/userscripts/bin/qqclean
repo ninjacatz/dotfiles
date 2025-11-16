@@ -14,8 +14,10 @@ if [[ "${wine_answer,,}" = "y" || "$1" = "-delete-wine" ]]; then
 	sudo "$source_dir/../qqsudo" rm -rf /root/.wine
 fi
 
-bleachbit -c --preset
-sudo "$source_dir/../qqsudo" bleachbit -c --preset
+echo "Running bleachbit"
+bleachbit -c --preset &>/dev/null
+echo "Running bleachbit root"
+sudo "$source_dir/../qqsudo" bleachbit -c --preset &>/dev/null
 
 # bash
 rm -f "$HOME/.bash_history"
@@ -33,7 +35,7 @@ sudo "$source_dir/../qqsudo" rm -f "/root/.lesshst"
 rm -f "$HOME/.wget-hsts"
 sudo "$source_dir/../qqsudo" rm -f "/root/.wget-hsts"
 # ssh
-rm -f "$HOME/.ssh/known_hosts"*
+# rm -f "$HOME/.ssh/known_hosts"*
 # X session errors
 rm -f "$HOME/.xsession-errors"
 # zathura

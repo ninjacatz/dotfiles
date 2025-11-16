@@ -3,15 +3,36 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-echo "qq: Mounting ext1"
-sudo mkdir -p /mnt/ext1
-while ! mount | grep -q /mnt/ext1; do
-	lsblk
-	echo -n "Name of ext1: "
-	read -r device
-	if [ -b "/dev/$device" ]; then
-		sudo cryptsetup luksOpen "/dev/$device" ext1
-		sudo mount /dev/mapper/ext1 /mnt/ext1
-		echo "qq: Done mounting ext1"
-	fi
+# files to exclude from git repo
+exclude=(
+	".vim/autoload"
+	".vim/plugged"
+	".vim/swap"
+	".vim/viminfo"
+	".config/mpv/watch_later"
+	".config/sxhkd/acpi-lid"
+	".config/vifm/vifminfo*"
+	".config/vifm/vifm-help.txt"
+)
+
+# additional files to exclude from home server sync
+exclude_server=(
+	"/home/qq/README.md"
+	".asoundrc"
+	".config/alacritty"
+	".config/bspwm"
+	".config/mpv"
+	".config/polybar"
+	".config/sxhkd"
+	".config/zathura"
+)
+
+rsync_exclude=()
+for file in "${exclude[@]}"; do
+	rsync_exclude+=("--exclude $file")
 done
+for file in "${exclude_server[@]}"; do
+	rsync_exclude+=("--exclude $file")
+done
+
+rsync -avn "${rsync_exclude[@]}" ~ ~/.local
