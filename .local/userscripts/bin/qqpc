@@ -10,13 +10,13 @@ usage () {
 Usage: ${0##*/}
 Options:
 	-menu|-logout|-reboot|-shutdown|-lock|-suspend|-hibernate
+		-notwithaudio
 EOF
 }
 
-xlock_font=-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*
+xlock_font="-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*"
 
 if [ "$2" == "-notwithaudio" ]; then
-	# if audio is playing
 	if [ "$(grep -r "RUNNING" /proc/asound | wc -l)" -ne 0 ]; then
 		echo "Audio is playing"
 		exit 0
@@ -77,10 +77,10 @@ case "$1" in
 		# turn off thinklight
 		echo 0 | sudo "$source_dir/../qqsudo" tee "/sys/class/leds/tpacpi::thinklight/brightness"
 
-		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10
+		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10 &
 		;;
 	-suspend)
-		"$source_dir/qqpc" -lock &
+		"$source_dir/qqpc" -lock
 
 		"$source_dir/qqcoffee" -off
 		"$source_dir/qqnet" -stop
@@ -92,7 +92,7 @@ case "$1" in
 		xdotool key BackSpace
 		;;
 	-hibernate)
-		"$source_dir/qqpc" -lock &
+		"$source_dir/qqpc" -lock
 
 		"$source_dir/qqcoffee" -off
 		"$source_dir/qqnet" -stop

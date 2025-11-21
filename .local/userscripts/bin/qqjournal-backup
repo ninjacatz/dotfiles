@@ -16,14 +16,10 @@ read -r -p "Would you like to trash old journals? (y/N) " trash_answer
 read -r -p "Do you want to eject devices when done? (y/N) " eject_answer
 
 "$source_dir/qqmount" ext1
-"$source_dir/qqmount" ext2
 "$source_dir/qqmount" part
 
-# Append the contents of the converted journals to the journals in ext1
+# append the contents of the converted journals to the journals in ext1
 rsync -av --ignore-existing "$journal_converted_path/" "$journal_ext1_path/"
-
-# Sync ext1 and ext2 via luckybackup
-sudo "$source_dir/../qqsudo" luckybackup -c --no-questions ext2-sync
 
 if [ "${trash_answer,,}" = "y" ]; then
 	trash "$journal_path"/*
@@ -31,10 +27,8 @@ if [ "${trash_answer,,}" = "y" ]; then
 	echo "Old journals trashed"
 fi
 
-
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1
-	"$source_dir/qqmount" -u ext2
 	"$source_dir/qqmount" -u part
 fi
 

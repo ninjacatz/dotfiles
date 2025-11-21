@@ -17,9 +17,8 @@ EOF
 }
 
 increment=5
-default_card="card 0"
-default_device="device 0"
-dp_device="device 3"
+default_device="hw:0,0"
+dp_device="hw:0,3"
 default_master="Master"
 dp_master="IEC958"
 
@@ -95,14 +94,12 @@ case "$1" in
 	-output)
 		case "$2" in
 			-default)
-				sed -i "s/device .*/$default_device/" "$HOME/.asoundrc"
-				sed -i "s/card .*/$default_card/" "$HOME/.asoundrc"
+				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$default_device\"/" "$HOME/.asoundrc"
 				sed -i "s/master-mixer = .*/master-mixer = $default_master/" "$HOME/.config/polybar/config.ini"
 				polybar-msg cmd restart > /dev/null
 				;;
 			-displayport)
-				sed -i "s/device .*/$dp_device/" "$HOME/.asoundrc"
-				sed -i "s/card .*/$default_card/" "$HOME/.asoundrc"
+				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$dp_device\"/" "$HOME/.asoundrc"
 				sed -i "s/master-mixer = .*/master-mixer = $dp_master/" "$HOME/.config/polybar/config.ini"
 				polybar-msg cmd restart > /dev/null
 				;;
@@ -111,7 +108,7 @@ case "$1" in
 				exit 1
 				;;
 		esac
-		echo "Changed audio to $(grep -m1 card ~/.asoundrc | tr -d '[:space:]') $(grep device ~/.asoundrc | tr -d '[:space:]')"
+		echo "Changed audio to $(grep '^[[:space:]]*pcm ' ~/.asoundrc | sed 's/^[[:space:]]*pcm //')"
 		;;
 	*)
 		usage

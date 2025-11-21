@@ -1,0 +1,9 @@
+#!/bin/bash
+set -eo pipefail
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+guides_path="/mnt/nfs/antiX-guides"
+
+"$source_dir/qqnfs" -mount home-server
+vim "$guides_path"

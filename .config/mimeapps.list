@@ -52,7 +52,7 @@ video/x-msvideo=mpv.desktop
 video/mpeg=mpv.desktop
 video/ogg=mpv.desktop
 
-# ADDED BY SCRIPT
+# ADDED
 x-scheme-handler/discord-455712169795780630=discord-455712169795780630.desktop
 application/zip=vim.desktop
 application/x-7z-compressed=vim.desktop
@@ -61,3 +61,4 @@ image/heic=mpv.desktop
 application/javascript=vim.desktop
 text/x-Algol68=vim.desktop
 audio/flac=mpv.desktop
+text/x-script.python=vim.desktop

@@ -38,6 +38,26 @@ echo "BACKING UP NFS"
 echo "----------------------------------------------"
 rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
 echo "----------------------------------------------"
+echo "BACKING UP HOME SERVER (SELECT FILES)"
+echo "----------------------------------------------"
+# nginx stuff
+mkdir -p /mnt/ext1/backups/disk-home-server/etc
+rsync -av --delete home-server:/etc/nginx/ /mnt/ext1/backups/disk-home-server/etc/nginx/
+mkdir -p /mnt/ext1/backups/disk-home-server/var/www
+rsync -av --delete home-server:/var/www/html/ /mnt/ext1/backups/disk-home-server/var/www/html/
+# network stuff
+mkdir -p /mnt/ext1/backups/disk-home-server/etc/ssh
+rsync -av --delete home-server:/etc/ssh/sshd_config /mnt/ext1/backups/disk-home-server/etc/ssh/
+mkdir -p /mnt/ext1/backups/disk-home-server/etc/network
+rsync -av --delete home-server:/etc/network/interfaces /mnt/ext1/backups/disk-home-server/etc/network/
+# nfs stuff
+rsync -av --delete home-server:/etc/exports /mnt/ext1/backups/disk-home-server/etc/
+# home dir stuff
+mkdir -p /mnt/ext1/backups/disk-home-server/home/qq
+rsync -av --delete home-server:~/*.sh /mnt/ext1/backups/disk-home-server/home/qq/
+mkdir -p /mnt/ext1/backups/disk-home-server/home/qq/.ssh
+rsync -av --delete home-server:~/.ssh/authorized_keys /mnt/ext1/backups/disk-home-server/home/qq/.ssh/
+echo "----------------------------------------------"
 echo "BACKING UP PART"
 echo "----------------------------------------------"
 rsync -av --delete /mnt/part/ /mnt/ext1/backups/part/

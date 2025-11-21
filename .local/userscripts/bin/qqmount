@@ -3,16 +3,6 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-usage () {
-	cat <<EOF
-Usage: ${0##*/}
-Options:
-	part|int|*
-	-u
-		part|int|*
-EOF
-}
-
 get_disk_path() {
 	while [ "$disk_path" == "" ]; do
 		lsblk
@@ -23,11 +13,26 @@ get_disk_path() {
 	done
 }
 
-get_mnt_path() {
+get_umnt_path() {
 	while [ "$dev" == "" ]; do
 		lsblk
 		read -r -p "Directory to unmount: " mount_dir
 		if mountpoint /mnt/"$mount_dir" > /dev/null; then
+			dev="$mount_dir"
+			dev_mnt_path="/mnt/$mount_dir"
+		fi
+	done
+}
+
+get_mnt_path() {
+	while [ "$dev" == "" ]; do
+		echo "Mountable directories:"
+		for mntpoint in /mnt/*; do
+			echo -n "$(basename "$mntpoint") "
+		done
+		echo
+		read -r -p "Directory to mount: " mount_dir
+		if ! mountpoint /mnt/"$mount_dir" > /dev/null; then
 			dev="$mount_dir"
 			dev_mnt_path="/mnt/$mount_dir"
 		fi
@@ -47,15 +52,14 @@ case "$1" in
 		custom_disk_path="/dev/sda2"
 		;;
 	int)
-		custom_disk_path="/dev/sdb14"
+		custom_disk_path="/dev/sdb1"
 		;;
 	*)
 		if [ -z "$1" ]; then
 			if [ "$umount" == "true" ]; then
-				get_mnt_path
+				get_umnt_path
 			else
-				usage
-				exit 1
+				get_mnt_path
 			fi
 		else
 			if ! [ -e "$dev_mnt_path" ]; then

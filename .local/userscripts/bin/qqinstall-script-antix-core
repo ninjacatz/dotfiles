@@ -1,7 +1,21 @@
 #!/bin/bash
 
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	-t420|-home-server
+EOF
+}
+
 if [ "$(id -u)" -eq 0 ]; then
 	echo "Run as user"
+	exit 1
+fi
+
+# if no correct arguments supplied
+if [[ "$1" != "-home-server" && "$1" != "-t420" ]]; then
+	usage
 	exit 1
 fi
 
@@ -45,7 +59,7 @@ qq_apt_rm () {
 
 qq_conf_add() {
 	for arg in "$@"; do
-		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		arg_trim="/$(echo "$arg" | cut -d'/' -f6-)"
 		if [ ! -e "$arg_trim" ]; then
 			echo "qq_conf_add: Copying $arg_trim"
 			cp -r "$arg" "$arg_trim"
@@ -57,7 +71,7 @@ qq_conf_add() {
 
 qq_conf_add_ow() {
 	for arg in "$@"; do
-		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		arg_trim="/$(echo "$arg" | cut -d'/' -f6-)"
 		echo "qq_conf_add_ow: Copying $arg_trim"
 		rm -rf "$arg_trim"
 		cp -r "$arg" "$arg_trim"
@@ -66,7 +80,7 @@ qq_conf_add_ow() {
 
 qq_su_conf_add() {
 	for arg in "$@"; do
-		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		arg_trim="/$(echo "$arg" | cut -d'/' -f6-)"
 		if sudo [ ! -e "$arg_trim" ]; then
 			echo "qq_su_conf_add: Copying $arg_trim"
 			sudo cp -r "$arg" "$arg_trim"
@@ -78,7 +92,7 @@ qq_su_conf_add() {
 
 qq_su_conf_add_ow() {
 	for arg in "$@"; do
-		arg_trim="/$(echo "$arg" | cut -d'/' -f5-)"
+		arg_trim="/$(echo "$arg" | cut -d'/' -f6-)"
 		echo "qq_su_conf_add_ow: Copying $arg_trim"
 		sudo rm -rf "$arg_trim"
 		sudo cp -r "$arg" "$arg_trim"
@@ -96,30 +110,44 @@ qq_root_ln() {
 	fi
 }
 
+qq_mount_ext1 () {
+	echo "qq: Mounting ext1"
+	sudo mkdir -p /mnt/ext1
+	sudo chown "$USER":"$USER" /mnt/ext1
+	while ! mount | grep -q /mnt/ext1; do
+		lsblk
+		echo -n "Partition of ext1: "
+		read -r device
+		if [ -b "/dev/$device" ]; then
+			sudo cryptsetup luksOpen "/dev/$device" ext1
+			sudo mount /dev/mapper/ext1 /mnt/ext1
+			echo "qq: Done mounting ext1"
+		fi
+	done
+}
+
+qq_unmount_ext1 () {
+	echo "qq: Unmounting ext1"
+	if mount | grep -q /mnt/ext1; then
+		sudo umount /dev/mapper/ext1
+		sudo cryptsetup luksClose /dev/mapper/ext1
+		echo "qq: ext1 unmounted"
+	fi
+}
+
 # ##########################
 # Setup
 # ##########################
 
 # Set up directories
-backups_dir="/mnt/ext1/backups"
+backups_dir="/mnt/ext1/backups/disk"
 backups_home_dir="$backups_dir/home/$USER"
 backups_etc_dir="$backups_dir/etc"
 backups_root_dir="$backups_dir/root"
 backups_var_dir="$backups_dir/var"
 # backups_usr_share_dir="$backups_dir/usr/share"
 
-echo "qq: Mounting ext1"
-sudo mkdir -p /mnt/ext1
-while ! mount | grep -q /mnt/ext1; do
-	lsblk
-	echo -n "Partition of ext1: "
-	read -r device
-	if [ -b "/dev/$device" ]; then
-		sudo cryptsetup luksOpen "/dev/$device" ext1
-		sudo mount /dev/mapper/ext1 /mnt/ext1
-		echo "qq: Done mounting ext1"
-	fi
-done
+qq_mount_ext1
 
 echo "qq: Creating directories"
 sudo mkdir -p /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6 /mnt/nfs
@@ -146,6 +174,8 @@ qq_su_conf_add_ow "$backups_etc_dir"/inputrc
 qq_su_conf_add_ow "$backups_etc_dir"/resolvconf/resolv.conf.d/head
 qq_su_conf_add_ow "$backups_etc_dir"/inittab
 sudo init q
+qq_su_conf_add "$backups_etc_dir"/fonts/local.conf
+fc-cache -f
 
 echo "qq: Adding user to input group"
 sudo usermod -aG input "$USER"
@@ -157,19 +187,6 @@ sudo ufw default allow outgoing
 
 echo "qq: Adding qqsudo to sudoers"
 sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
-
-echo "qq: Adding t420 specific configs"
-qq_conf_add "$backups_home_dir"/.asoundrc
-qq_conf_add "$backups_home_dir"/.dotfiles
-qq_su_conf_add_ow "$backups_etc_dir"/fstab
-qq_su_conf_add_ow "$backups_etc_dir"/default/keyboard
-qq_su_conf_add_ow "$backups_etc_dir"/default/grub
-sudo update-grub
-
-echo "qq: Fixing broken keys (t420 specific)"
-qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
-sudo udevadm hwdb --update
-sudo udevadm trigger /dev/input/event4
 
 # ##########################
 # Remove programs and upgrade
@@ -213,7 +230,8 @@ qq_apt_add openvpn
 qq_su_conf_add_ow "$backups_etc_dir"/openvpn
 sudo update-rc.d openvpn disable
 qq_apt_add ssh
-# ssh configs added at bottom of script
+sudo rm -rf /root/.ssh
+# ssh extra configuration added at bottom of script
 
 # ##########################
 # Install Programs (No GUI)
@@ -236,8 +254,8 @@ qq_apt_add ffmpeg
 qq_conf_add "$backups_home_dir"/.config/gh
 qq_apt_add imagemagick
 qq_apt_add jq
-qq_apt_add lm-sensors
-qq_apt_add macchanger
+qq_apt_add lm-sensors # PROBLEMATIC IN SCRIPT
+qq_apt_add macchanger # PROBLEMATIC IN SCRIPT
 qq_apt_add mesa-utils
 qq_apt_add nfs-common
 qq_apt_add pandoc
@@ -261,7 +279,6 @@ qq_apt_add zip unzip rar unrar 7zip zstd
 # ##########################
 # Programming Tools (No GUI)
 # ##########################
-
 echo "qq: Installing programming tools (no-gui)"
 qq_apt_add flake8
 qq_apt_add gcc-doc
@@ -269,12 +286,68 @@ qq_apt_add gdb
 qq_apt_add gh
 qq_apt_add git
 qq_conf_add "$backups_home_dir"/.gitconfig
+qq_apt_add manpages
+qq_apt_add manpages-dev
 qq_apt_add shellcheck
 
 # ##########################
-# Install Xorg and WM
+# HOME SERVER ONLY
+# ##########################
+if [ "$1" == "-home-server" ]; then
+	# Set up home server directories
+	home_server_backups_dir="/mnt/ext1/backups/disk-home-server"
+	home_server_backups_home_dir="$home_server_backups_dir/home/$USER"
+	home_server_backups_etc_dir="$home_server_backups_dir/etc"
+	home_server_backups_var_dir="$home_server_backups_dir/var"
+
+	echo "qq: Removing home server programs"
+	qq_apt_rm alsa-tools
+	qq_apt_rm alsa-utils
+	rm ~/.asoundrc
+	sudo apt autopurge -y
+
+	echo "qq: Adding home server configs"
+	qq_conf_add "$home_server_backups_home_dir"/*
+	mkdir -p "$HOME"/.ssh
+	qq_conf_add "$home_server_backups_home_dir"/authorized_keys
+	qq_su_conf_add_ow "$home_server_backups_etc_dir"/network/interfaces
+	qq_su_conf_add_ow "$home_server_backups_etc_dir"/ssh/sshd_config
+	sudo ufw allow 2269/tcp
+
+	echo "qq: Setting up home server nfs"
+	qq_apt_add nfs-kernel-server
+	sudo update-rc.d nfs-kernel-server disable
+	qq_su_conf_add_ow "$home_server_backups_etc_dir"/exports
+	sudo mkdir -p /srv/nfs
+	sudo chmod 755 /srv/nfs
+	ln -s /srv/nfs ~/nfs
+
+	echo "qq: Setting up home server nginx"
+	qq_apt_add nginx
+	qq_su_conf_add_ow "$home_server_backups_etc_dir"/nginx/nginx.conf
+	qq_su_conf_add_ow "$home_server_backups_etc_dir"/nginx/sites-available/default
+	qq_su_conf_add_ow "$home_server_backups_var_dir"/www/html
+	sudo ufw allow 80/tcp
+	mkdir -p ~/nginx
+	ln -s /etc/nginx/nginx.conf ~/nginx
+	ln -s /etc/nginx/sites-available/default ~/nginx
+	ln -s /var/www/html ~/nginx
+
+	qq_unmount_ext1
+
+	echo "qq: Done installing!"
+
+	# exit so t420 install doesn't run
+	exit 0
+fi
+
+# ##########################
+# T420 ONLY BEYOND THIS POINT
 # ##########################
 
+# ##########################
+# Install Xorg and WM (GUI)
+# ##########################
 echo "qq: Installing Xorg and WM"
 qq_apt_add xorg
 qq_apt_add xserver-xorg-video-intel
@@ -303,11 +376,11 @@ qq_root_ln "$HOME"/.gtkrc-2.0
 # ##########################
 # Install Programs (GUI)
 # ##########################
-
 echo "qq: Installing gui programs"
 qq_apt_add alacritty
 qq_conf_add "$backups_home_dir"/.config/alacritty
 qq_root_ln "$HOME"/.config/alacritty
+sudo update-alternatives --config x-terminal-emulator
 qq_apt_add audacity
 qq_conf_add "$backups_home_dir"/.config/audacity
 qq_conf_add "$backups_home_dir"/.local/share/audacity
@@ -315,6 +388,8 @@ qq_apt_add dillo
 qq_conf_add "$backups_home_dir"/.dillo
 qq_apt_add feh
 qq_apt_add fonts-dejavu-extra
+qq_apt_add fonts-noto-color-emoji
+qq_conf_add 
 qq_apt_add galculator
 qq_conf_add "$backups_home_dir"/.config/galculator
 qq_apt_add gimp
@@ -356,7 +431,6 @@ qq_conf_add "$backups_home_dir"/.config/zathura
 # ##########################
 # Copy/Install Games
 # ##########################
-
 echo "qq: Adding game files"
 qq_conf_add "$backups_home_dir"/Games
 
@@ -379,7 +453,6 @@ qq_apt_add libjpeg8
 # ##########################
 # Copy documents
 # ##########################
-
 echo "qq: Adding all documents"
 qq_conf_add "$backups_home_dir"/Videos
 qq_conf_add "$backups_home_dir"/Music
@@ -391,31 +464,35 @@ qq_conf_add "$backups_home_dir"/Downloads
 # ##########################
 # Extra
 # ##########################
-
-echo "qq: Setting default terminal (gui-only)"
-sudo update-alternatives --config x-terminal-emulator
-
-echo "qq: Disabling startup services"
+echo "qq: Disabling t420 startup services"
 sudo update-rc.d networking disable
 sudo update-rc.d ssh disable
 
-echo "qq: Installing ssh"
-# Done at the end in case installing a server
+echo "qq: Adding t420 specific configs"
+qq_conf_add "$backups_home_dir"/.asoundrc
+qq_conf_add "$backups_home_dir"/.dotfiles
+qq_su_conf_add_ow "$backups_etc_dir"/fstab
+qq_su_conf_add_ow "$backups_etc_dir"/default/keyboard
+qq_su_conf_add_ow "$backups_etc_dir"/default/grub
+sudo update-grub
+
+echo "qq: Fixing t420 broken keys"
+qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
+sudo udevadm hwdb --update
+sudo udevadm trigger /dev/input/event4
+
+echo "qq: Extra configuring of ssh"
 qq_conf_add_ow "$backups_home_dir"/.ssh
-sudo rm -rf /root/.ssh
 sudo ufw allow ssh
 
-echo "qq: Installing usbmuxd"
-# Done at the end in case installing a server
+echo "qq: Installing usbmuxd for t420"
 qq_apt_add usbmuxd ifuse
 qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
 sudo update-rc.d usbmuxd defaults
 
-echo "qq: Unmounting ext1"
-if mount | grep -q /mnt/ext1; then
-	sudo umount /dev/mapper/ext1
-	sudo cryptsetup luksClose /dev/mapper/ext1
-	echo "qq: ext1 unmounted"
-fi
+# ##########################
+# Unmounting
+# ##########################
+qq_unmount_ext1
 
-echo "qq: Done installing!"
+echo "Done installing!"

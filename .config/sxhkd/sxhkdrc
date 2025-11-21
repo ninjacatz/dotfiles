@@ -17,7 +17,7 @@ XF86Sleep
 {_,shift + ,shift + ctrl + }XF86WLAN
 	~/.local/userscripts/bin/qqnet -{wifi,ethernet,stop}
 XF86WebCam
-	guvcview
+	guvcview -g none
 {_,shift + ,shift + ctrl + }XF86Display
 	~/.local/userscripts/bin/qqscreen -{internal,external,internal-external}
 # XF86TouchpadToggle:
@@ -66,16 +66,17 @@ super + shift + {1,2,3,4}
 super + shift + ctrl + {1,2,3,4}
 	for node in $(bspc query -N -d); do bspc node "$node" -d {1,2,3,4}; done
 super + 5
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc ~/.config/zathura/zathurarc ~/.bashrc ~/.config/alacritty/alacritty.yml ~/.config/mpv/mpv.conf ~/.config/mpv/input.conf ~/.asoundrc
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc
 super + 6
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini
 super + 7
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/zathura/zathurarc ~/.config/alacritty/alacritty.yml
 super + 8
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.local/userscripts/bin
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/mpv/mpv.conf ~/.config/mpv/input.conf ~/.asoundrc
 super + 9
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/Documents/antiX-guides
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.local/userscripts/bin
 super + 0
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sh -c "sudo vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb"
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sh -c "sudo -E vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb"
 super + minus
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext1; sleep 3"
 super + shift + minus
@@ -96,15 +97,13 @@ super + w
 super + shift + w
 	dillo
 super + {_, shift + }e
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e {vim,sudo -E vim /root}
-super + r
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqrecord -screen-mic"
-super + shift + r
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqrecord -mic"
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e {vim,sudo -E vim}
+super + {_, shift + }r
+	~/.local/userscripts/bin/qqrecord -{screen-mic,stop}
 super + t
 	alacritty --config-file ~/.config/alacritty/term.yml
 super + shift + t
-	alacritty --config-file ~/.config/alacritty/term.yml -e sudo sh -c "cd /root && bash"
+	alacritty --config-file ~/.config/alacritty/term.yml -e sudo -E bash
 super + {_, shift + }y
 	~/.local/userscripts/bin/qqnet -ssh -{start,stop}
 super + u
@@ -132,7 +131,7 @@ super + {_, shift + }s
 super + d
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqdpi; sleep 3"
 super + {_, shift + }f
-	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo -E vifm /root}
+	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo -E vifm}
 super + {_, shift + }g
 	~/.local/userscripts/bin/qqnet -mac -{start,stop}
 super + {h,j,k,l}
@@ -159,6 +158,8 @@ super + b
 super + {_, shift + }n
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e ~/.local/userscripts/bin/{qqnotes,qqjournal}
 super + m
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount; sleep 3"
+super + shift + m
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u; sleep 3"
 super + comma
 super + {_, shift + }period

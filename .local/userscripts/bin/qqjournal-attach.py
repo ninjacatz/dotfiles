@@ -6,7 +6,7 @@ import sys
 def main():
     if len(sys.argv) == 2:
         recursiveSearch(sys.argv[1])
-        print('\nDone!')
+        print('Done!')
     else:
         print("Usage: qqjournal_attach.py /path/to/journal")
 
@@ -18,7 +18,6 @@ def recursiveSearch(directory):
         if os.path.isdir(file_path):
             print('DIRECTORY: ' + file_path)
             recursiveSearch(file_path)
-            print()
         elif '.md' not in file:
             file = '%20'.join(file.split(' '))
             md_attachment_line = '![ATTACHMENT: ](' + file + ')\n'
@@ -33,12 +32,11 @@ def appendTxt(md_path, file, md_attachment_line):
         for line in data:
             if '](' + file + ')' in line:
                 print('  already attached: ' + file)
-                print(line)
                 do_append = False
 
     if do_append:
         with open(md_path, 'a', errors='ignore') as f:
-            print('----adding ' + file + ' to ' + os.path.dirname(md_path))
+            print('  ----adding ' + file + ' to ' + os.path.dirname(md_path))
             f.write(md_attachment_line)
 
 

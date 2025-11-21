@@ -7,7 +7,7 @@ if [ ! -f /tmp/bspwm_first_run ]; then
 	bspc monitor -d 1 2 3 4
 	~/.local/userscripts/bin/qqvolume -input -off
 	~/.local/userscripts/bin/qqdevice -trackpad -stop
-	xautolock -time 5 -detectsleep -locker "~/.local/userscript/bin/qqpc -lock -notwithaudio" &
+	xautolock -time 5 -detectsleep -locker "$HOME/.local/userscripts/bin/qqpc -lock -notwithaudio > /dev/null" &
 
 	touch /tmp/bspwm_first_run
 fi

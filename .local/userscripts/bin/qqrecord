@@ -7,7 +7,7 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-screenshot|-screencrop|-mic|-screen|-screen-mic
+	-screenshot|-screencrop|-mic|-screen|-screen-mic|-stop
 EOF
 }
 
@@ -21,6 +21,13 @@ create_file_path () {
 		counter=$((counter + 1))
 	done
 	echo "$dir/$base_name.$ext_name"
+}
+
+ffmpeg_record_check () {
+	if pgrep -f 'ffmpeg.*-f' > /dev/null; then
+		echo "ffmpeg already recording"
+		exit 1
+	fi
 }
 
 dir="$HOME/Downloads/recordings"
@@ -40,16 +47,22 @@ case "$1" in
 		scrot -s "$file_path"
 		;;
 	-mic)
+		ffmpeg_record_check
 		file_path=$(create_file_path "mic" "mp3")
 		ffmpeg "${audio_command[@]}" "$mic_audio" "${audio_codecs[@]}" "$file_path"
 		;;
 	-screen)
+		ffmpeg_record_check
 		file_path=$(create_file_path "screen" "mp4")
 		ffmpeg "${video_command[@]}" "$DISPLAY" "${video_codecs[@]}" "$file_path"
 		;;
 	-screen-mic)
+		ffmpeg_record_check
 		file_path=$(create_file_path "screen-mic" "mp4")
 		ffmpeg "${video_command[@]}" "$DISPLAY" "${audio_command[@]}" "$mic_audio" "${video_codecs[@]}" "${audio_codecs[@]}" "$file_path"
+		;;
+	-stop)
+		pkill -f 'ffmpeg.*-f'
 		;;
 	*)
 		usage

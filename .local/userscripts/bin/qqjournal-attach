@@ -22,9 +22,7 @@ for days_ago in $(seq 0 30); do
 	if ls "$journal_attach_path"/*-"$month$day".* 1> /dev/null 2>&1; then
 		"$source_dir/qqjournal-new-day" "$days_ago"
 		mv "$journal_attach_path"/*-"$month$day".* "$journal_path/$year-$month_num/$month$day"
-		echo
 	fi
 done
 
 "$source_dir/qqjournal-attach.py" "$journal_path"
-

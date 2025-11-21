@@ -52,48 +52,51 @@ set shell=/bin/bash\ --login
 let $PATH = system('echo $PATH')
 
 " ---------------------------
-" BOOKMARKS
+" MARKS
 " ---------------------------
 mark h ~
-mark H /mnt/ext1/backups/home/qq
+mark H /mnt/ext1/backups/disk/home/qq
+
+mark r /root
+mark R /mnt/ext1/backups/disk/root
 
 mark c ~/.config
-mark C /mnt/ext1/backups/home/qq/.config
+mark C /mnt/ext1/backups/disk/home/qq/.config
 
 mark s ~/.local/share
-mark S /mnt/ext1/backups/home/qq/.local/share
+mark S /mnt/ext1/backups/disk/home/qq/.local/share
 
 mark t ~/.local/share/Trash/files
 
 mark d /home/qq/Downloads
-mark D /mnt/ext1/backups/home/qq/Downloads
+mark D /mnt/ext1/backups/disk/home/qq/Downloads
 
 mark u /home/qq/Documents
-mark U /mnt/ext1/backups/home/qq/Documents
+mark U /mnt/ext1/backups/disk/home/qq/Documents
 
 mark e /home/qq/Desktop
-mark E /mnt/ext1/backups/home/qq/Desktop
+mark E /mnt/ext1/backups/disk/home/qq/Desktop
 
 mark v /home/qq/Videos
-mark V /mnt/ext1/backups/home/qq/Videos
+mark V /mnt/ext1/backups/disk/home/qq/Videos
 
 mark p /home/qq/Pictures
-mark P /mnt/ext1/backups/home/qq/Pictures
+mark P /mnt/ext1/backups/disk/home/qq/Pictures
 
 mark m /home/qq/Music
-mark M /mnt/ext1/backups/home/qq/Music
+mark M /mnt/ext1/backups/disk/home/qq/Music
 
 mark g /home/qq/Games
-mark G /mnt/ext1/backups/home/qq/Games
+mark G /mnt/ext1/backups/disk/home/qq/Games
 
-mark 8 /home/qq/.local/userscripts/bin
-mark 9 /home/qq/Documents/antiX-guides
-mark 0 /etc
-nnoremap '[ :cd /mnt/part<CR>
-nnoremap '] :cd /mnt/int<CR>
 nnoremap '- :cd /mnt/ext1<CR>
 nnoremap '= :cd /mnt/ext2<CR>
+nnoremap '[ :cd /mnt/part<CR>
+nnoremap '] :cd /mnt/int<CR>
 nnoremap '\ :cd /mnt/nfs<CR>
+
+nnoremap 'n :cd /mnt/nfs/notes<CR>
+nnoremap 'N :cd /mnt/part/journal<CR>
 
 " ---------------------------
 " THEMING
