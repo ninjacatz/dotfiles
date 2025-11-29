@@ -47,28 +47,18 @@ fi
 dev="$1"
 dev_mnt_path="/mnt/$1"
 
-case "$1" in
-	part)
-		custom_disk_path="/dev/sda2"
-		;;
-	int)
-		custom_disk_path="/dev/sdb1"
-		;;
-	*)
-		if [ -z "$1" ]; then
-			if [ "$umount" == "true" ]; then
-				get_umnt_path
-			else
-				get_mnt_path
-			fi
-		else
-			if ! [ -e "$dev_mnt_path" ]; then
-				echo "$dev_mnt_path directory doesn't exist"
-				exit 1
-			fi
-		fi
-		;;
-esac
+if [ -z "$1" ]; then
+	if [ "$umount" == "true" ]; then
+		get_umnt_path
+	else
+		get_mnt_path
+	fi
+else
+	if ! [ -e "$dev_mnt_path" ]; then
+		echo "$dev_mnt_path directory doesn't exist"
+		exit 1
+	fi
+fi
 
 if [ "$custom_disk_path" != "" ]; then
 	disk_path="$custom_disk_path"

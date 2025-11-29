@@ -3,9 +3,7 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-journal_path="/mnt/part/journal"
+journal_path="/mnt/nfs/journal-unencoded"
 
-"$source_dir/qqmount" part
+"$source_dir/qqnfs" -mount home-server
 vim "$journal_path"
-
-

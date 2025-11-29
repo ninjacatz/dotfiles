@@ -2,8 +2,11 @@ export EDITOR=vim
 
 export PATH="$PATH:$HOME/.local/userscripts/bin:$HOME/.local/bin"
 
+# for 256 colors
+export TERM=xterm-256color
+
 # suppress output for non-interactive sessions (needed for scp/rsync)
-if [[ ! $- =~ i ]]; then
+if [[ ! "$-" =~ i ]]; then
 	return
 fi
 
@@ -13,9 +16,9 @@ fi
 # Adds title
 PS1="\[\033]0;\w - Bash\007\]"
 # Begin prompt
-PS1+="\[\e[36m\][\[\e[96m\]\h\[\e[36m\]] "
-if [[ $EUID -eq 0 ]]; then
-	if [[ $HOME == '/root' ]]; then
+PS1+="\[\e[36m\][\[\e[35m\]\h\[\e[36m\]] "
+if [[ "$EUID" -eq 0 ]]; then
+	if [[ "$HOME" == '/root' ]]; then
 		PS1+="(root) "
 	else
 		PS1+="(sudo) "

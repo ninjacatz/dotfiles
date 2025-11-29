@@ -3,8 +3,10 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
+if [ -d ~/.wine ]; then
+	read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+fi
 read -r -p "Push dotfile updates to GitHub? (y/N) " github_answer
-read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
 read -r -p "Do you want to eject devices after backup? (y/N) " eject_answer
 
 if [ "${github_answer,,}" = "y" ]; then
@@ -17,79 +19,66 @@ fi
 
 "$source_dir/qqmount" ext1
 "$source_dir/qqmount" ext2
-"$source_dir/qqmount" part
 "$source_dir/qqnfs" -mount home-server
 
 echo "----------------------------------------------"
-echo "CLEANING SYSTEM"
+echo "CLEANING PC AND HOME SERVER"
 echo "----------------------------------------------"
 if [ "${wine_answer,,}" = "y" ]; then
 	"$source_dir/qqclean" -delete-wine
 else
 	"$source_dir/qqclean"
 fi
+ssh home-server "$HOME/.local/userscripts/bin/qqclean"
 
+echo "----------------------------------------------"
+echo "BACKING UP /mnt/nfs"
+echo "----------------------------------------------"
+rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
 echo "----------------------------------------------"
 echo "SYNCING DOTFILES TO HOME SERVER"
 echo "----------------------------------------------"
 "$source_dir/qqdotfiles" home-server-sync
 echo "----------------------------------------------"
-echo "BACKING UP NFS"
+echo "BACKING UP HOME SERVER $HOME"
 echo "----------------------------------------------"
-rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
+rsync -av --delete home-server:/home/"$USER"/ /mnt/ext1/backups/disk-home-server/"$HOME"/
 echo "----------------------------------------------"
-echo "BACKING UP HOME SERVER (SELECT FILES)"
+echo "BACKING UP HOME SERVER /etc"
 echo "----------------------------------------------"
-# nginx stuff
-mkdir -p /mnt/ext1/backups/disk-home-server/etc
-rsync -av --delete home-server:/etc/nginx/ /mnt/ext1/backups/disk-home-server/etc/nginx/
-mkdir -p /mnt/ext1/backups/disk-home-server/var/www
-rsync -av --delete home-server:/var/www/html/ /mnt/ext1/backups/disk-home-server/var/www/html/
-# network stuff
-mkdir -p /mnt/ext1/backups/disk-home-server/etc/ssh
-rsync -av --delete home-server:/etc/ssh/sshd_config /mnt/ext1/backups/disk-home-server/etc/ssh/
-mkdir -p /mnt/ext1/backups/disk-home-server/etc/network
-rsync -av --delete home-server:/etc/network/interfaces /mnt/ext1/backups/disk-home-server/etc/network/
-# nfs stuff
-rsync -av --delete home-server:/etc/exports /mnt/ext1/backups/disk-home-server/etc/
-# home dir stuff
-mkdir -p /mnt/ext1/backups/disk-home-server/home/qq
-rsync -av --delete home-server:~/*.sh /mnt/ext1/backups/disk-home-server/home/qq/
-mkdir -p /mnt/ext1/backups/disk-home-server/home/qq/.ssh
-rsync -av --delete home-server:~/.ssh/authorized_keys /mnt/ext1/backups/disk-home-server/home/qq/.ssh/
+rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" home-server:/etc/ /mnt/ext1/backups/disk-home-server/etc/
 echo "----------------------------------------------"
-echo "BACKING UP PART"
+echo "BACKING UP HOME SERVER /var"
 echo "----------------------------------------------"
-rsync -av --delete /mnt/part/ /mnt/ext1/backups/part/
+rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" home-server:/var/ /mnt/ext1/backups/disk-home-server/var/
 echo "----------------------------------------------"
-echo "BACKING UP HOME"
+echo "BACKING UP $HOME (EXCLUDING Downloads/nobackup)"
 echo "----------------------------------------------"
-rsync -av --delete "$HOME"/ /mnt/ext1/backups/disk/"$HOME"/
+rsync -av --delete --delete-excluded --exclude='Downloads/nobackup/' "$HOME"/ /mnt/ext1/backups/disk/"$HOME"/
 echo "----------------------------------------------"
-echo "BACKING UP ETC"
+echo "BACKING UP /etc"
 echo "----------------------------------------------"
 sudo "$source_dir/../qqsudo" rsync -av --delete /etc/ /mnt/ext1/backups/disk/etc/
 echo "----------------------------------------------"
-echo "BACKING UP VAR"
+echo "BACKING UP /var"
 echo "----------------------------------------------"
 sudo "$source_dir/../qqsudo" rsync -av --delete /var/ /mnt/ext1/backups/disk/var/
 echo "----------------------------------------------"
-echo "BACKING UP ROOT"
+echo "BACKING UP /root"
 echo "----------------------------------------------"
 sudo "$source_dir/../qqsudo" rsync -av --delete /root/ /mnt/ext1/backups/disk/root/
 echo "----------------------------------------------"
-echo "BACKING UP USR/SHARE"
+echo "BACKING UP /usr/share"
 echo "----------------------------------------------"
 sudo "$source_dir/../qqsudo" rsync -av --delete /usr/share/ /mnt/ext1/backups/disk/usr/share/
 echo "----------------------------------------------"
-echo "BACKING UP JOURNALS"
+echo "BACKING UP /mnt/ext1 TO /mnt/ext2 (EXCLUDING backups)"
 echo "----------------------------------------------"
-rsync -av --delete /mnt/ext1/journal/ /mnt/ext2/journal/
+rsync -av --delete --delete-excluded --exclude='backups/' /mnt/ext1/ /mnt/ext2/
 
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1
 	"$source_dir/qqmount" -u ext2
-	"$source_dir/qqmount" -u part
 	"$source_dir/qqnfs" -umount home-server
 fi
 

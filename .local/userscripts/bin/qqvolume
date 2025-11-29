@@ -46,8 +46,8 @@ case "$1" in
 				amixer set "$dp_master",0 unmute
 				;;
 			-toggle)
-				current_dev=$(grep device "$HOME/.asoundrc" | awk '{print $2}')
-				if [ "$current_dev" == "0" ]; then
+				current_dev=$(grep hw: "$HOME/.asoundrc" | awk -F'"' '{print $2}')
+				if [ "$current_dev" == "hw:0,0" ]; then
 					current_master="$default_master"
 				else
 					current_master="$dp_master"

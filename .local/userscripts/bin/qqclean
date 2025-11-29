@@ -5,7 +5,9 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 # if no arguments supplied
 if [ "$#" -eq 0 ]; then
-	read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+	if [ -d ~/.wine ]; then
+		read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+	fi
 fi
 
 if [[ "${wine_answer,,}" = "y" || "$1" = "-delete-wine" ]]; then
@@ -15,9 +17,9 @@ if [[ "${wine_answer,,}" = "y" || "$1" = "-delete-wine" ]]; then
 fi
 
 echo "Running bleachbit"
-bleachbit -c --preset &>/dev/null
+bleachbit -c --preset &> /dev/null
 echo "Running bleachbit root"
-sudo "$source_dir/../qqsudo" bleachbit -c --preset &>/dev/null
+sudo "$source_dir/../qqsudo" bleachbit -c --preset &> /dev/null
 
 # bash
 rm -f "$HOME/.bash_history"
@@ -47,6 +49,10 @@ sudo "$source_dir/../qqsudo" rm -rf "/root/.cache"
 rm -f "$HOME/.local/share/recently-used.xbel"
 # MPV saved video locations
 rm -f "$HOME/.config/mpv/watch_later/"*
+# Clutter in ~/.config and ~/.local/share
+rm -rf "$HOME/.config/menus"
+rm -rf "$HOME/.local/share/desktop-directories"
+rm -rf "$HOME/.local/share/mime"
 # Audacity recent files
 sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg" || true
 # OpenOffice recent files

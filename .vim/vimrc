@@ -1,49 +1,92 @@
 " ---------------------------
-" BASIC CONFIG
+" BASIC FUNCTIONALITY
 " ---------------------------
+" disable vi compatibility mode
 set nocompatible
-set clipboard=unnamedplus
-set belloff=all
-set updatetime=250
-set swapfile
-set directory=~/.vim/swap
-set viminfo+=n~/.vim/viminfo history=1000
-set encoding=utf-8 fileformat=unix
-set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
-set autoread
-set autochdir
-set switchbuf=uselast
+" enable mouse in all modes
 set mouse=a
+" use the system clipboard
+set clipboard=unnamedplus
+" enable swapfiles, store them with full path names
+set swapfile directory=~/.vim/swap//
+" viminfo path and number of entries
+set viminfo+=n~/.vim/viminfo history=1000
+" encoding and file format
+set encoding=utf-8 fileformat=unix
+" enable filetype detection
+filetype on
+" change working directory to current file directory automatically
+set autochdir
+" reload files changed outside of vim
+set autoread
+" case-insensitive search unless using upper case letters
 set ignorecase smartcase
-set autoindent
-set nostartofline
-set nojoinspaces
-" Ability to switch from unsaved buffers
-set hidden
-" Backspace behavior
-" indent=deletes any auto-indentation
+" updatetime for various operations:
+" cursor hold
+" writes to swapfiles
+" plugin triggers (if any)
+set updatetime=250
+" backspace behavior:
 " start=goes to previous line when at start of line
 " eol=goes to end of previous line when at start of line
-set backspace=indent,eol,start
-" When changing words (cw) include hyphens
+" indent=deletes any auto-indentation
+set backspace=start,eol,indent
+" include extra characters when changing words
 set iskeyword+=-
-" Set vim to use bashrc
-set shell=/bin/bash\ --login
-" Recursive search with :find command
-set path=**
-" Set grep command
+" autoindent new lines
+set autoindent
+" keep cursor column when moving lines
+set nostartofline
+" use single space when joining lines
+set nojoinspaces
+" use tab character instead of spaces
+set noexpandtab
+" set tab length in all modes
+set tabstop=4 softtabstop=4 shiftwidth=4
+" can switch away from unsaved buffers
+set hidden
+" switch to the most recently used buffer
+set switchbuf=uselast
+" search as you type and highlight matches
+set incsearch hlsearch
+" vertical and horizontal split settings
+set splitbelow splitright
+" set grep command
 set grepprg=grep\ -irnHI
-" Set path
-let $PATH = substitute(system('echo $PATH'), '\n', '', 'g')
+" prevent netrw from loading
+let g:loaded_netrw=1
+let g:loaded_netrwPlugin=1
+" TODO: when opening a directory, cd to it and open a blank buffer (replaces netrw)
+autocmd BufEnter * if &buftype == '' && isdirectory(expand('%:p')) | execute 'cd ' . expand('%:p') | enew | execute 'bd #' | endif
+" TODO: use bash login shell (not sourcing bashrc with sudo or root)
+set shell=/bin/bash shellcmdflag=-lc
+" set $PATH to system $PATH when sudo or root
+if $USER == "root" || $HOME == "/root"
+	let $PATH = trim(system('echo $PATH'))
+endif
+" TODO: disable auto-comment on new line
+autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
 
 " ---------------------------
-" VISUAL TWEAKS
+" STATUS LINE
 " ---------------------------
-" Status line
-" Always show status bar
+" FUNCTIONS
+" get path formatted by autochdir with tilde substitution
+function! TildePath()
+	let path = &autochdir ? expand("%:p:~:h") : fnamemodify(getcwd(-1), ':~')
+	return &autochdir ? path . '/' : '[' . path . '] '
+endfunction
+" get filetype with formatting or empty string
+function! FileType()
+	 return !empty(&filetype) ? '[' . &filetype . '] ' : ''
+endfunction
+
+" always show status bar
 set laststatus=2
+
+" begin statusline
 set statusline=
-" Display if root or sudo
+" display if root or sudo
 if $USER == "root" || $HOME == "/root"
 	if $HOME == '/root'
 		set statusline+=(root)\ 
@@ -51,93 +94,193 @@ if $USER == "root" || $HOME == "/root"
 		set statusline+=(sudo)\ 
 	endif
 endif
-" Display if ssh connection
+" display if ssh connection
 if !empty($SSH_CONNECTION)
 	set statusline+=(ssh)\ 
 endif
-" Function to refresh path
-function! TildePath()
-	let path = &autochdir ? expand("%:p:~:h") : getcwd(-1)
-	let home = $HOME
-	if path =~ home | let path = substitute(path, '^' . home, '~', '') | endif
-	return &autochdir ? path . '/' : '[' . path . '] '
-endfunction
-" Function to refresh filetype
-function! FileType()
-	 return !empty(&filetype) ? '[' . &filetype . '] ' : ''
-endfunction
+" finish statusline
 set statusline+=%{TildePath()}%f\ %m%r%w%=%{FileType()}%L
 
-" Terminal title
-set title
-set titlestring=%F\ %{&modified?'[+]\ ':''}-\ Vim
+" ---------------------------
+" TITLE
+" ---------------------------
+set title titlestring=%F\ %{&modified?'[+]\ ':''}-\ Vim
 
-" Set cursor to line in insert mode, and block in command mode
+" ---------------------------
+" VISUAL TWEAKS
+" ---------------------------
+" remove intro message
+set shortmess+=I
+" disables audio/visual bells
+set belloff=all
+" set true color support
+set termguicolors
+" enable syntax highlighting
+syntax on
+" enable and define whitespace characters
+set list listchars=tab:»·,extends:>,precedes:<,space:·
+" set sign column
+set signcolumn=yes
+" set line numbers and relative line numbers
+set number relativenumber
+" highlight current line
+set cursorline
+" number of lines to keep  at top or bottom while scrolling
+set scrolloff=8
+" enable word wrap and preserve word wrap indentation
+set wrap breakindent
+" highlight matching brackets, quotes, etc.
+set showmatch
+" show commands in command line as they are being typed
+set showcmd
+" show tabline at top if multiple tabs open
+set showtabline=1
+" set cursor to line in insert mode, or block otherwise
 autocmd InsertEnter * silent execute "!echo -ne '\e[5 q'"
 autocmd InsertLeave * silent execute "!echo -ne '\e[2 q'"
-" Remove intro message
-set shortmess+=I
-" Set true color support
-set termguicolors
-" Line numbers
-set number relativenumber
-" Highlight current line
-set cursorline
-" Scroll only when cursor is at last or first line, and number of lines to keep on screen
-set display=lastline scrolloff=8
-" Enable word wrap and preserve word wrap indentation
-set wrap breakindent
-" Show matching braces, etc.
-set showmatch
-" Highlight words you search and as you type
-set hlsearch incsearch
-" Enable filetype detection
-filetype on
-" Enable file-specific plugins
-filetype plugin on
-" Enable file-specific indentations
-filetype indent on
-" Enable syntax highlighting
-syntax on
-" Use default language-specific completions with omni complete
-set omnifunc=syntaxcomplete#Complete
-" Set completeopt (auto complete menu) settings
-set completeopt=menuone,longest
-" Turn on wildmenu for autocomplete (and ignore case)
-set wildmenu wildignorecase
-" set wildmode=list:longest,full
-set wildmode=longest:full,full
-" Set tab to trigger wildmenu completion (no need to press enter)
-set wildcharm=<Tab>
-" wildmenu display options
-set wildoptions=pum
-" Files to ignore when using wildmenu such as :e <Tab>
-set wildignore+=
-" Show commands as they are being typed
-set showcmd
-" Sign column (beside line numbers)
-set signcolumn=yes
-" Vertical and horizontal split settings
-set splitbelow splitright
-" Enable whitespace chars and define them
-set list listchars=tab:»·,extends:>,precedes:<,space:·
-" Show tabline at top if multiple tabs open
-set showtabline=1
-" Prevent netrw from ever loading
-let g:loaded_netrw = 1
-let g:loaded_netrwPlugin = 1
-" When opening a directory, cd to it and open a blank buffer (replaces netrw)
-autocmd BufEnter * if &buftype == '' && isdirectory(expand('%:p')) | execute 'cd ' . expand('%:p') | enew | execute 'bd #' | endif
-" Disable auto-comment on new line (note: MUST come after filetype on)
-autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
 
 " ---------------------------
-" FUNCTIONS FOR KEYMAPS
+" COLORSCHEME
 " ---------------------------
-" Automatically set all tablength variables with one number
+" TODO: colorscheme light/dark based on terminal window class
+let window_class = system("xprop -id $(xdotool getactivewindow) | awk -F '\"' '/WM_CLASS/ {print $2}'")
+if trim(window_class) == "vim"
+	set background=light
+else
+	set background=dark
+endif
+" colorscheme
+colorscheme gruvbox8
+" turn off background (for terminal transparency)
+hi Normal guibg=NONE ctermbg=NONE
+
+" ---------------------------
+" AUTO-COMPLETE
+" ---------------------------
+" use default language-specific completions with omni complete
+set omnifunc=syntaxcomplete#Complete
+" set menu to show even if there is only one entry
+set completeopt=menuone
+" turn off completion messages in command line
+set shortmess+=c
+" use <CR> to accept selected menu option
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "<CR>"
+
+" ---------------------------
+" AUTO-COMPLETE (COMMAND LINE)
+" ---------------------------
+" turn on completions (and ignore case)
+set wildmenu wildignorecase
+" complete longest match, display full list
+set wildmode=longest,full
+" display pop up menu
+set wildoptions=pum
+
+" ---------------------------
+" AUTO INSTALL vim-plug
+" ---------------------------
+" install with the command: vim +PlugInstall +qa
+let data_dir = '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+	silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+	autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" ---------------------------
+" INSTALL PLUGINS
+" ---------------------------
+" remember: :PlugStatus, :PlugUpdate, :PlugClean, :PlugUpgrade
+call plug#begin()
+" comment manager
+Plug 'preservim/nerdcommenter'
+" completion manager
+Plug 'lifepillar/vim-mucomplete'
+" linters, fixers, and lsp
+Plug 'dense-analysis/ale'
+" git integration
+Plug 'airblade/vim-gitgutter'
+" claude with api
+Plug 'pasky/claude.vim'
+call plug#end()
+
+" ---------------------------
+" CONFIGURE PLUGINS
+" ---------------------------
+" PLUGIN: nerdcommenter
+" get rid of default mappings
+let g:NERDCreateDefaultMappings=0
+" create space around comments
+let NERDSpaceDelims=1
+
+" PLUGIN: vim-mucomplete
+" adds tab keybind for completion
+" by default, mucomplete tries completions in this order:
+" path, omni, keyword, dictionary, spelling
+
+" PLUGIN: ale
+let g:ale_lint_on_text_changed='never'
+let g:ale_lint_on_save=1
+" disable error text at end of line
+let g:ale_virtualtext_cursor=0
+" fixers
+let g:ale_fix_on_save=1
+let g:ale_fixers = {
+\	'*': ['remove_trailing_lines'],
+\}
+" linters
+let g:ale_linters_explicit=1
+let g:ale_linters = {
+\	'sh': ['shellcheck'],
+\	'python': ['flake8'],
+\	'c': ['gcc'],
+\}
+" errors to ignore
+let g:ale_python_flake8_options='--ignore=E501' " line too long
+
+" PLUGIN: vim-gitgutter
+let g:gitgutter_update_interval=1000
+" disable all keymaps
+let g:gitgutter_map_keys=0
+" will not overwrite ale signs in gutter
+let g:gitgutter_sign_allow_clobber=0
+
+" PLUGIN: claude.vim
+" disable default keymaps
+let g:claude_map_open_chat = ""
+let g:claude_map_implement = ""
+let g:claude_map_send_chat_message = ""
+let g:claude_map_cancel_response = ""
+" set model
+let g:claude_model = 'claude-sonnet-4-20250514'
+" set api key if it exists
+if filereadable(expand('~/.vim/claude-api.key'))
+	let g:claude_api_key=trim(readfile(expand('~/.vim/claude-api.key'))[0])
+endif
+
+" ---------------------------
+" KEYMAPS
+" ---------------------------
+" set keymap timeout delay
+set timeoutlen=2000
+" set key code timeout delay
+set ttimeoutlen=0
+" clear highlights on pressing <Esc>
+nnoremap <Esc> <Cmd>nohlsearch<CR>
+" auto-completing brackets, quotes, etc
+inoremap "<CR> ""<Left>
+inoremap '<CR> ''<Left>
+inoremap (<CR> ()<Left>
+inoremap [<CR> []<Left>
+inoremap <<CR> <><Left>
+inoremap {<CR> {<CR>}<ESC>O
+
+" ---------------------------
+" MAP LEADER KEYMAPS
+" ---------------------------
+" FUNCTIONS
+" automatically set tab length in all modes with one number
 function! SetTabLength()
 	let l = input('Enter tab length: ')
-	" Check if input is a positive integer
 	if l =~ '^\d\+$'
 		let l = str2nr(l)
 		execute 'set tabstop=' . l
@@ -147,46 +290,39 @@ function! SetTabLength()
 		echo 'Invalid tab length. Positive integers only.'
 	endif
 endfunction
-" Renaming a file in place and deleting the old file
+" renaming a file in place
 function! RenameFile()
+	let old_name = expand('%:t')
+	let old_file_path = expand('%:p')
+	let old_path = expand('%:p:h')
 	if &modified
 		echoerr 'Cannot rename unsaved file'
 		return
 	endif
-
-	let old_name = expand('%:t')
-	let old_file_path = expand('%:p')
-	let old_path = expand('%:p:h')
-
 	if !filereadable(old_file_path)
 		echoerr 'Current buffer is not readable file'
 		return
 	endif
-
 	let new_name = input('Rename ' . old_name . ' to ')
 	if new_name == ''
 		echoerr 'No new file name provided'
 		return
 	endif
-
 	let new_file_path = old_path . '/' . new_name
-
 	if filereadable(new_file_path) || isdirectory(new_file_path)
 		echoerr "New file name already exists"
 		return
 	endif
-
 	try
 		call rename(old_file_path, new_file_path)
 	catch /./
 		echoerr "Failed to rename file"
 		return
 	endtry
-
 	execute 'e' fnameescape(new_file_path)
-	execute 'bd' bufname(old_file_path)
+	execute 'bd' fnameescape(old_file_path)
 endfunction
-" Searching with grep and copen
+" searching with grep and copen
 function! SearchWithGrep()
 	let pattern = input('grep -irnHI ')
 	if pattern == ''
@@ -198,207 +334,85 @@ function! SearchWithGrep()
 	redraw!
 endfunction
 
-" ---------------------------
-" KEYMAPS
-" ---------------------------
-" Set keymap timeout delay
-set timeoutlen=2000
-
-" timeoutlen is used for mapping delays, and ttimeoutlen is used for key code delays
-" This breaks mappings that start with <Esc>
-set ttimeoutlen=0
-" Clear highlights on pressing <Esc> in normal mode
-nnoremap <silent> <Esc> :nohlsearch<CR>
-
-" Enter and '\' when wildmenu open accepts and closes menu instead of newline
-cnoremap <expr> <CR> wildmenumode() ? "\<C-y>" : "<CR>"
-cnoremap <expr> / wildmenumode() ? "\<C-y>" : "/"
-" Enter and '\' when completion menu open accepts and closes menu instead of newline
-inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "<CR>"
-inoremap <expr> / pumvisible() ? "\<C-y>" : "/"
-
-" Auto-completing brackets, quotes, etc
-inoremap "<CR> ""<Left>
-inoremap '<CR> ''<Left>
-inoremap (<CR> ()<Left>
-inoremap [<CR> []<Left>
-inoremap <<CR> <><Left>
-inoremap {<CR> {<CR>}<ESC>O
-
-" Set leader key
+" set leader key
 let mapleader=' '
 
-" Spacebar
-noremap <Leader><Space> :map<CR>
-
 " 1 -> 9
-" noremap <Leader>`
-" noremap <Leader>1
-" noremap <Leader>2
-" noremap <Leader>3
-" noremap <Leader>4
-" noremap <Leader>5
-" noremap <Leader>6
-" noremap <Leader>7
-" noremap <Leader>8
-" resizing splits
-noremap <Leader>9 10<C-w><
-noremap <Leader>0 10<C-w>>
-noremap <Leader>- 3<C-w>-
-noremap <Leader>= 3<C-w>+
-noremap <Leader><BS> :so $HOME/.vim/vimrc<CR>
+" nnoremap <Leader>`
+" nnoremap <Leader>1
+" nnoremap <Leader>2
+" nnoremap <Leader>3
+" nnoremap <Leader>4
+" nnoremap <Leader>5
+" nnoremap <Leader>6
+" nnoremap <Leader>7
+" nnoremap <Leader>8
+nnoremap <Leader>9 10<C-w><
+nnoremap <Leader>0 10<C-w>>
+nnoremap <Leader>- 3<C-w>-
+nnoremap <Leader>= 3<C-w>+
+nnoremap <Leader><BS> :so $HOME/.vim/vimrc<CR>
 "
-" Q -> P
-noremap <Leader><Tab> :set tabstop? softtabstop? shiftwidth? expandtab?<CR>
-noremap <Leader><S-Tab> :call SetTabLength()<CR>
-noremap <Leader>q :q<CR>
-noremap <Leader>Q :q!<CR>
-noremap <Leader>w :w<CR>
-noremap <Leader>W :w!<CR>
-" noremap <Leader>e ALE error detail
-noremap <Leader>r :silent call RenameFile()<CR>
-noremap <Leader>t :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
-noremap <Leader>y :browse oldfiles<CR>
-noremap <Leader>Y :browse history<CR>
-noremap <Leader>u :changes<CR>
-noremap <Leader>i :help<Space>
-noremap <Leader>o :find *
-noremap <Leader>p "0p
-noremap <Leader>[ :set autochdir<CR>
-noremap <Leader>] :cd %:p:h<CR>:set noautochdir<CR>
-noremap <Leader>\ :silent cd  <Bar> set noautochdir<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
-noremap <Leader>\| :cd<Space>
+" q -> p
+nnoremap <Leader><Tab> :set tabstop? softtabstop? shiftwidth? expandtab?<CR>
+nnoremap <Leader><S-Tab> :call SetTabLength()<CR>
+nnoremap <Leader>q :q<CR>
+nnoremap <Leader>Q :q!<CR>
+nnoremap <Leader>w :w<CR>
+nnoremap <Leader>W :w!<CR>
+nnoremap <Leader>e :ALEDetail<CR>
+nnoremap <Leader>r :call RenameFile()<CR>
+nnoremap <Leader>t :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
+nnoremap <Leader>y :browse oldfiles<CR>
+nnoremap <Leader>Y :browse history<CR>
+nnoremap <Leader>u :changes<CR>
+nnoremap <Leader>i :help<Space>
+nnoremap <Leader>o :split<CR>
+nnoremap <Leader>O :vsplit<CR>
+nnoremap <Leader>p "0p
+nnoremap <Leader>[ :set autochdir<CR>
+nnoremap <Leader>] :cd %:p:h<CR>:set noautochdir<CR>
+nnoremap <Leader>\ :ClaudeCancel<CR>
 
-" A -> L
-noremap <Leader>a :wa<CR>
-noremap <Leader>A :wa!<CR>
-noremap <Leader>s :split<CR>
-noremap <Leader>S :vsplit<CR>
-noremap <Leader>d :bd<CR>
-noremap <Leader>D :bd!<CR>
-noremap <Leader>f :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/vifm.yml -e vifm %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
-" noremap <Leader>g GitGutter git diff
-noremap <Leader>h <C-w><C-h>
-noremap <C-h> :tabprevious<CR>
-noremap <Leader>j <C-w><C-j>
-noremap <C-j> :bn<CR>
-noremap <Leader>k <C-w><C-k>
-noremap <C-k> :bp<CR>
-noremap <Leader>l <C-w><C-l>
-noremap <C-l> :tabNext<CR>
-noremap <Leader>; :!
-noremap <Leader>: :sh<CR>
-noremap <Leader>' :marks<CR>:mark<Space>
-noremap <Leader>" :registers<CR>
-" noremap <Leader><CR>
+" a -> l
+nnoremap <Leader>a :ClaudeChat<CR>
+vnoremap <Leader>a :ClaudeImplement<Space>
+nnoremap <Leader>s :set spell<CR>
+nnoremap <Leader>S :set nospell<CR>
+nnoremap <Leader>d :bd<CR>
+nnoremap <Leader>D :bd!<CR>
+nnoremap <Leader>f :silent execute '!nohup alacritty --config-file $HOME/.config/alacritty/vifm.yml -e vifm %:p:h > /dev/null 2>&1 &' <Bar> redraw!<CR>
+nnoremap <Leader>g :GitGutterDiffOrig<CR>
+nnoremap <Leader>h <C-w><C-h>
+nnoremap <C-h> :tabprevious<CR>
+nnoremap <Leader>j <C-w><C-j>
+nnoremap <C-j> :bn<CR>
+nnoremap <Leader>k <C-w><C-k>
+nnoremap <C-k> :bp<CR>
+nnoremap <Leader>l <C-w><C-l>
+nnoremap <C-l> :tabNext<CR>
+nnoremap <Leader>; :!
+nnoremap <Leader>: :sh<CR>
+nnoremap <Leader>' :marks<CR>:mark<Space>
+nnoremap <Leader>" :registers<CR>
+nnoremap <Leader><CR> :ClaudeSend<CR>
 
-" Z -> M
-noremap <Leader>z :args `find . -type f -size -$((256*256))c -name '*'`<Left><Left>
-noremap <Leader>Z :args `find . -type f -size -$((256*256))c -name '*'`<CR>
-noremap <Leader>x :tabc<CR>
-noremap <Leader>X :tabc!<CR>
-" noremap <Leader>c NERD COMMENTER
-noremap <Leader>v :tabs<CR>:tabn<Space>
-noremap <Leader>b :ls<CR>:b<Space>
-noremap <Leader>n :e<Space>
-noremap <Leader>N :e **/*
-noremap <Leader>m :tabnew<Space>
-noremap <Leader>M :tabnew **/
-noremap <Leader>, :norm<Space>
+" z -> m
+nnoremap <Leader>z :args `find . -type f -size -$((256*256))c -name '*'`<Left><Left>
+nnoremap <Leader>x :tabc<CR>
+nnoremap <Leader>X :tabc!<CR>
+nnoremap <Leader>c <Cmd>call nerdcommenter#Comment(0,"toggle")<CR>
+nnoremap <Leader>v :tabs<CR>:tabn<Space>
+nnoremap <Leader>b :ls<CR>:b<Space>
+nnoremap <Leader>n :e<Space>
+nnoremap <Leader>N :e **/*
+nnoremap <Leader>m :tabnew<Space>
+nnoremap <Leader>M :tabnew **/*
+nnoremap <Leader>, :norm<Space>
 nnoremap <Leader>. :%s///g<Left><Left><Left>
 xnoremap <Leader>. :s///g<Left><Left><Left>
-noremap <Leader>> :bufdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
+nnoremap <Leader>> :bufdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
 nnoremap <Leader>/ :call SearchWithGrep()<CR>
 
-" ---------------------------
-" SNIPPETS
-" ---------------------------
-noremap ,cs :-1read $HOME/.vim/snippets/cstart.c<CR>3jo
-noremap ,ps :-1read $HOME/.vim/snippets/pystart.py<CR>o<CR>
-noremap ,ss :-1read $HOME/.vim/snippets/shstart.sh<CR>o<CR>
-
-" ---------------------------
-" AUTO INSTALL vim-plug
-" ---------------------------
-" Install with the command: vim +PlugInstall +qa
-let data_dir = '~/.vim'
-if empty(glob(data_dir . '/autoload/plug.vim'))
-	silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-	autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
-
-" ---------------------------
-" INSTALL PLUGINS
-" ---------------------------
-" remember: :PlugStatus, :PlugUpdate, :PlugUpgrade :PlugClean
-call plug#begin()
-" Add/remove comments automatically
-Plug 'preservim/nerdcommenter'
-" Tab to trigger context sensitive autocomplete when typing word
-Plug 'ervandew/supertab'
-" linters and lsp
-Plug 'dense-analysis/ale'
-" git indicators in gutter
-Plug 'airblade/vim-gitgutter'
-" Colorscheme
-Plug 'lifepillar/vim-gruvbox8'
-call plug#end()
-
-" ---------------------------
-" CONFIGURE PLUGINS
-" ---------------------------
-" Supertab context-based completions
-let g:SuperTabDefaultCompletionType="context"
-" fallback default option
-" let g:SuperTabContextDefaultCompletionType="<C-n>"
-let g:SuperTabContextDefaultCompletionType="\<C-x>\<C-o>"
-
-" Nerd commenter
-" get rid of default mappings
-let g:NERDCreateDefaultMappings=0
-" create space around comments
-let NERDSpaceDelims=1
-map <Leader>c :call nerdcommenter#Comment(0,"toggle")<CR>
-
-" ALE
-let g:ale_lint_on_text_changed='never'
-let g:ale_lint_on_save=1
-let g:ale_lint_delay=200
-" disable error text at end of line
-let g:ale_virtualtext_cursor=0
-noremap <Leader>e :ALEDetail<CR>
-" linters
-let g:ale_linters_explicit=1
-let g:ale_linters = {
-\	'sh': ['shellcheck'],
-\	'python': ['flake8'],
-\	'c': ['gcc'],
-\}
-" ignore line too long
-let g:ale_python_flake8_options='--ignore=E501'
-" fixers
-let g:ale_fix_on_save=1
-let g:ale_fixers = {
-\	'*': ['remove_trailing_lines'],
-\}
-
-" GitGutter
-let g:gitgutter_update_interval=1000
-" disable all keymaps
-let g:gitgutter_map_keys=0
-" will not overwrite ALE signs in gutter
-let g:gitgutter_sign_allow_clobber=0
-noremap <Leader>g :GitGutterDiffOrig<CR>
-
-" Colorschemes based on window class
-let window_class = system("xprop -id $(xdotool getactivewindow) | awk -F '\"' '/WM_CLASS/ {print $2}'")
-let window_class = trim(window_class)
-if window_class == "vim"
-	set background=light
-else
-	set background=dark
-endif
-" Colorscheme
-colorscheme gruvbox8
-" Turn off background (for terminal transparency)
-hi Normal guibg=NONE ctermbg=NONE
+" other keys
+nnoremap <Leader><Space> :map<CR>

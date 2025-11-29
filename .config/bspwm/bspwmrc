@@ -59,7 +59,7 @@ if pgrep -x picom > /dev/null; then
 fi
 picom &
 
-feh --bg-fill --random ~/Pictures/backgrounds/rotation/ivan-aivazovsky-ship-painting.jpg &
+feh --bg-fill --random ~/Downloads/background.jpg &
 
 # set capslock key to esc
 setxkbmap -option caps:escape_shifted_capslock &&

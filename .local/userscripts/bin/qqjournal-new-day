@@ -3,9 +3,9 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-journal_path="/mnt/part/journal"
+journal_path="/mnt/nfs/journal-unencoded"
 
-"$source_dir/qqmount" part
+"$source_dir/qqnfs" -mount home-server
 
 # if no arguments supplied
 if [ "$#" -eq 0 ]; then
@@ -41,4 +41,3 @@ else
 	echo "# $formatted_date" | tee "$journal_path/$year-$month_num/$month$day/TXT.md"
 	echo "Created journal for $month$day"
 fi
-

@@ -8,10 +8,10 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 # Example: journal-file-may22.jpg
 # Checks for "-may22."
 
-journal_path="/mnt/part/journal"
+journal_path="/mnt/nfs/journal-unencoded"
 journal_attach_path="$HOME/Downloads"
 
-"$source_dir/qqmount" part
+"$source_dir/qqnfs" -mount home-server
 
 for days_ago in $(seq 0 30); do
 	day=$(date -d "$days_ago days ago" +"%1d")

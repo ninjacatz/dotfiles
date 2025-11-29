@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# NOTE: at the end of script, do the following
+# install lm-sensors and macchanger manually
+# make sure /etc/fstab and /etc/default/grub have swap setup (and timeout=0 if want)
+
 usage () {
 	cat <<EOF
 Usage: ${0##*/}
@@ -150,7 +154,7 @@ backups_var_dir="$backups_dir/var"
 qq_mount_ext1
 
 echo "qq: Creating directories"
-sudo mkdir -p /mnt/part /mnt/int /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6 /mnt/nfs
+sudo mkdir -p /mnt/ext2 /mnt/ext3 /mnt/ext4 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6 /mnt/nfs
 sudo chown "$USER":"$USER" /mnt/*
 mkdir -p "$HOME"/.config "$HOME"/.local/share
 sudo mkdir -p /root/.config /root/.local/share
@@ -254,8 +258,6 @@ qq_apt_add ffmpeg
 qq_conf_add "$backups_home_dir"/.config/gh
 qq_apt_add imagemagick
 qq_apt_add jq
-qq_apt_add lm-sensors # PROBLEMATIC IN SCRIPT
-qq_apt_add macchanger # PROBLEMATIC IN SCRIPT
 qq_apt_add mesa-utils
 qq_apt_add nfs-common
 qq_apt_add pandoc
@@ -309,10 +311,16 @@ if [ "$1" == "-home-server" ]; then
 	echo "qq: Adding home server configs"
 	qq_conf_add "$home_server_backups_home_dir"/*
 	mkdir -p "$HOME"/.ssh
-	qq_conf_add "$home_server_backups_home_dir"/authorized_keys
+	qq_conf_add "$home_server_backups_home_dir"/.ssh/authorized_keys
 	qq_su_conf_add_ow "$home_server_backups_etc_dir"/network/interfaces
 	qq_su_conf_add_ow "$home_server_backups_etc_dir"/ssh/sshd_config
 	sudo ufw allow 2269/tcp
+
+	echo "qq: Setting up guest user"
+	sudo mkdir -p /srv/guest/upload
+	sudo useradd -s /usr/sbin/nologin guest
+	echo 'guest:guest' | sudo chpasswd
+	sudo chown guest:guest /srv/guest/upload
 
 	echo "qq: Setting up home server nfs"
 	qq_apt_add nfs-kernel-server
@@ -332,6 +340,7 @@ if [ "$1" == "-home-server" ]; then
 	ln -s /etc/nginx/nginx.conf ~/nginx
 	ln -s /etc/nginx/sites-available/default ~/nginx
 	ln -s /var/www/html ~/nginx
+	ln -s /var/log/nginx ~/nginx/log
 
 	qq_unmount_ext1
 
@@ -380,7 +389,6 @@ echo "qq: Installing gui programs"
 qq_apt_add alacritty
 qq_conf_add "$backups_home_dir"/.config/alacritty
 qq_root_ln "$HOME"/.config/alacritty
-sudo update-alternatives --config x-terminal-emulator
 qq_apt_add audacity
 qq_conf_add "$backups_home_dir"/.config/audacity
 qq_conf_add "$backups_home_dir"/.local/share/audacity
@@ -451,19 +459,11 @@ qq_apt_add libcrypt1:i386
 qq_apt_add libjpeg8
 
 # ##########################
-# Copy documents
-# ##########################
-echo "qq: Adding all documents"
-qq_conf_add "$backups_home_dir"/Videos
-qq_conf_add "$backups_home_dir"/Music
-qq_conf_add "$backups_home_dir"/Pictures
-qq_conf_add "$backups_home_dir"/Documents
-qq_conf_add "$backups_home_dir"/Desktop
-qq_conf_add "$backups_home_dir"/Downloads
-
-# ##########################
 # Extra
 # ##########################
+echo "qq: Adding Downloads"
+qq_conf_add "$backups_home_dir"/Downloads
+
 echo "qq: Disabling t420 startup services"
 sudo update-rc.d networking disable
 sudo update-rc.d ssh disable
@@ -471,10 +471,7 @@ sudo update-rc.d ssh disable
 echo "qq: Adding t420 specific configs"
 qq_conf_add "$backups_home_dir"/.asoundrc
 qq_conf_add "$backups_home_dir"/.dotfiles
-qq_su_conf_add_ow "$backups_etc_dir"/fstab
-qq_su_conf_add_ow "$backups_etc_dir"/default/keyboard
-qq_su_conf_add_ow "$backups_etc_dir"/default/grub
-sudo update-grub
+qq_conf_add "$backups_home_dir"/README.md
 
 echo "qq: Fixing t420 broken keys"
 qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
@@ -489,6 +486,9 @@ echo "qq: Installing usbmuxd for t420"
 qq_apt_add usbmuxd ifuse
 qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
 sudo update-rc.d usbmuxd defaults
+
+echo "qq: Setting default terminal"
+sudo update-alternatives --config x-terminal-emulator
 
 # ##########################
 # Unmounting

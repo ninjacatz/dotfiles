@@ -62,3 +62,4 @@ application/javascript=vim.desktop
 text/x-Algol68=vim.desktop
 audio/flac=mpv.desktop
 text/x-script.python=vim.desktop
+text/x-msdos-batch=vim.desktop

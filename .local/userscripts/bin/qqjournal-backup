@@ -3,7 +3,7 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-journal_path="/mnt/part/journal"
+journal_path="/mnt/nfs/journal-unencoded"
 journal_converted_path="$HOME/Downloads/journal-converted"
 journal_ext1_path="/mnt/ext1/journal"
 
@@ -16,7 +16,7 @@ read -r -p "Would you like to trash old journals? (y/N) " trash_answer
 read -r -p "Do you want to eject devices when done? (y/N) " eject_answer
 
 "$source_dir/qqmount" ext1
-"$source_dir/qqmount" part
+"$source_dir/qqnfs" -mount home-server
 
 # append the contents of the converted journals to the journals in ext1
 rsync -av --ignore-existing "$journal_converted_path/" "$journal_ext1_path/"
@@ -29,7 +29,7 @@ fi
 
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1
-	"$source_dir/qqmount" -u part
+	"$source_dir/qqnfs" -umount home-server
 fi
 
 echo "Done backing up"

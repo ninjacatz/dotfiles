@@ -78,13 +78,7 @@ super + 9
 super + 0
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sh -c "sudo -E vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb"
 super + minus
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext1; sleep 3"
-super + shift + minus
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u ext1; sleep 3"
 super + equal
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext2; sleep 3"
-super + shift + equal
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u ext2; sleep 3"
 super + BackSpace
 	~/.config/bspwm/bspwmrc
 
@@ -112,13 +106,13 @@ super + o
 super + p
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqiphone-sync; sleep 3"
 super + bracketleft
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount part; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext1; sleep 3"
 super + shift + bracketleft
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u part; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u ext1; sleep 3"
 super + bracketright
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount int; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext2; sleep 3"
 super + shift + bracketright
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u int; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u ext2; sleep 3"
 super + backslash
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -mount home-server; sleep 3"
 super + shift + backslash

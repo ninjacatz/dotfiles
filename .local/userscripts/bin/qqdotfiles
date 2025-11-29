@@ -36,10 +36,12 @@ git_exclude=(
 	".vim/plugged"
 	".vim/swap"
 	".vim/viminfo"
+	".vim/claude-api.key"
 	".config/mpv/watch_later"
 	".config/sxhkd/acpi-lid"
 	".config/vifm/vifminfo*"
 	".config/vifm/vifm-help.txt"
+	".config/vifm/scripts"
 )
 
 home_server_dotfiles=(
@@ -47,8 +49,8 @@ home_server_dotfiles=(
 	"$HOME/.profile"
 	"$HOME/.vim/autoload"
 	"$HOME/.vim/plugged"
-	"$HOME/.vim/snippets"
 	"$HOME/.vim/vimrc"
+	"$HOME/.vim/claude-api.key"
 	"$HOME/.config/vifm/colors"
 	"$HOME/.config/vifm/scripts"
 	"$HOME/.config/vifm/vifmrc"

@@ -1,55 +1,102 @@
 " vim: filetype=vim :
 
 " ---------------------------
-" BASIC CONFIG
+" BASIC FUNCTIONALITY
 " ---------------------------
-" Use xdg defaults (in the background) for all files:
+" use xdg defaults for all files:
 filetype * xdg-open 2>/dev/null &
-" Set default program to open files with if none set in xdg
-" set vicmd=vim
-" Enable mouse (requires version 0.13)
+" enable mouse (requires version 0.13)
 " set mouse=a
-" Uses vifm operations instead of standard utilities like 'cp'
+" uses vifm utilities instead of shell utilities
 set syscalls
-" Enable dotfiles
+" show hidden files
 set dotfiles
-" Set trash and trashdir
-set trash
-set trashdir="$HOME/.local/share/Trash/files"
-" History max
-set history=100
-" Automatically resolve symbolic links on l or Enter.
-set nofollowlinks
-" Natural sort of (version) numbers within text.
-set sortnumbers
-" Maximum number of changes that can be undone.
-set undolevels=100
-" Use Vim's format of help file
-set vimhelp
-" Do not autorun executable files
-set norunexec
-" Ignore case unless capital letter
-set ignorecase smartcase
-" Don't highlight search results automatically
-set nohlsearch
-" Use increment searching (search while typing)
-set incsearch
-" Case insensitive autocomplete
-set caseoptions=p
-" Case insensitive :find command
-set findprg="find %s -iname %p"
-" Case insensitive :grep command
-set grepprg="grep -irnHI %i %a %s"
-" Try to leave some space from cursor to upper/lower border in lists
-set scrolloff=8
-" Don't do too many requests to slow file systems
-set slowfs=curlftpfs
-" What should be saved automatically between vifm session
+" set trash and trashdir
+set trash trashdir="$HOME/.local/share/Trash/files"
+" what should be saved automatically between vifm session
 set vifminfo=chistory,shistory,phistory,fhistory,registers,bookmarks,bmarks
-" Set vifm to use bashrc
-set shell=/bin/bash\ --login
-" Set path
+" history max
+set history=1000
+" maximum number of changes that can be undone
+set undolevels=1000
+" automatically resolve symbolic links
+set nofollowlinks
+" do not run executables
+set norunexec
+" natural sort of (version) numbers within text
+set sortnumbers
+" use vim's format for help file
+set vimhelp
+" case-insensitive search unless using upper case letters
+set ignorecase smartcase
+" search as you type and highlight matches
+set incsearch hlsearch
+" number of lines to keep  at top or bottom while scrolling
+set scrolloff=8
+" don't do too many requests to slow file systems
+set slowfs=curlftpfs
+" case insensitive :find command
+set findprg="find %s -iname %p"
+" case insensitive :grep command
+set grepprg="grep -irnHI %i %a %s"
+" TODO: use bash login shell (not sourcing bashrc with sudo or root)
+set shell=/bin/bash shellcmdflag=-lc
+" set $PATH to system $PATH when sudo or root
 let $PATH = system('echo $PATH')
+
+" ---------------------------
+" STATUS LINE
+" ---------------------------
+" begin statusline
+set statusline=
+" display if root or sudo
+if $HOME == '/root' || $USER == 'root'
+	if $HOME == '/root'
+		set statusline+=(root)\ 
+	else
+		set statusline+=(sudo)\ 
+	endif
+endif
+" display if ssh connection
+if $SSH_CONNECTION != ''
+	set statusline+=(ssh)\ 
+endif
+" finish statusline
+set statusline+=%A\ %u:%g\ %E\ %T%=%d
+
+" ---------------------------
+" VISUAL TWEAKS
+" ---------------------------
+" show directory preview by default
+view!
+" no wrapping in previews
+set nowrap
+" show only filenames in view columns
+windo set viewcolumns=-{name}..
+" time format. See man date or man strftime
+set timefmt=%b\ %d\ %I:%M%P\ %Y
+
+" ---------------------------
+" COLORSCHEME
+" ---------------------------
+" colorscheme
+colorscheme gruvbox
+" turn off backgrounds (for terminal transparency)
+hi Win guibg=NONE ctermbg=NONE
+hi Border guibg=NONE ctermbg=NONE
+hi CmdLine guibg=NONE ctermbg=NONE
+
+" ---------------------------
+" AUTO-COMPLETE (COMMAND LINE)
+" ---------------------------
+" turn on completions in command line
+set wildmenu
+" display pop up menu
+set wildstyle=popup
+" Display suggestions in the following modes
+set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
+" case insensitive completions
+set caseoptions=p
 
 " ---------------------------
 " MARKS
@@ -60,6 +107,9 @@ mark H /mnt/ext1/backups/disk/home/qq
 mark r /root
 mark R /mnt/ext1/backups/disk/root
 
+mark g /home/qq/Games
+mark G /mnt/ext1/backups/disk/home/qq/Games
+
 mark c ~/.config
 mark C /mnt/ext1/backups/disk/home/qq/.config
 
@@ -68,113 +118,71 @@ mark S /mnt/ext1/backups/disk/home/qq/.local/share
 
 mark t ~/.local/share/Trash/files
 
-mark d /home/qq/Downloads
-mark D /mnt/ext1/backups/disk/home/qq/Downloads
+mark d /mnt/nfs/dev
+mark D /mnt/ext1/backups/nfs/dev
 
-mark u /home/qq/Documents
-mark U /mnt/ext1/backups/disk/home/qq/Documents
+mark w /home/qq/Downloads
+mark W /mnt/ext1/backups/disk/home/qq/Downloads
 
-mark e /home/qq/Desktop
-mark E /mnt/ext1/backups/disk/home/qq/Desktop
+mark u /mnt/nfs/documents
+mark U /mnt/ext1/backups/nfs/documents
 
-mark v /home/qq/Videos
-mark V /mnt/ext1/backups/disk/home/qq/Videos
+mark v /mnt/nfs/videos
+mark V /mnt/ext1/backups/nfs/videos
 
-mark p /home/qq/Pictures
-mark P /mnt/ext1/backups/disk/home/qq/Pictures
+mark p /mnt/nfs/pictures
+mark P /mnt/ext1/backups/nfs/pictures
 
-mark m /home/qq/Music
-mark M /mnt/ext1/backups/disk/home/qq/Music
+mark m /mnt/nfs/music
+mark M /mnt/ext1/backups/nfs/music
 
-mark g /home/qq/Games
-mark G /mnt/ext1/backups/disk/home/qq/Games
-
-nnoremap '- :cd /mnt/ext1<CR>
-nnoremap '= :cd /mnt/ext2<CR>
-nnoremap '[ :cd /mnt/part<CR>
-nnoremap '] :cd /mnt/int<CR>
+nnoremap '[ :cd /mnt/ext1<CR>
+nnoremap '] :cd /mnt/ext2<CR>
 nnoremap '\ :cd /mnt/nfs<CR>
 
 nnoremap 'n :cd /mnt/nfs/notes<CR>
 nnoremap 'N :cd /mnt/part/journal<CR>
 
 " ---------------------------
-" THEMING
-" ---------------------------
-colorscheme gruvbox
-" Allow transparency
-hi Win guibg=NONE ctermbg=NONE
-hi Border guibg=NONE ctermbg=NONE
-hi CmdLine guibg=NONE ctermbg=NONE
-" Show directory preview by default
-view!
-" No wrapping in previews
-set nowrap
-" Set custom status line look
-set statusline=
-if $HOME == '/root' || $USER == 'root'
-	if $HOME == '/root'
-		set statusline+=(root)\ 
-	else
-		set statusline+=(sudo)\ 
-	endif
-endif
-if $SSH_CONNECTION != ''
-	set statusline+=(ssh)\ 
-endif
-set statusline+=%A\ %u:%g\ %E\ %T%=%d
-" Show only filenames in view columns
-windo set viewcolumns=-{name}..
-" Time format. See man date or man strftime
-set timefmt=%b\ %d\ %I:%M%P\ %Y
-" Show list of matches on tab completion in command-line mode
-set wildmenu
-" Display completions in a form of popup
-set wildstyle=popup
-" Display suggestions in the following modes
-set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
-
-" ---------------------------
 " KEYMAPS
 " ---------------------------
+" set keymap timeout delay
 set timeoutlen=2000
+
+" set name change keymaps
 noremap cw cW
 noremap cW cw
 noremap cc cW<c-u>
-" noremap yd :!echo %d | xsel --clipboard --input<CR>:echo expand('%"d') "is yanked to clipboard"<CR>
-" noremap yf :!echo %c:p | xsel --clipboard --input<CR>:echo expand('%"c:p') "is yanked to clipboard"<CR>
 
-" Remove space keymapping
+" remove space keymapping
 noremap <Space> <nop>
 noremap <Space><Space> <nop>
 
 " 1 -> 9
-noremap <Space><BS> :source $HOME/.config/vifm/vifmrc<CR>
+nnoremap <Space><BS> :source $HOME/.config/vifm/vifmrc<CR>
 
-" Q -> P
-noremap <Space>q :q<CR>
-noremap <Space>Q :q!<CR>
-noremap <Space>e :!nohup alacritty --config-file $HOME/.config/alacritty/vim.yml --class vim -e vim %d > /dev/null 2>&1 &<CR>
-noremap <Space>t :!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %d > /dev/null 2>&1 &<CR>
-noremap <Space>y :history<CR>
-noremap <Space>i :help<Space>
-noremap <Space>o :find **<Left>
-noremap <Space>\ :cd<Space>
+" q -> p
+nnoremap <Space>q :q<CR>
+nnoremap <Space>Q :q!<CR>
+nnoremap <Space>e :!nohup alacritty --config-file $HOME/.config/alacritty/vim.yml --class vim -e vim %d > /dev/null 2>&1 &<CR>
+nnoremap <Space>t :!nohup alacritty --config-file $HOME/.config/alacritty/term.yml --working-directory %d > /dev/null 2>&1 &<CR>
+nnoremap <Space>y :history<CR>
+nnoremap <Space>i :help<Space>
 
-" A -> L
-noremap <Space>s :sort<CR>
-noremap <C-h> :tabprevious<CR>
-noremap <C-l> :tabnext<CR>
-noremap <Space>; :!
-noremap <Space>: :sh<CR>
-noremap <Space>' :marks<CR>
-noremap <Space>" :registers<CR>
+" a -> l
+nnoremap <Space>s :sort<CR>
+nnoremap <C-h> :tabprevious<CR>
+nnoremap <C-l> :tabnext<CR>
+nnoremap <Space>; :!
+nnoremap <Space>: :sh<CR>
+nnoremap <Space>' :marks<CR>
+nnoremap <Space>" :registers<CR>
 
-" Z -> M
-noremap <Space>x :tabc<CR>
-noremap <Space>m :tabnew<Space>
-noremap <Space>M :tabnew **/
-noremap <Space>, :norm<Space>
+" z -> m
+nnoremap <Space>x :tabc<CR>
+nnoremap <Space>n :find **<Left>
+nnoremap <Space>m :tabnew<Space>
+nnoremap <Space>, :norm<Space>
 nnoremap <Space>. :%s///g<Left><Left><Left>
 vnoremap <Space>. :s///g<Left><Left><Left>
-noremap <Space>/ :grep<Space>
+nnoremap <Space>/ :grep<Space>
