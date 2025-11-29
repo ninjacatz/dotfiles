@@ -73,17 +73,11 @@ super + shift + {1,2,3,4}
 super + shift + ctrl + {1,2,3,4}
 	for node in $(bspc query -N -d); do bspc node "$node" -d {1,2,3,4}; done
 super + 5
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc
 super + 6
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini
 super + 7
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/zathura/zathurarc ~/.config/alacritty/alacritty.yml
 super + 8
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.config/mpv/mpv.conf ~/.config/mpv/input.conf ~/.asoundrc
 super + 9
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.local/userscripts/bin
 super + 0
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sh -c "sudo -E vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb"
 super + minus
 super + equal
 super + BackSpace

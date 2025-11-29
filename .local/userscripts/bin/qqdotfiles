@@ -47,6 +47,7 @@ home_server_dotfiles=(
 	"$HOME/.bashrc"
 	"$HOME/.profile"
 	"$HOME/.vim/autoload"
+	"$HOME/.vim/colors"
 	"$HOME/.vim/plugged"
 	"$HOME/.vim/vimrc"
 	"$HOME/.vim/claude-api.key"

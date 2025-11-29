@@ -336,14 +336,14 @@ let mapleader=' '
 
 " 1 -> 9
 " nnoremap <Leader>`
-nnoremap <Leader>1 :e ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc<CR>
-" nnoremap <Leader>2
-" nnoremap <Leader>3
-" nnoremap <Leader>4
-" nnoremap <Leader>5
+nnoremap <Leader>1 :args ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc<CR>
+nnoremap <Leader>2 :args ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini<CR>
+nnoremap <Leader>3 :args ~/.config/zathura/zathurarc ~/.config/alacritty/alacritty.yml<CR>
+nnoremap <Leader>4 :args ~/.config/mpv/mpv.conf ~/.config/mpv/input.conf ~/.asoundrc<CR>
+nnoremap <Leader>5 :args /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb<CR>
 " nnoremap <Leader>6
-" nnoremap <Leader>7
-" nnoremap <Leader>8
+nnoremap <Leader>7 :set noautochdir <Bar> cd ~/.local/userscripts/bin<CR>
+nnoremap <Leader>8 :set noautochdir <Bar> cd /mnt/nfs/dev/textbook-the-modern-approach-c<CR>
 nnoremap <Leader>9 10<C-w><
 nnoremap <Leader>0 10<C-w>>
 nnoremap <Leader>- 3<C-w>-

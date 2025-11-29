@@ -1,5 +1,16 @@
 #!/bin/sh
 
+# if running bspwm for the first time in login
+if [ ! -f /tmp/bspwm_first_run ]; then
+	bspc monitor -d 1 2 3 4
+	~/.local/userscripts/bin/qqvolume -input -off
+	~/.local/userscripts/bin/qqdevice -trackpad -stop
+	# execute lock after 5 minutes
+	xautolock -time 5 -detectsleep -locker "$HOME/.local/userscripts/bin/qqpc -lock -notwithaudio > /dev/null" &
+
+	touch /tmp/bspwm_first_run
+fi
+
 # ---------------------------
 # BASIC CONFIG
 # ---------------------------
@@ -34,15 +45,6 @@ bspc config bottom_padding "$height_in_pixels"
 # ---------------------------
 # STARTUP
 # ---------------------------
-# if running bspwm for the first time in login
-if [ ! -f /tmp/bspwm_first_run ]; then
-	bspc monitor -d 1 2 3 4
-	~/.local/userscripts/bin/qqvolume -input -off
-	~/.local/userscripts/bin/qqdevice -trackpad -stop
-	xautolock -time 5 -detectsleep -locker "$HOME/.local/userscripts/bin/qqpc -lock -notwithaudio > /dev/null" &
-
-	touch /tmp/bspwm_first_run
-fi
 
 # set keybindings
 if pgrep -x sxhkd > /dev/null; then

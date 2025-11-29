@@ -91,7 +91,7 @@ hi CmdLine guibg=NONE ctermbg=NONE
 set wildmenu
 " display pop up menu
 set wildstyle=popup
-" Display suggestions in the following modes
+" display suggestions in the following modes
 set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
 " case insensitive completions
 set caseoptions=p
@@ -99,7 +99,7 @@ set caseoptions=p
 " ---------------------------
 " MARKS
 " ---------------------------
-mark h ~
+mark h /home/qq
 mark H /mnt/ext1/backups/disk/home/qq
 
 mark r /root
