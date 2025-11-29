@@ -4,6 +4,8 @@ capslk=$(cat /sys/class/leds/input0::capslock/brightness)
 nmlk=$(cat /sys/class/leds/input0::numlock/brightness)
 scrlk=$(cat /sys/class/leds/input0::scrolllock/brightness)
 
+output=""
+
 if [ "$capslk" = "1" ]; then
 	output="CapsLk "
 fi

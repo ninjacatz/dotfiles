@@ -1,5 +1,7 @@
 #!/bin/sh
 
+output=""
+
 if [ -e /tmp/mac-on ]; then
 	output="mac"
 fi

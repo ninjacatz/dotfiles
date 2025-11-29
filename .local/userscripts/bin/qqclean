@@ -49,7 +49,8 @@ sudo "$source_dir/../qqsudo" rm -rf "/root/.cache"
 rm -f "$HOME/.local/share/recently-used.xbel"
 # MPV saved video locations
 rm -f "$HOME/.config/mpv/watch_later/"*
-# Clutter in ~/.config and ~/.local/share
+# Extra clutter
+rm -rf "$HOME/.fltk"
 rm -rf "$HOME/.config/menus"
 rm -rf "$HOME/.local/share/desktop-directories"
 rm -rf "$HOME/.local/share/mime"

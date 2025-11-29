@@ -3,6 +3,11 @@
 " ---------------------------
 " disable vi compatibility mode
 set nocompatible
+" updatetime for various operations:
+" cursor hold
+" writes to swapfiles
+" plugin triggers (if any)
+set updatetime=250
 " enable mouse in all modes
 set mouse=a
 " use the system clipboard
@@ -15,17 +20,12 @@ set viminfo+=n~/.vim/viminfo history=1000
 set encoding=utf-8 fileformat=unix
 " enable filetype detection
 filetype on
-" change working directory to current file directory automatically
+" auto change working directory to current file directory
 set autochdir
 " reload files changed outside of vim
 set autoread
 " case-insensitive search unless using upper case letters
 set ignorecase smartcase
-" updatetime for various operations:
-" cursor hold
-" writes to swapfiles
-" plugin triggers (if any)
-set updatetime=250
 " backspace behavior:
 " start=goes to previous line when at start of line
 " eol=goes to end of previous line when at start of line
@@ -72,12 +72,12 @@ autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
 " ---------------------------
 " FUNCTIONS
 " get path formatted by autochdir with tilde substitution
-function! TildePath()
+function! StatusLineAutochdirPath()
 	let path = &autochdir ? expand("%:p:~:h") : fnamemodify(getcwd(-1), ':~')
 	return &autochdir ? path . '/' : '[' . path . '] '
 endfunction
 " get filetype with formatting or empty string
-function! FileType()
+function! StatusLineFileType()
 	 return !empty(&filetype) ? '[' . &filetype . '] ' : ''
 endfunction
 
@@ -99,7 +99,7 @@ if !empty($SSH_CONNECTION)
 	set statusline+=(ssh)\ 
 endif
 " finish statusline
-set statusline+=%{TildePath()}%f\ %m%r%w%=%{FileType()}%L
+set statusline+=%{StatusLineAutochdirPath()}%f\ %m%r%w%=%{StatusLineFileType()}%L
 
 " ---------------------------
 " TITLE
@@ -163,8 +163,6 @@ set omnifunc=syntaxcomplete#Complete
 set completeopt=menuone
 " turn off completion messages in command line
 set shortmess+=c
-" use <CR> to accept selected menu option
-inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "<CR>"
 
 " ---------------------------
 " AUTO-COMPLETE (COMMAND LINE)
@@ -191,9 +189,11 @@ endif
 " ---------------------------
 " remember: :PlugStatus, :PlugUpdate, :PlugClean, :PlugUpgrade
 call plug#begin()
-" comment manager
+" auto-commenter
 Plug 'preservim/nerdcommenter'
-" completion manager
+" completion manager (adds tab completion)
+" by default, mucomplete tries completions in this order:
+" path, omni, keyword, dictionary, spelling
 Plug 'lifepillar/vim-mucomplete'
 " linters, fixers, and lsp
 Plug 'dense-analysis/ale'
@@ -212,14 +212,7 @@ let g:NERDCreateDefaultMappings=0
 " create space around comments
 let NERDSpaceDelims=1
 
-" PLUGIN: vim-mucomplete
-" adds tab keybind for completion
-" by default, mucomplete tries completions in this order:
-" path, omni, keyword, dictionary, spelling
-
 " PLUGIN: ale
-let g:ale_lint_on_text_changed='never'
-let g:ale_lint_on_save=1
 " disable error text at end of line
 let g:ale_virtualtext_cursor=0
 " fixers
@@ -228,14 +221,16 @@ let g:ale_fixers = {
 \	'*': ['remove_trailing_lines'],
 \}
 " linters
+let g:ale_lint_on_text_changed='never'
+let g:ale_lint_on_save=1
 let g:ale_linters_explicit=1
 let g:ale_linters = {
 \	'sh': ['shellcheck'],
 \	'python': ['flake8'],
 \	'c': ['gcc'],
 \}
-" errors to ignore
-let g:ale_python_flake8_options='--ignore=E501' " line too long
+" linter errors to ignore
+let g:ale_python_flake8_options='--ignore=E501,E302,E261'
 
 " PLUGIN: vim-gitgutter
 let g:gitgutter_update_interval=1000
@@ -265,7 +260,9 @@ set timeoutlen=2000
 " set key code timeout delay
 set ttimeoutlen=0
 " clear highlights on pressing <Esc>
-nnoremap <Esc> <Cmd>nohlsearch<CR>
+nnoremap <Esc> :nohlsearch<CR>
+" use <CR> to select item in auto-complete menu
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "<CR>"
 " auto-completing brackets, quotes, etc
 inoremap "<CR> ""<Left>
 inoremap '<CR> ''<Left>
@@ -275,7 +272,7 @@ inoremap <<CR> <><Left>
 inoremap {<CR> {<CR>}<ESC>O
 
 " ---------------------------
-" MAP LEADER KEYMAPS
+" KEYMAPS (MAP LEADER)
 " ---------------------------
 " FUNCTIONS
 " automatically set tab length in all modes with one number
@@ -287,8 +284,19 @@ function! SetTabLength()
 		execute 'set softtabstop=' . l
 		execute 'set shiftwidth=' . l
 	else
-		echo 'Invalid tab length. Positive integers only.'
+		echo 'Invalid tab length. Positive integers only'
 	endif
+endfunction
+" searching with grep and selecting with copen
+function! GrepCopen()
+	let pattern = input(':grep ')
+	if pattern == ''
+		return
+	endif
+	let quoted_pattern = shellescape(pattern)
+	silent execute 'grep ' . quoted_pattern
+	copen
+	redraw!
 endfunction
 " renaming a file in place
 function! RenameFile()
@@ -321,17 +329,6 @@ function! RenameFile()
 	endtry
 	execute 'e' fnameescape(new_file_path)
 	execute 'bd' fnameescape(old_file_path)
-endfunction
-" searching with grep and copen
-function! SearchWithGrep()
-	let pattern = input('grep -irnHI ')
-	if pattern == ''
-		return
-	endif
-	let quoted_pattern = shellescape(pattern)
-	silent execute 'grep ' . quoted_pattern
-	copen
-	redraw!
 endfunction
 
 " set leader key
@@ -401,7 +398,7 @@ nnoremap <Leader><CR> :ClaudeSend<CR>
 nnoremap <Leader>z :args `find . -type f -size -$((256*256))c -name '*'`<Left><Left>
 nnoremap <Leader>x :tabc<CR>
 nnoremap <Leader>X :tabc!<CR>
-nnoremap <Leader>c <Cmd>call nerdcommenter#Comment(0,"toggle")<CR>
+noremap <Leader>c :call nerdcommenter#Comment(0,"toggle")<CR>
 nnoremap <Leader>v :tabs<CR>:tabn<Space>
 nnoremap <Leader>b :ls<CR>:b<Space>
 nnoremap <Leader>n :e<Space>
@@ -412,7 +409,7 @@ nnoremap <Leader>, :norm<Space>
 nnoremap <Leader>. :%s///g<Left><Left><Left>
 xnoremap <Leader>. :s///g<Left><Left><Left>
 nnoremap <Leader>> :bufdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
-nnoremap <Leader>/ :call SearchWithGrep()<CR>
+nnoremap <Leader>/ :call GrepCopen()<CR>
 
 " other keys
 nnoremap <Leader><Space> :map<CR>

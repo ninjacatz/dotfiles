@@ -1,7 +1,9 @@
 #!/bin/sh
 
-if pgrep -af "ffmpeg.*-f" > /dev/null; then
-	output="rec"
+output=""
+
+if pgrep -x ffmpeg > /dev/null; then
+	output="ffmpeg"
 fi
 
 echo "$output"

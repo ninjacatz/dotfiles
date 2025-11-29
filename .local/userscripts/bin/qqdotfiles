@@ -18,7 +18,6 @@ git_dotfiles_fn() {
 git_dotfiles=(
 	"$HOME/.asoundrc"
 	"$HOME/.bashrc"
-	"$HOME/README.md"
 	"$HOME/.vim"
 	"$HOME/.config/alacritty"
 	"$HOME/.config/bspwm"

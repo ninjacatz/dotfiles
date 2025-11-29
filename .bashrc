@@ -16,7 +16,7 @@ fi
 # Adds title
 PS1="\[\033]0;\w - Bash\007\]"
 # Begin prompt
-PS1+="\[\e[36m\][\[\e[35m\]\h\[\e[36m\]] "
+PS1+="\[\e[36m\][\[\e[37m\]\h\[\e[36m\]] "
 if [[ "$EUID" -eq 0 ]]; then
 	if [[ "$HOME" == '/root' ]]; then
 		PS1+="(root) "

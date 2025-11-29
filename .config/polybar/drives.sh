@@ -1,5 +1,7 @@
 #!/bin/sh
 
+output=""
+
 output=$(df -h | awk '
   $NF ~ /^\/mnt\// {
     sub("^/mnt/", "", $NF)
