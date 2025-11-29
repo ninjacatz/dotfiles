@@ -64,8 +64,6 @@ set shell=/bin/bash shellcmdflag=-lc
 if $USER == "root" || $HOME == "/root"
 	let $PATH = trim(system('echo $PATH'))
 endif
-" TODO: disable auto-comment on new line
-autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
 
 " ---------------------------
 " STATUS LINE
@@ -138,6 +136,8 @@ set showtabline=1
 " set cursor to line in insert mode, or block otherwise
 autocmd InsertEnter * silent execute "!echo -ne '\e[5 q'"
 autocmd InsertLeave * silent execute "!echo -ne '\e[2 q'"
+" TODO: (where to put?) disable auto-comment on new line
+autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
 
 " ---------------------------
 " COLORSCHEME
@@ -336,7 +336,7 @@ let mapleader=' '
 
 " 1 -> 9
 " nnoremap <Leader>`
-" nnoremap <Leader>1
+nnoremap <Leader>1 :e ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc<CR>
 " nnoremap <Leader>2
 " nnoremap <Leader>3
 " nnoremap <Leader>4
@@ -366,7 +366,7 @@ nnoremap <Leader>u :changes<CR>
 nnoremap <Leader>i :help<Space>
 nnoremap <Leader>o :split<CR>
 nnoremap <Leader>O :vsplit<CR>
-nnoremap <Leader>p "0p
+noremap <Leader>p "0p
 nnoremap <Leader>[ :set autochdir<CR>
 nnoremap <Leader>] :cd %:p:h<CR>:set noautochdir<CR>
 nnoremap <Leader>\ :ClaudeCancel<CR>

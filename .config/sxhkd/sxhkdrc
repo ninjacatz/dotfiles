@@ -1,11 +1,14 @@
+# not using
 Scroll_Lock
 Num_Lock
 
-## KEYBINDS YOU CANT GET RID OF
+# system keybinds
 # ctrl + Alt + F1 - F3 -> tty
 # ctrl + Alt + F7 -> exit tty
 
-############ Blue Keys Top Left to Bottom Right
+# ---------------------------
+# BLUE KEYS TOP LEFT TO BOTTOM RIGHT
+# ---------------------------
 XF86ScreenSaver
 	~/.local/userscripts/bin/qqpc -lock
 XF86Battery
@@ -29,8 +32,8 @@ XF86Suspend
 	~/.local/userscripts/bin/qqbacklight -internal -{up,down}
 shift + {XF86MonBrightnessUp,XF86MonBrightnessDown}
 	~/.local/userscripts/bin/qqbacklight -external -{up,down}
-# ThinkLight (Automatic)
-# Zoom:
+# thinkLight (automatic)
+# zoom:
 XF86Launch4
 	xzoom
 {XF86AudioStop,XF86AudioPlay,XF86AudioPrev,XF86AudioNext}
@@ -38,23 +41,27 @@ XF86Launch4
 shift + {XF86AudioPrev,XF86AudioNext}
 	~/.local/userscripts/bin/qqmpv-controls -{seek-rewind,seek-forward}
 
-############ Buttons
+# ---------------------------
+# AUDIO BUTTONS
+# ---------------------------
 XF86AudioMute
 	~/.local/userscripts/bin/qqvolume -mute -toggle
 XF86AudioLowerVolume
 	~/.local/userscripts/bin/qqvolume -down
 XF86AudioRaiseVolume
 	~/.local/userscripts/bin/qqvolume -up
-# Mic Mute Button:
+# mic mute button:
 XF86Launch1
 	~/.local/userscripts/bin/qqvolume -input -toggle
-# ThinkVantage Button:
+# thinkvantage button:
 {_,shift + }XF86Launch2
 	~/.local/userscripts/bin/qqvolume -output -{default,displayport}
 XF86PowerOff
 	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/userscripts/bin/qqpc -menu
 
-############ 1 -> 0
+# ---------------------------
+# 1 -> 0
+# ---------------------------
 super + grave
 	~/.local/userscripts/bin/qqbspwm -desktop-occupied -next
 super + shift+ grave
@@ -82,7 +89,9 @@ super + equal
 super + BackSpace
 	~/.config/bspwm/bspwmrc
 
-############ Q -> P
+# ---------------------------
+# Q -> P
+# ---------------------------
 super + Tab
 super + q
 	bspc node -c
@@ -118,7 +127,9 @@ super + backslash
 super + shift + backslash
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -umount home-server; sleep 3"
 
-############ A -> L
+# ---------------------------
+# A -> L
+# ---------------------------
 super + a
 super + {_, shift + }s
 	~/.local/userscripts/bin/qqrecord -{screenshot,screencrop}
@@ -139,7 +150,9 @@ super + apostrophe
 super + Return
 	~/.local/userscripts/bin/qqbspwm -fullscreen
 
-############ Z -> M
+# ---------------------------
+# Z -> M
+# ---------------------------
 super + z
 super + {_, shift + }x
 	~/.local/userscripts/bin/qqcoffee -{on,off}
@@ -161,7 +174,9 @@ super + {_, shift + }period
 super + slash
 	~/.local/userscripts/bin/qqbspwm -floating
 
-############ OTHER
+# ---------------------------
+# OTHER KEYS
+# ---------------------------
 super + {_, shift + }space
 	~/.local/userscripts/bin/qqrofi -{app,game}
 super + {Left,Right,Up,Down}

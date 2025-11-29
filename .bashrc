@@ -1,8 +1,10 @@
+# set editor
 export EDITOR=vim
 
+# add local paths
 export PATH="$PATH:$HOME/.local/userscripts/bin:$HOME/.local/bin"
 
-# for 256 colors
+# set 256 colors
 export TERM=xterm-256color
 
 # suppress output for non-interactive sessions (needed for scp/rsync)
@@ -10,13 +12,18 @@ if [[ ! "$-" =~ i ]]; then
 	return
 fi
 
+# set tab length to 4
+tabs 4
+
 # -----------
-# Prompt
+# PROMPT
 # -----------
-# Adds title
+# add title
 PS1="\[\033]0;\w - Bash\007\]"
-# Begin prompt
+
+# begin prompt
 PS1+="\[\e[36m\][\[\e[37m\]\h\[\e[36m\]] "
+# display if root or sudo
 if [[ "$EUID" -eq 0 ]]; then
 	if [[ "$HOME" == '/root' ]]; then
 		PS1+="(root) "
@@ -24,16 +31,16 @@ if [[ "$EUID" -eq 0 ]]; then
 		PS1+="(sudo) "
 	fi
 fi
+# display if ssh connection
 if [[ -n "$SSH_CONNECTION" ]]; then
 	PS1+="(ssh) "
 fi
+# finish prompt
 PS1+="\w \[\e[0m\]>"
 
-# Set tab length to 4
-tabs 4
 
 # -----------
-# Alias
+# ALIAS
 # -----------
 # sudo vim --> sudo -E vim
 # sudo vifm --> sudo -E vifm
@@ -46,7 +53,7 @@ sudo() {
 		command sudo "$@"
 	fi
 }
-# enable color support of commands
+# enable color support for ls and grep
 alias ls='ls --color=auto --group-directories-first'
 alias grep='grep --color=always'
 # making cp and mv ask before overwriting files as user and sudo

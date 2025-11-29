@@ -1,3 +1,6 @@
+# ---------------------------
+# SETTINGS
+# ---------------------------
 window:
   opacity: 0.9
   padding:
@@ -7,7 +10,7 @@ window:
     columns: 60
     lines: 20
 scrolling:
-  history: 10000
+  history: 1000
   multiplier: 3
 cursor:
   style:
@@ -26,16 +29,12 @@ font:
   bold_italic:
     family: JetBrains Mono
     style: BoldItalic
-draw_bold_text_with_bright_colors: true
-# bell:
-  # duration: 100
-  # color: '#ffffff'
-  # command:
-    # program: paplay
-    # args: ["/usr/share/sounds/freedesktop/stereo/dialog-error.oga"]
 import:
   - /home/qq/.config/alacritty/themes/gruvbox_dark.yaml
 
+# ---------------------------
+# KEYBINDS
+# ---------------------------
 key_bindings:
   # replace all ctrl+* keybindings to ctrl+shift+*
   - { key: At, mods: Control|Shift, chars: "\x00" }
