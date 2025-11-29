@@ -82,4 +82,4 @@ if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqnfs" -umount home-server
 fi
 
-echo "Done backing up"
+read -r -p "Done backing up. Press enter to continue..."

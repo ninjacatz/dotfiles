@@ -3,8 +3,6 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-# TODO: on t420, network blue key toggles wifi external to this script, may have to press twice
-
 usage () {
 	cat <<EOF
 Usage: ${0##*/}

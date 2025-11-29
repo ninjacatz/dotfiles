@@ -3,8 +3,6 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-# TODO: on t420, backlight special key automatically changes internal backlight with or without script
-
 usage () {
 	cat <<EOF
 Usage: ${0##*/}
@@ -14,27 +12,31 @@ Options:
 EOF
 }
 
-# internal monitor backlight
-backlight_path="/sys/class/backlight/acpi_video0"
-backlight_increment=1
-
-# external monitor backlight
-external_backlight_device="/dev/i2c-7"
-external_backlight_address="0x10"
-external_backlight_increment=34
-
 # set up variables
 case "$1" in
 	-internal)
+		backlight_path="/sys/class/backlight/acpi_video0"
+		min=0
+		increment=1
+
 		backlight=$(cat "$backlight_path/brightness")
 		max=$(cat "$backlight_path/max_brightness")
+		;;
+	-keyboard)
+		keyboard_backlight_path="/sys/class/leds/tpacpi::thinklight"
 		min=0
-		increment=$backlight_increment
+		increment=255
+
+		backlight=$(cat "$keyboard_backlight_path/brightness")
+		max=$(cat "$keyboard_backlight_path/max_brightness")
 		;;
 	-external)
-		read -r backlight max <<< "$(ddccontrol -r "$external_backlight_address" dev:"$external_backlight_device" | awk -F '[/ ]' '/^Control/ {print $4, $5; exit}')"
+		external_backlight_device="/dev/i2c-7"
+		external_backlight_address="0x10"
 		min=0
-		increment=$external_backlight_increment
+		increment=34
+
+		read -r backlight max <<< "$(ddccontrol -r "$external_backlight_address" dev:"$external_backlight_device" | awk -F '[/ ]' '/^Control/ {print $4, $5; exit}')"
 		;;
 	*)
 		usage
@@ -69,14 +71,16 @@ case "$1" in
 	-internal)
 		echo "$total" | sudo "$source_dir/../qqsudo" tee "$backlight_path/brightness"
 		;;
+	-keyboard)
+		echo "$total" | sudo "$source_dir/../qqsudo" tee "$keyboard_backlight_path/brightness"
+		;;
 	-external)
 		ddccontrol -r "$external_backlight_address" -w "$total" dev:"$external_backlight_device"
+		# kill ddccontrol daemon after period of inactivity
+		(
+			sleep 20
+			sudo "$source_dir/../qqsudo" pkill ddccontrol_serv || true
+			sudo "$source_dir/../qqsudo" pkill ddcpci || true
+		) &
 		;;
 esac
-
-# kill ddccontrol daemon after period of inactivity
-(
-	sleep 20
-	sudo "$source_dir/../qqsudo" pkill ddccontrol_serv || true
-	sudo "$source_dir/../qqsudo" pkill ddcpci || true
-) &

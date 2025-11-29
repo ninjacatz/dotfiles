@@ -7,6 +7,7 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
+	-start-cons|-ac-perf
 	-mode
 		start|ac|bat
 	-governor
@@ -44,6 +45,14 @@ case "$1" in
 
 		echo "Governors for cpu0-cpu$cpu_cores:"
 		cpufreq-info | awk -F '\"' '/may decide/ {print $2}'
+		;;
+	-start-cons)
+		"$source_dir/qqcpu" -mode start
+		"$source_dir/qqcpu" -governor conservative
+		;;
+	-ac-perf)
+		"$source_dir/qqcpu" -mode ac
+		"$source_dir/qqcpu" -governor performance
 		;;
 	*)
 		usage

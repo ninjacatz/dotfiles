@@ -73,9 +73,7 @@ case "$1" in
 		"$source_dir/qqcoffee" -off
 		"$source_dir/qqvolume" -mute -on
 		"$source_dir/qqvolume" -input -off
-
-		# turn off thinklight
-		echo 0 | sudo "$source_dir/../qqsudo" tee "/sys/class/leds/tpacpi::thinklight/brightness"
+		"$source_dir/qqbacklight" -keyboard -min
 
 		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10 &
 		;;
