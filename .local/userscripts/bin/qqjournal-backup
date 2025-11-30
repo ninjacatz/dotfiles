@@ -16,7 +16,7 @@ read -r -p "Would you like to trash old journals? (y/N) " trash_answer
 read -r -p "Do you want to eject devices when done? (y/N) " eject_answer
 
 "$source_dir/qqmount" ext1
-"$source_dir/qqnfs" -mount home-server
+"$source_dir/qqnfs" -mount hs
 
 # append the contents of the converted journals to the journals in ext1
 rsync -av --ignore-existing "$journal_converted_path/" "$journal_ext1_path/"
@@ -29,7 +29,7 @@ fi
 
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1
-	"$source_dir/qqnfs" -umount home-server
+	"$source_dir/qqnfs" -umount hs
 fi
 
 echo "Done backing up"

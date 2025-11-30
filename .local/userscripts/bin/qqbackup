@@ -19,7 +19,7 @@ fi
 
 "$source_dir/qqmount" ext1
 "$source_dir/qqmount" ext2
-"$source_dir/qqnfs" -mount home-server
+"$source_dir/qqnfs" -mount hs
 
 echo "----------------------------------------------"
 echo "CLEANING PC AND HOME SERVER"
@@ -29,7 +29,7 @@ if [ "${wine_answer,,}" = "y" ]; then
 else
 	"$source_dir/qqclean"
 fi
-ssh home-server "$HOME/.local/userscripts/bin/qqclean"
+ssh hs "$HOME/.local/userscripts/bin/qqclean"
 
 echo "----------------------------------------------"
 echo "BACKING UP /mnt/nfs"
@@ -42,15 +42,15 @@ echo "----------------------------------------------"
 echo "----------------------------------------------"
 echo "BACKING UP HOME SERVER $HOME"
 echo "----------------------------------------------"
-rsync -av --delete home-server:/home/"$USER"/ /mnt/ext1/backups/disk-home-server/"$HOME"/
+rsync -av --delete hs:/home/"$USER"/ /mnt/ext1/backups/disk-home-server/"$HOME"/
 echo "----------------------------------------------"
 echo "BACKING UP HOME SERVER /etc"
 echo "----------------------------------------------"
-rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" home-server:/etc/ /mnt/ext1/backups/disk-home-server/etc/
+rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" hs:/etc/ /mnt/ext1/backups/disk-home-server/etc/
 echo "----------------------------------------------"
 echo "BACKING UP HOME SERVER /var"
 echo "----------------------------------------------"
-rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" home-server:/var/ /mnt/ext1/backups/disk-home-server/var/
+rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" hs:/var/ /mnt/ext1/backups/disk-home-server/var/
 echo "----------------------------------------------"
 echo "BACKING UP $HOME (EXCLUDING Downloads/nobackup)"
 echo "----------------------------------------------"
@@ -79,7 +79,7 @@ rsync -av --delete --delete-excluded --exclude='backups/' /mnt/ext1/ /mnt/ext2/
 if [ "${eject_answer,,}" = "y" ]; then
 	"$source_dir/qqmount" -u ext1
 	"$source_dir/qqmount" -u ext2
-	"$source_dir/qqnfs" -umount home-server
+	"$source_dir/qqnfs" -umount hs
 fi
 
 read -r -p "Done backing up. Press enter to continue..."

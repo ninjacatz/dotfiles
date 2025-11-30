@@ -23,7 +23,6 @@ XF86Suspend
 # zoom:
 XF86Launch4
 {XF86AudioStop,XF86AudioPlay,XF86AudioPrev,XF86AudioNext}
-XF86Display
 
 # ---------------------------
 # AUDIO BUTTONS
@@ -52,9 +51,9 @@ super + 6
 super + 7
 super + 8
 super + {_, shift + }9
-	~/.local/userscripts/bin/qqvolume -{down,mute -toggle}
+	~/.local/userscripts/bin/qqvolume {down,mute toggle}
 super + {_, shift + }0
-	~/.local/userscripts/bin/qqvolume -{up,input -toggle}
+	~/.local/userscripts/bin/qqvolume {up,input toggle}
 super + {_, shift + , shift + ctrl + }minus
 	~/.local/userscripts/bin/qqbacklight -{internal -down,keyboard -down,external -down}
 super + {_, shift + , shift + ctrl + }equal
@@ -66,7 +65,7 @@ super + BackSpace
 # Q -> P
 # ---------------------------
 super + {_,shift + }Tab
-	~/.local/userscripts/bin/qqpc -{lock,suspend}
+	~/.local/userscripts/bin/qqbspwm -select {next,prev}
 super + q
 	bspc node -c
 super + {_, shift + }w
@@ -96,19 +95,19 @@ super + bracketright
 super + shift + bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u ext2; sleep 3"
 super + backslash
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -mount home-server; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -mount hs; sleep 3"
 super + shift + backslash
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -umount home-server; sleep 3"
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs -umount hs; sleep 3"
 
 # ---------------------------
 # A -> L
 # ---------------------------
 super + {_, shift + }a
-	~/.local/userscripts/bin/qqvolume -output -{default,displayport}
+	~/.local/userscripts/bin/qqvolume output {default,external}
 super + {_, shift + }s
 	~/.local/userscripts/bin/qqrecord -{screenshot,screencrop}
-super + d
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqdpi; sleep 3"
+super + {_, shift + }d
+	~/.local/userscripts/bin/qqpc -{lock,suspend}
 super + {_, shift + }f
 	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo -E vifm}
 super + {_,shift + }g
@@ -117,10 +116,10 @@ super + {h,j,k,l}
 	~/.local/userscripts/bin/qqbspwm -select {west,south,north,east}
 super + shift + {h,j,k,l}
 	~/.local/userscripts/bin/qqbspwm -move {west,south,north,east}
-super + {_,shift + }semicolon
-	~/.local/userscripts/bin/qqbspwm -select {next,prev}
-super + {_,shift + }apostrophe
-	~/.local/userscripts/bin/qqbspwm -{tiled,floating}
+super + semicolon
+	~/.local/userscripts/bin/qqbspwm -tiled
+super + apostrophe
+	~/.local/userscripts/bin/qqbspwm -floating
 super + Return
 	~/.local/userscripts/bin/qqbspwm -fullscreen
 
@@ -132,22 +131,23 @@ super + {_, shift + }z
 super + {_,shift + ,shift + ctrl + }x
 	~/.local/userscripts/bin/qqdevice -trackpad -{stop,start}
 super + c
-	alacritty --config-file ~/.config/alacritty/term.yml  -e ~/.local/userscripts/bin/qqcalendar
-super + v
 	guvcview -g none
-super + b
-	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/userscripts/bin/qqbackup
-super + {_, shift + }n
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e ~/.local/userscripts/bin/{qqnotes,qqjournal}
+super + {_,shift + ,shift + ctrl + }v
+	~/.local/userscripts/bin/qqscreen -{internal,external,internal-external}
+super + {_,shift + }b
+	~/.local/userscripts/bin/qqbspwm -bar -{hide,show}
+super + {_, shift + ,shift + ctrl + }n
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e ~/.local/userscripts/bin/{qqnotes,qqcalendar,qqjournal}
 super + m
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount; sleep 3"
 super + shift + m
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount -u; sleep 3"
-super + comma
+super + {_, shift + }comma
+	~/.local/userscripts/bin/qqmpv-controls -{seek-rewind,rewind}
 super + {_, shift + }period
-	~/.local/userscripts/bin/qqbspwm -bar -{hide,show}
-super + {_,shift + ,shift + ctrl + }slash
-	~/.local/userscripts/bin/qqscreen -{internal,external,internal-external}
+	~/.local/userscripts/bin/qqmpv-controls -{seek-forward,forward}
+super + slash
+	~/.local/userscripts/bin/qqmpv-controls -play-pause
 
 # ---------------------------
 # OTHER KEYS
@@ -156,9 +156,5 @@ super + {_, shift + }space
 	~/.local/userscripts/bin/qqrofi -{app,game}
 super + {Left,Right,Up,Down}
 	~/.local/userscripts/bin/qqbspwm -size {left,right,top,bottom}
-{XF86AudioStop,XF86AudioPlay,XF86AudioPrev,XF86AudioNext}
-	~/.local/userscripts/bin/qqmpv-controls -{stop,play-pause,rewind,forward}
-shift + {XF86AudioPrev,XF86AudioNext}
-	~/.local/userscripts/bin/qqmpv-controls -{seek-rewind,seek-forward}
 XF86PowerOff
 	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/userscripts/bin/qqpc -menu

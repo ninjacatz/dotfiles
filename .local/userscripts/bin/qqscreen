@@ -2,6 +2,7 @@
 set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqlib"
 
 # NOTE: cannot have more than 4 monitors
 # NOTE: initial order of desktops inside switch statement indicates placement of desktops 1-4
@@ -14,39 +15,44 @@ Options:
 EOF
 }
 
+internal_monitor="$qqinternal_monitor"
+internal_res="$qqinternal_res"
+internal_rate="$qqinternal_rate"
+
+external_monitor="$qqexternal_monitor"
+external_res="$qqexternal_res"
+external_rate="$qqexternal_rate"
+
+parents_monitor="$qqparents_monitor"
+parents_res="$qqparents_res"
+
 old_monitors=("$(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}')")
 
 case "$1" in
 	-internal)
-		new_monitors=("LVDS-1")
+		new_monitors=("$internal_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode 1920x1080 --rate 60.00
-		"$source_dir/qqvolume" -output -default
+		--output "${new_monitors[0]}" --primary --mode $internal_res --rate $internal_rate
+		"$source_dir/qqvolume" output default
 		;;
 	-external)
-		new_monitors=("DP-1")
+		new_monitors=("$external_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode 2560x1440 --rate 75.00
-		"$source_dir/qqvolume" -output -displayport
-		;;
-	-external-1080p)
-		new_monitors=("DP-1")
-		xrandr \
-		--output "${new_monitors[0]}" --primary --mode 1920x1080 --rate 120.00
-		"$source_dir/qqvolume" -output -displayport
+		--output "${new_monitors[0]}" --primary --mode $external_res --rate $external_rate
+		"$source_dir/qqvolume" output external
 		;;
 	-internal-external)
-		new_monitors=("LVDS-1" "DP-1")
+		new_monitors=("$internal_monitor" "$external_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode 1920x1080 --rate 60.00 \
-		--output "${new_monitors[1]}" --mode 2560x1440 --rate 75.00 --above "${new_monitors[0]}"
-		"$source_dir/qqvolume" -output -displayport
+		--output "${new_monitors[0]}" --primary --mode $internal_res --rate $internal_monitor_rate \
+		--output "${new_monitors[1]}" --mode $external_res --rate $external_monitor_rate --above "${new_monitors[0]}"
+		"$source_dir/qqvolume" output external
 		;;
 	-parents)
-		new_monitors=("HDMI-1")
+		new_monitors=("$parents_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode 1920x1080 --pos 0x0 --rotate normal
-		"$source_dir/qqvolume" -output -displayport
+		--output "${new_monitors[0]}" --primary --mode $parents_res --pos 0x0 --rotate normal
+		"$source_dir/qqvolume" output external
 		;;
 	*)
 		usage

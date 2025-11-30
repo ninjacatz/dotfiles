@@ -5,5 +5,5 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 journal_path="/mnt/nfs/journal-unencoded"
 
-"$source_dir/qqnfs" -mount home-server
+"$source_dir/qqnfs" -mount hs
 vim "$journal_path"

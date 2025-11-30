@@ -396,6 +396,7 @@ qq_root_ln "$HOME"/.gtkrc-2.0
 echo "qq: Installing gui programs"
 qq_apt_add alacritty
 qq_conf_add "$backups_home_dir"/.config/alacritty
+sudo update-alternatives --set x-terminal-emulator /usr/bin/alacritty
 qq_root_ln "$HOME"/.config/alacritty
 qq_apt_add audacity
 qq_conf_add "$backups_home_dir"/.config/audacity
@@ -472,6 +473,9 @@ qq_apt_add libjpeg8
 echo "qq: Adding Downloads"
 qq_conf_add "$backups_home_dir"/Downloads
 
+echo "qq: Adding background image"
+qq_conf_add "$backups_home_dir"/bg.jpg
+
 echo "qq: Disabling t420 startup services"
 sudo update-rc.d networking disable
 sudo update-rc.d ssh disable
@@ -494,9 +498,6 @@ echo "qq: Installing usbmuxd for t420"
 qq_apt_add usbmuxd ifuse
 qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
 sudo update-rc.d usbmuxd defaults
-
-echo "qq: Setting default terminal"
-sudo update-alternatives --config x-terminal-emulator
 
 # ##########################
 # Unmounting

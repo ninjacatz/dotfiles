@@ -1,63 +1,68 @@
 #!/bin/bash
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqlib"
 
 usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-up|-down|-min|-max
-	-mute
-		-on|-off|-toggle
-	-input
-		-on|-off|-toggle
-	-output
-		-default|-displayport
+	up|down|min|max
+	mute
+		on|off|toggle
+	input
+		on|off|toggle
+	output
+		default|external
 EOF
 }
 
+default_master="$qqdefault_master"
+default_card="$qqdefault_card"
+default_hw="$qqdefault_hw"
+
+ext_master="$qqext_master"
+ext_card="$qqext_card"
+ext_hw="$qqext_hw"
+
 increment=5
-default_device="hw:0,0"
-dp_device="hw:0,3"
-default_master="Master"
-dp_master="IEC958"
+
+current_dev=$(grep hw: "$HOME/.asoundrc" | awk -F'"' '{print $2}')
+if [ "$current_dev" == "$default_hw" ]; then
+	current_master="$default_master"
+elif [ "$current_dev" == "$ext_hw" ]; then
+	current_master="$ext_master"
+else
+	echo "Not a known device"
+	exit 1
+fi
 
 case "$1" in
-	-up)
-		amixer set "$default_master" "$increment%+"
+	up)
+		amixer set "$current_master" "$increment%+"
 		;;
-	-down)
-		amixer set "$default_master" "$increment%-"
+	down)
+		amixer set "$current_master" "$increment%-"
 		;;
-	-min)
-		amixer set "$default_master" 0%
+	min)
+		amixer set "$current_master" 0%
 		;;
-	-max)
-		amixer set "$default_master" 100%
+	max)
+		amixer set "$current_master" 100%
 		;;
-	-mute)
+	mute)
 		case "$2" in
-			-on)
-				amixer set "$default_master" mute
-				amixer set "$dp_master",0 mute
+			on)
+				amixer set "$current_master" mute
 				;;
-			-off)
-				amixer set "$default_master" unmute
-				amixer set "$dp_master",0 unmute
+			off)
+				amixer set "$current_master" unmute
 				;;
-			-toggle)
-				current_dev=$(grep hw: "$HOME/.asoundrc" | awk -F'"' '{print $2}')
-				if [ "$current_dev" == "hw:0,0" ]; then
-					current_master="$default_master"
-				else
-					current_master="$dp_master"
-				fi
+			toggle)
 				if amixer get "$current_master" | grep -q '\[off\]'; then
-					amixer set "$default_master" unmute
-					amixer set "$dp_master",0 unmute
+					amixer set "$current_master" unmute
 				else
-					amixer set "$default_master" mute
-					amixer set "$dp_master",0 mute
+					amixer set "$current_master" mute
 				fi
 				;;
 			*)
@@ -66,17 +71,17 @@ case "$1" in
 				;;
 		esac
 		;;
-	-input)
+	input)
 		case "$2" in
-			-on)
+			on)
 				amixer set Capture cap
 				sudo "$source_dir/../qqsudo" chmod 660 /dev/video0
 				;;
-			-off)
+			off)
 				amixer set Capture nocap
 				sudo "$source_dir/../qqsudo" chmod 000 /dev/video0
 				;;
-			-toggle)
+			toggle)
 				if amixer get Capture | grep "\[on\]" > /dev/null; then
 					amixer set Capture nocap
 					sudo "$source_dir/../qqsudo" chmod 000 /dev/video0
@@ -91,16 +96,18 @@ case "$1" in
 				;;
 		esac
 		;;
-	-output)
+	output)
 		case "$2" in
-			-default)
-				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$default_device\"/" "$HOME/.asoundrc"
+			default)
+				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$default_hw\"/" "$HOME/.asoundrc"
+				sed -i "s/card .*/card $default_card/g" "$HOME/.asoundrc"
 				sed -i "s/master-mixer = .*/master-mixer = $default_master/" "$HOME/.config/polybar/config.ini"
 				polybar-msg cmd restart > /dev/null
 				;;
-			-displayport)
-				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$dp_device\"/" "$HOME/.asoundrc"
-				sed -i "s/master-mixer = .*/master-mixer = $dp_master/" "$HOME/.config/polybar/config.ini"
+			external)
+				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$ext_hw\"/" "$HOME/.asoundrc"
+				sed -i "s/card .*/card $ext_card/g" "$HOME/.asoundrc"
+				sed -i "s/master-mixer = .*/master-mixer = $ext_master/" "$HOME/.config/polybar/config.ini"
 				polybar-msg cmd restart > /dev/null
 				;;
 			*)

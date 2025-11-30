@@ -5,5 +5,5 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 notes_path="/mnt/nfs/notes"
 
-"$source_dir/qqnfs" -mount home-server
+"$source_dir/qqnfs" -mount hs
 vim "$notes_path"

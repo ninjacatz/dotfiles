@@ -169,8 +169,8 @@ set shortmess+=c
 " ---------------------------
 " turn on completions (and ignore case)
 set wildmenu wildignorecase
-" complete longest match, display full list
-set wildmode=longest,full
+" complete full match, display full list
+set wildmode=full
 " display pop up menu
 set wildoptions=pum
 

@@ -5,7 +5,7 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 
 journal_path="/mnt/nfs/journal-unencoded"
 
-"$source_dir/qqnfs" -mount home-server
+"$source_dir/qqnfs" -mount hs
 
 # if no arguments supplied
 if [ "$#" -eq 0 ]; then

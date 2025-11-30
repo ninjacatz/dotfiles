@@ -2,6 +2,7 @@
 set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqlib"
 
 usage () {
 	cat <<EOF
@@ -12,10 +13,9 @@ Options:
 EOF
 }
 
-# device names
-trackpads=("SynPS/2 Synaptics TouchPad")
-trackpoints=("TPPS/2 IBM TrackPoint")
-mice=("Logitech M325" "Logitech G400s")
+trackpads=("${qqtrackpads[@]}")
+trackpoints=("${qqtrackpads[@]}")
+mice=("${qqmice[@]}")
 
 case "$1" in
 	-trackpad|-trackpoint|-mouse)

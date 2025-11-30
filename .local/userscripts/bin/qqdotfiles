@@ -91,7 +91,7 @@ case "$1" in
 		;;
 	home-server-sync)
 		for file in "${home_server_dotfiles[@]}"; do
-			rsync -av "$file" home-server:"$(dirname "$file")"
+			rsync -av "$file" hs:"$(dirname "$file")"
 		done
 	;;
 *)

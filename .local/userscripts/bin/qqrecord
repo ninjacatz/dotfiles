@@ -2,6 +2,7 @@
 set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqlib"
 
 usage () {
 	cat <<EOF
@@ -30,12 +31,13 @@ ffmpeg_record_check () {
 	fi
 }
 
+mic_audio="$qqmic_audio"
+
 dir="$HOME/Downloads/recordings"
 video_command=(-f x11grab -thread_queue_size 512 -r 30 -i)
 video_codecs=(-c:v libx264 -preset ultrafast -pix_fmt yuv420p)
 audio_command=(-f alsa -use_wallclock_as_timestamps 1 -thread_queue_size 512 -i)
 audio_codecs=(-c:a libmp3lame -b:a 128k -ar 44100)
-mic_audio="hw:0,0"
 
 case "$1" in
 	-screenshot)

@@ -58,8 +58,8 @@ case "$1" in
 		esac
 		;;
 	-logout)
-		"$source_dir/qqnet" -stop
-		"$source_dir/qqcoffee" -off
+		"$source_dir/qqnet" -stop || true
+		"$source_dir/qqcoffee" -off || true
 		rm -f /tmp/bspwm_first_run
 		pkill -KILL -u "$USER"
 		;;
@@ -70,18 +70,17 @@ case "$1" in
 		sudo "$source_dir/../qqsudo" shutdown -h now
 		;;
 	-lock)
-		"$source_dir/qqcoffee" -off
-		"$source_dir/qqvolume" -mute -on
-		"$source_dir/qqvolume" -input -off
-		"$source_dir/qqbacklight" -keyboard -min
+		"$source_dir/qqcoffee" -off || true
+		"$source_dir/qqvolume" mute on || true
+		"$source_dir/qqvolume" input off || true
+		"$source_dir/qqbacklight" -keyboard -min || true
 
 		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10 &
 		;;
 	-suspend)
 		"$source_dir/qqpc" -lock
 
-		"$source_dir/qqcoffee" -off
-		"$source_dir/qqnet" -stop
+		"$source_dir/qqnet" -stop || true
 
 		sudo "$source_dir/../qqsudo" pm-suspend
 
@@ -92,8 +91,7 @@ case "$1" in
 	-hibernate)
 		"$source_dir/qqpc" -lock
 
-		"$source_dir/qqcoffee" -off
-		"$source_dir/qqnet" -stop
+		"$source_dir/qqnet" -stop || true
 
 		sudo "$source_dir/../qqsudo" pm-hibernate
 
