@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# file: qqvolume
 qqdefault_master="Master"
 qqdefault_card="0"
 qqdefault_device="0"
@@ -10,10 +9,8 @@ qqext_card="0"
 qqext_device="3"
 qqext_hw="hw:$qqext_card,$qqext_device"
 
-# file: qqrecord
 qqmic_audio="$qqdefault_hw"
 
-# file: qqscreen
 qqinternal_monitor="LVDS-1"
 qqinternal_res="1920x1080"
 qqinternal_rate="60.00"
@@ -23,19 +20,16 @@ qqexternal_rate="75.00"
 qqparents_monitor="HDMI-1"
 qqparents_res="1920x1080"
 
-# file: qqbacklight
 qqbacklight_path="/sys/class/backlight/acpi_video0"
 qqkeyboard_backlight_path="/sys/class/leds/tpacpi::thinklight"
 qqexternal_backlight_device="/dev/i2c-7"
 qqexternal_backlight_address="0x10"
 
-# file: qqdevice
 qqmice=("Logitech M325" "Logitech G400s")
 qqtrackpads=("SynPS/2 Synaptics TouchPad")
 qqtrackpoints=("TPPS/2 IBM TrackPoint")
 
 # asus
-# # file: qqvolume
 # qqdefault_master="Master"
 # qqdefault_card="2"
 # qqdefault_device="0"
@@ -45,10 +39,8 @@ qqtrackpoints=("TPPS/2 IBM TrackPoint")
 # qqext_device="3"
 # qqext_hw="hw:$qqext_card,$qqext_device"
 
-# # file: qqrecord
 # qqmic_audio="$qqdefault_hw"
 
-# # file: qqscreen
 # qqinternal_monitor="eDP"
 # qqinternal_res="2560x1440"
 # qqinternal_rate="165.00"
@@ -58,13 +50,11 @@ qqtrackpoints=("TPPS/2 IBM TrackPoint")
 # qqparents_monitor="???"
 # qqparents_res="???"
 
-# # file: qqbacklight
 # qqbacklight_path="/sys/class/backlight/amd_gpu_bl0"
 # qqkeyboard_backlight_path="???"
 # qqexternal_backlight_device="/dev/i2c-6"
 # qqexternal_backlight_address="0x10"
 
-# # file: qqdevice
 # qqmice=("Logitech M325" "Logitech G400s")
 # qqtrackpads=("ASUE1209:00 04F3:319F Touchpad")
 # qqtrackpoints=()

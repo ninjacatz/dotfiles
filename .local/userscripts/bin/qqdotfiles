@@ -3,14 +3,6 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-usage () {
-	cat <<EOF
-Usage: ${0##*/}
-Options:
-	git|home-server-sync
-EOF
-}
-
 git_dotfiles_fn() {
 	git --git-dir="$HOME"/.dotfiles/ --work-tree="$HOME" "$@"
 }
@@ -43,59 +35,31 @@ git_exclude=(
 	".config/vifm/scripts"
 )
 
-home_server_dotfiles=(
-	"$HOME/.bashrc"
-	"$HOME/.profile"
-	"$HOME/.vim/autoload"
-	"$HOME/.vim/colors"
-	"$HOME/.vim/plugged"
-	"$HOME/.vim/vimrc"
-	"$HOME/.vim/claude-api.key"
-	"$HOME/.config/vifm/colors"
-	"$HOME/.config/vifm/scripts"
-	"$HOME/.config/vifm/vifmrc"
-	"$HOME/.config/mimeapps.list"
-	"$HOME/.local/userscripts"
-	"$HOME/.local/bin"
-)
 
-case "$1" in
-	git)
-		if [[ "$2" == "commit" ]]; then
-			# add excluded files to ~/.dotfiles/info/exclude
-			for file in "${git_exclude[@]}"; do
-				if ! grep -Fxq "$file" "$HOME/.dotfiles/info/exclude"; then
-					echo "$file" >> "$HOME/.dotfiles/info/exclude"
-				fi
-			done
-			# remove any excluded files (if they were added before defined in ~/.dotfiles/info/exclude)
-			for file in "${git_exclude[@]}"; do
-				if git_dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
-					git_dotfiles_fn rm -r --cached "$HOME/$file"
-				fi
-			done
-			# add all dotfiles
-			for file in "${git_dotfiles[@]}"; do
-				git_dotfiles_fn add "$file"
-			done
-			# check if there are changes to commit and then commit them
-			if ! git_dotfiles_fn diff --cached --quiet; then
-				git_dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
-			else
-				echo "No changes to commit"
-			fi
-		# otherwise, pass all arguments directly to git
-		else
-			git_dotfiles_fn "${@:2}"
+if [[ "$1" == "commit" ]]; then
+	# add excluded files to ~/.dotfiles/info/exclude
+	for file in "${git_exclude[@]}"; do
+		if ! grep -Fxq "$file" "$HOME/.dotfiles/info/exclude"; then
+			echo "$file" >> "$HOME/.dotfiles/info/exclude"
 		fi
-		;;
-	home-server-sync)
-		for file in "${home_server_dotfiles[@]}"; do
-			rsync -av "$file" hs:"$(dirname "$file")"
-		done
-	;;
-*)
-	usage
-	exit 1
-	;;
-esac
+	done
+	# remove any excluded files (if they were added before defined in ~/.dotfiles/info/exclude)
+	for file in "${git_exclude[@]}"; do
+		if git_dotfiles_fn ls-files --error-unmatch "$HOME/$file" > /dev/null 2>&1; then
+			git_dotfiles_fn rm -r --cached "$HOME/$file"
+		fi
+	done
+	# add all dotfiles
+	for file in "${git_dotfiles[@]}"; do
+		git_dotfiles_fn add "$file"
+	done
+	# check if there are changes to commit and then commit them
+	if ! git_dotfiles_fn diff --cached --quiet; then
+		git_dotfiles_fn commit -m "Automated commit $(date '+%Y-%m-%d %H:%M:%S')"
+	else
+		echo "No changes to commit"
+	fi
+# otherwise, pass all arguments directly to git
+else
+	git_dotfiles_fn "${@:1}"
+fi

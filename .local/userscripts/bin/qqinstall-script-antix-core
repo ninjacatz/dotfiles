@@ -2,7 +2,7 @@
 
 # NOTE: at the end of script, do the following
 # install lm-sensors and macchanger manually
-# make sure /etc/fstab and /etc/default/grub have swap setup (and timeout=0 if want)
+# run qqasus-config if necessary
 
 usage () {
 	cat <<EOF
@@ -173,6 +173,7 @@ qq_root_ln "$HOME"/.config/mimeapps.list
 qq_conf_add "$backups_home_dir"/.local/bin
 qq_conf_add "$backups_home_dir"/.local/userscripts
 qq_root_ln "$backups_home_dir"/.local/userscripts
+qq_conf_add "$backups_home_dir"/.local/asus-config
 qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
 qq_su_conf_add_ow "$backups_etc_dir"/inputrc
 qq_su_conf_add_ow "$backups_etc_dir"/resolvconf/resolv.conf.d/head

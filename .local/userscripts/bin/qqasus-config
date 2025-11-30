@@ -1,0 +1,41 @@
+#!/bin/bash
+set -eo pipefail
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	on|off
+EOF
+}
+
+case "$1" in
+	on)
+		if [ ! -f ~/.asoundrc.backup ]; then
+			mv ~/.asoundrc ~/.asoundrc.backup
+			cp ~/.local/asus-config/.asoundrc ~/.asoundrc
+		fi
+
+		# comment before "# asus"
+		sed -i '/# asus/,$!s/^qq/# qq/' ~/.local/userscripts/qqlib
+		# uncomment after "# asus"
+		sed -i '/# asus/,$s/^# qq/qq/' ~/.local/userscripts/qqlib
+		;;
+	off)
+		if [ -f ~/.asoundrc.backup ]; then
+			rm ~/.asoundrc
+			mv ~/.asoundrc.backup ~/.asoundrc
+		fi
+
+		# uncomment before "# asus"
+		sed -i '/# asus/,$!s/^# qq/qq/' ~/.local/userscripts/qqlib
+		# comment after "# asus"
+		sed -i '/# asus/,$s/^qq/# qq/' ~/.local/userscripts/qqlib
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac

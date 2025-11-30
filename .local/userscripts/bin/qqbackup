@@ -13,8 +13,8 @@ if [ "${github_answer,,}" = "y" ]; then
 	echo "----------------------------------------------"
 	echo "PUSHING DOTFILES TO GITHUB"
 	echo "----------------------------------------------"
-	"$source_dir/qqdotfiles" git commit
-	"$source_dir/qqdotfiles" git push
+	"$source_dir/qqdotfiles" commit
+	"$source_dir/qqdotfiles" push
 fi
 
 "$source_dir/qqmount" ext1
@@ -38,7 +38,25 @@ rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
 echo "----------------------------------------------"
 echo "SYNCING DOTFILES TO HOME SERVER"
 echo "----------------------------------------------"
-"$source_dir/qqdotfiles" home-server-sync
+home_server_dotfiles=(
+	"$HOME/.bashrc"
+	"$HOME/.profile"
+	"$HOME/.vim/autoload"
+	"$HOME/.vim/colors"
+	"$HOME/.vim/plugged"
+	"$HOME/.vim/vimrc"
+	"$HOME/.vim/claude-api.key"
+	"$HOME/.config/vifm/colors"
+	"$HOME/.config/vifm/scripts"
+	"$HOME/.config/vifm/vifmrc"
+	"$HOME/.config/mimeapps.list"
+	"$HOME/.local/userscripts"
+	"$HOME/.local/asus-config"
+	"$HOME/.local/bin"
+)
+for file in "${home_server_dotfiles[@]}"; do
+	rsync -av "$file" hs:"$(dirname "$file")"
+done
 echo "----------------------------------------------"
 echo "BACKING UP HOME SERVER $HOME"
 echo "----------------------------------------------"
