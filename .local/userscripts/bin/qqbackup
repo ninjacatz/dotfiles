@@ -22,20 +22,6 @@ fi
 "$source_dir/qqnfs" -mount hs
 
 echo "----------------------------------------------"
-echo "CLEANING PC AND HOME SERVER"
-echo "----------------------------------------------"
-if [ "${wine_answer,,}" = "y" ]; then
-	"$source_dir/qqclean" -delete-wine
-else
-	"$source_dir/qqclean"
-fi
-ssh hs "$HOME/.local/userscripts/bin/qqclean"
-
-echo "----------------------------------------------"
-echo "BACKING UP /mnt/nfs"
-echo "----------------------------------------------"
-rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
-echo "----------------------------------------------"
 echo "SYNCING DOTFILES TO HOME SERVER"
 echo "----------------------------------------------"
 home_server_dotfiles=(
@@ -51,12 +37,51 @@ home_server_dotfiles=(
 	"$HOME/.config/vifm/vifmrc"
 	"$HOME/.config/mimeapps.list"
 	"$HOME/.local/userscripts"
-	"$HOME/.local/asus-config"
 	"$HOME/.local/bin"
 )
 for file in "${home_server_dotfiles[@]}"; do
 	rsync -av "$file" hs:"$(dirname "$file")"
 done
+echo "----------------------------------------------"
+echo "SYNCING DOTFILES TO OTHER PC"
+echo "----------------------------------------------"
+if [ "$1" == "-other-pc" ]; then
+	other_pc="qq@192.168.1.7"
+	other_pc_dotfiles=(
+		"$HOME/.asoundrc"
+		"$HOME/.gtkrc-2.0"
+		"$HOME/.config/alacritty"
+		"$HOME/.config/bspwm"
+		"$HOME/.config/gtk-2.0"
+		"$HOME/.config/gtk-3.0"
+		"$HOME/.config/mpv"
+		"$HOME/.config/polybar"
+		"$HOME/.config/sxhkd"
+		"$HOME/.config/zathura"
+		"$HOME/.local/asus-config"
+	)
+	for file in "${home_server_dotfiles[@]}"; do
+		rsync -av "$file" "$other_pc":"$(dirname "$file")"
+	done
+	for file in "${other_pc_dotfiles[@]}"; do
+		rsync -av "$file" "$other_pc":"$(dirname "$file")"
+	done
+else
+	echo "Skipping..."
+fi
+echo "----------------------------------------------"
+echo "CLEANING PC AND HOME SERVER"
+echo "----------------------------------------------"
+if [ "${wine_answer,,}" = "y" ]; then
+	"$source_dir/qqclean" -delete-wine
+else
+	"$source_dir/qqclean"
+fi
+ssh hs "$HOME/.local/userscripts/bin/qqclean"
+echo "----------------------------------------------"
+echo "BACKING UP /mnt/nfs"
+echo "----------------------------------------------"
+rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
 echo "----------------------------------------------"
 echo "BACKING UP HOME SERVER $HOME"
 echo "----------------------------------------------"

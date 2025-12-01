@@ -20,41 +20,14 @@ qqexternal_rate="75.00"
 qqparents_monitor="HDMI-1"
 qqparents_res="1920x1080"
 
-qqbacklight_path="/sys/class/backlight/acpi_video0"
+qqinternal_backlight_path="/sys/class/backlight/acpi_video0"
+qqinternal_increment="1"
 qqkeyboard_backlight_path="/sys/class/leds/tpacpi::thinklight"
+qqkeyboard_increment="255"
 qqexternal_backlight_device="/dev/i2c-7"
 qqexternal_backlight_address="0x10"
+qqexternal_increment="34"
 
 qqmice=("Logitech M325" "Logitech G400s")
 qqtrackpads=("SynPS/2 Synaptics TouchPad")
 qqtrackpoints=("TPPS/2 IBM TrackPoint")
-
-# asus
-# qqdefault_master="Master"
-# qqdefault_card="2"
-# qqdefault_device="0"
-# qqdefault_hw="hw:$qqdefault_card,$qqdefault_device"
-# qqext_master="IEC958"
-# qqext_card="1"
-# qqext_device="3"
-# qqext_hw="hw:$qqext_card,$qqext_device"
-
-# qqmic_audio="$qqdefault_hw"
-
-# qqinternal_monitor="eDP"
-# qqinternal_res="2560x1440"
-# qqinternal_rate="165.00"
-# qqexternal_monitor="HDMI-A-0"
-# qqexternal_res="2560x1440"
-# qqexternal_rate="144.00"
-# qqparents_monitor="???"
-# qqparents_res="???"
-
-# qqbacklight_path="/sys/class/backlight/amd_gpu_bl0"
-# qqkeyboard_backlight_path="???"
-# qqexternal_backlight_device="/dev/i2c-6"
-# qqexternal_backlight_address="0x10"
-
-# qqmice=("Logitech M325" "Logitech G400s")
-# qqtrackpads=("ASUE1209:00 04F3:319F Touchpad")
-# qqtrackpoints=()

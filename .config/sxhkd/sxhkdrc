@@ -47,9 +47,13 @@ super + shift + {1,2,3,4}
 super + shift + ctrl + {1,2,3,4}
 	for node in $(bspc query -N -d); do bspc node "$node" -d {1,2,3,4}; done
 super + 5
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.vim/vimrc ~/.config/vifm/vifmrc ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini ~/.config/zathura/zathurarc ~/.config/alacritty/alacritty.yml ~/.config/mpv/mpv.conf ~/.config/mpv/input.conf ~/.asoundrc
 super + 6
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sudo -E vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/udev/hwdb.d/99-thinkpad-extra.hwdb
 super + 7
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.local/userscripts/bin
 super + 8
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim /mnt/nfs/dev/textbook-the-modern-approach-c
 super + {_, shift + }9
 	~/.local/userscripts/bin/qqvolume {down,mute toggle}
 super + {_, shift + }0

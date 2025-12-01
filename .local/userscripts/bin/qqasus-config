@@ -11,31 +11,8 @@ Options:
 EOF
 }
 
-case "$1" in
-	on)
-		if [ ! -f ~/.asoundrc.backup ]; then
-			mv ~/.asoundrc ~/.asoundrc.backup
-			cp ~/.local/asus-config/.asoundrc ~/.asoundrc
-		fi
+trash ~/.asoundrc || true
+cp ~/.local/asus-config/.asoundrc ~/.asoundrc
 
-		# comment before "# asus"
-		sed -i '/# asus/,$!s/^qq/# qq/' ~/.local/userscripts/qqlib
-		# uncomment after "# asus"
-		sed -i '/# asus/,$s/^# qq/qq/' ~/.local/userscripts/qqlib
-		;;
-	off)
-		if [ -f ~/.asoundrc.backup ]; then
-			rm ~/.asoundrc
-			mv ~/.asoundrc.backup ~/.asoundrc
-		fi
-
-		# uncomment before "# asus"
-		sed -i '/# asus/,$!s/^# qq/qq/' ~/.local/userscripts/qqlib
-		# comment after "# asus"
-		sed -i '/# asus/,$s/^qq/# qq/' ~/.local/userscripts/qqlib
-		;;
-	*)
-		usage
-		exit 1
-		;;
-esac
+trash ~/.local/userscripts/qqlib || true
+cp ~/.local/asus-config/qqlib ~/.local/userscripts/qqlib

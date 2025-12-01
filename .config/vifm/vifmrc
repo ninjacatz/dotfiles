@@ -105,8 +105,8 @@ mark H /mnt/ext1/backups/disk/home/qq
 mark r /root
 mark R /mnt/ext1/backups/disk/root
 
-mark g /home/qq/Games
-mark G /mnt/ext1/backups/disk/home/qq/Games
+mark g /home/qq/games
+mark G /mnt/ext1/Games
 
 mark c ~/.config
 mark C /mnt/ext1/backups/disk/home/qq/.config

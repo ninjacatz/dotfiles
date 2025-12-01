@@ -11,6 +11,7 @@ Options:
 EOF
 }
 
+games_path="$HOME/games"
 dpi=$(awk '/dpi:/ {print $2}' "$HOME/.Xresources")
 font="jetbrains mono 13"
 theme="$HOME/.config/rofi/themes/gruvbox-dark.rasi"
@@ -35,7 +36,7 @@ case $1 in
 			name=$(awk -F= '/^Name=/ {print $2}' "$path")
 			exec_line=$(awk -F= '/^Exec=/ {print $2}' "$path")
 			names_and_execs+=("$name@$(dirname "$path")${exec_line:1}")
-		done < <(find ~/Games -maxdepth 2 -name "*.desktop")
+		done < <(find "$games_path" -maxdepth 2 -name "*.desktop")
 		mapfile -t names_and_execs < <(printf "%s\n" "${names_and_execs[@]}" | sort)
 
 		# display names and select with rofi
@@ -60,4 +61,3 @@ case $1 in
 		exit 1
 		;;
 esac
-

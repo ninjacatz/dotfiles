@@ -54,6 +54,8 @@ case "$1" in
 		fi
 		;;
 	-umount)
+		read -r -p "Do you want to eject nfs? (y/N) " nfs_answer
+
 		# check for sshfs ssh process
 		if pgrep -a ssh | grep "\-s sftp" > /dev/null; then
 			echo "unmounting nfs via sshfs..."
@@ -62,8 +64,12 @@ case "$1" in
 			echo "success"
 		else
 			echo "nfs not mounted via sshfs"
+		fi
+
+		if ! [ "${nfs_answer,,}" = "y" ]; then
 			exit 0
 		fi
+
 		ssh "$2" "cat > ~/umount_nfs.sh" <<-EOF
 			set -eo pipefail
 			sudo ~/.local/userscripts/qqsudo service nfs-kernel-server stop > /dev/null

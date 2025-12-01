@@ -10,9 +10,12 @@ git_dotfiles_fn() {
 git_dotfiles=(
 	"$HOME/.asoundrc"
 	"$HOME/.bashrc"
+	"$HOME/.gtkrc-2.0"
 	"$HOME/.vim"
 	"$HOME/.config/alacritty"
 	"$HOME/.config/bspwm"
+	"$HOME/.config/gtk-2.0"
+	"$HOME/.config/gtk-3.0"
 	"$HOME/.config/mpv"
 	"$HOME/.config/polybar"
 	"$HOME/.config/sxhkd"

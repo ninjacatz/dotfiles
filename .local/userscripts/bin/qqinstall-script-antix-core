@@ -8,7 +8,7 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-t420|-home-server
+	-t420|-asus|-home-server
 EOF
 }
 
@@ -18,7 +18,7 @@ if [ "$(id -u)" -eq 0 ]; then
 fi
 
 # if no correct arguments supplied
-if [[ "$1" != "-home-server" && "$1" != "-t420" ]]; then
+if [[ "$1" != "-home-server" && "$1" != "-asus" && "$1" != "-t420" ]]; then
 	usage
 	exit 1
 fi
@@ -173,7 +173,6 @@ qq_root_ln "$HOME"/.config/mimeapps.list
 qq_conf_add "$backups_home_dir"/.local/bin
 qq_conf_add "$backups_home_dir"/.local/userscripts
 qq_root_ln "$backups_home_dir"/.local/userscripts
-qq_conf_add "$backups_home_dir"/.local/asus-config
 qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
 qq_su_conf_add_ow "$backups_etc_dir"/inputrc
 qq_su_conf_add_ow "$backups_etc_dir"/resolvconf/resolv.conf.d/head
@@ -189,9 +188,6 @@ if grep swap /etc/fstab > /dev/null; then
 	sudo sed -i "/GRUB_CMDLINE_LINUX_DEFAULT=/ { /\(resume=UUID=$swap_uuid\)/! s/\"$/ resume=UUID=$swap_uuid\"/ }" /etc/default/grub
 fi
 sudo update-grub
-
-echo "qq: Adding user to input group"
-sudo usermod -aG input "$USER"
 
 echo "qq: Setting up ufw"
 sudo ufw enable
@@ -355,12 +351,12 @@ if [ "$1" == "-home-server" ]; then
 
 	echo "qq: Done installing!"
 
-	# exit so t420 install doesn't run
+	# exit at end of home server install
 	exit 0
 fi
 
 # ##########################
-# T420 ONLY BEYOND THIS POINT
+# NON HOME SERVER ONLY BEYOND THIS POINT
 # ##########################
 
 # ##########################
@@ -450,7 +446,7 @@ qq_conf_add "$backups_home_dir"/.config/zathura
 # Copy/Install Games
 # ##########################
 echo "qq: Adding game files"
-qq_conf_add "$backups_home_dir"/Games
+qq_conf_add "$backups_home_dir"/games
 
 echo "qq: Installing game programs"
 qq_apt_add dosbox
@@ -468,8 +464,14 @@ qq_apt_add libcrypt1:i386
 # for jedi outcast singleplayer
 qq_apt_add libjpeg8
 
+echo "qq: Opening ports for games"
+# bf1942
+sudo ufw allow 14567
+# source
+sudo ufw allow 27015
+
 # ##########################
-# Extra
+# Extra (Not home server)
 # ##########################
 echo "qq: Adding Downloads"
 qq_conf_add "$backups_home_dir"/Downloads
@@ -477,28 +479,54 @@ qq_conf_add "$backups_home_dir"/Downloads
 echo "qq: Adding background image"
 qq_conf_add "$backups_home_dir"/bg.jpg
 
-echo "qq: Disabling t420 startup services"
+echo "qq: Adding user to input group"
+sudo usermod -aG input "$USER"
+
+echo "qq: Disabling startup services"
 sudo update-rc.d networking disable
 sudo update-rc.d ssh disable
 
-echo "qq: Adding t420 specific configs"
+echo "qq: Adding extra configs"
 qq_conf_add "$backups_home_dir"/.asoundrc
 qq_conf_add "$backups_home_dir"/.dotfiles
 qq_conf_add "$backups_home_dir"/README.md
-
-echo "qq: Fixing t420 broken keys"
-qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
-sudo udevadm hwdb --update
-sudo udevadm trigger /dev/input/event4
+qq_conf_add "$backups_home_dir"/.local/asus-config
 
 echo "qq: Extra configuring of ssh"
 qq_conf_add_ow "$backups_home_dir"/.ssh
 sudo ufw allow ssh
 
-echo "qq: Installing usbmuxd for t420"
+echo "qq: Installing usbmuxd"
 qq_apt_add usbmuxd ifuse
 qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
 sudo update-rc.d usbmuxd defaults
+
+# ##########################
+# T420
+# ##########################
+if [ "$1" == "-t420" ]; then
+	echo "qq: Fixing t420 broken keys"
+	qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
+	sudo udevadm hwdb --update
+	sudo udevadm trigger /dev/input/event4
+fi
+
+# ##########################
+# Asus G15
+# ##########################
+if [ "$1" == "-asus" ]; then
+	echo "qq: Adding asus laptop configs"
+	trash ~/.asoundrc
+	cp ~/.local/asus-config/.asoundrc ~/.asoundrc
+	trash ~/.local/userscripts/qqlib
+	cp ~/.local/asus-config/qqlib ~/.local/userscripts/qqlib
+
+	echo "qq: Switching to kernel 6.1 for asus"
+	qq_apt_add linux-image-6.1.90-antix.1-amd64-smp
+	sudo apt purge linux-image-5.10* -y
+	# qq_apt_add mesa-vulkan-drivers
+	# qq_apt_add nvidia-driver nvidia-smi
+fi
 
 # ##########################
 # Unmounting
