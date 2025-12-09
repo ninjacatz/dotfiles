@@ -7,7 +7,7 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-audio|-video
+	audio|video
 		"URL"
 EOF
 }
@@ -18,17 +18,17 @@ if [ $# -ne 2 ]; then
 	exit 1
 fi
 
-mkdir -p "$HOME"/Downloads/yt-dlp
-cd "$HOME"/Downloads/yt-dlp
+mkdir -p "$HOME/downloads/yt-dlp"
+cd "$HOME/downloads/yt-dlp"
 
 case "$1" in
-	-audio)
+	audio)
 		# Best audio quality
-		yt-dlp --cookies-from-browser firefox:"$HOME"/.librewolf --extract-audio --audio-format mp3 --audio-quality 0 --no-playlist "$2"
+		yt-dlp --cookies-from-browser firefox:"$HOME/.librewolf" --extract-audio --audio-format mp3 --audio-quality 0 --no-playlist "$2"
 		;;
-	-video)
+	video)
 		# Best video quality
-		yt-dlp --cookies-from-browser firefox:"$HOME"/.librewolf --format "bestvideo[height<=1080]+bestaudio" --no-playlist "$2"
+		yt-dlp --cookies-from-browser firefox:"$HOME/.librewolf" --format "bestvideo[height<=1080]+bestaudio" --no-playlist "$2"
 		;;
 	*)
 		usage

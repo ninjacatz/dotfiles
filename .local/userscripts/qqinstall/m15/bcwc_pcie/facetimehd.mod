@@ -1,0 +1,2 @@
+/home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_ddr.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_hw.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_drv.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_ringbuf.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_isp.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_v4l2.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_buffer.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/fthd_debugfs.o
+

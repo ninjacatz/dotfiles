@@ -1,0 +1,1 @@
+cmd_/home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/facetimehd.ko := ld -r -m elf_x86_64 -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T scripts/module.lds -o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/facetimehd.ko /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/facetimehd.o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/facetimehd.mod.o;  true

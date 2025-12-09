@@ -2,25 +2,59 @@
 set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqssh"
 
-if [ -d ~/.wine ]; then
-	read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
-fi
+hs_or_lhs="$qqssh_hs_or_lhs"
+other="$qqssh_other"
+echo "ssh: $hs_or_lhs"
+
+read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
+read -r -p "Do you want to back up another pc (must set ip in ssh)? (y/N) " other_pc_answer
 read -r -p "Push dotfile updates to GitHub? (y/N) " github_answer
 read -r -p "Do you want to eject devices after backup? (y/N) " eject_answer
 
-if [ "${github_answer,,}" = "y" ]; then
-	echo "----------------------------------------------"
-	echo "PUSHING DOTFILES TO GITHUB"
-	echo "----------------------------------------------"
-	"$source_dir/qqdotfiles" commit
-	"$source_dir/qqdotfiles" push
-fi
-
 "$source_dir/qqmount" ext1
 "$source_dir/qqmount" ext2
-"$source_dir/qqnfs" -mount hs
+"$source_dir/qqnfs" 1 mount
+"$source_dir/qqnfs" 2 mount
 
+echo "----------------------------------------------"
+echo "CLEANING ALL PC"
+echo "----------------------------------------------"
+if [ "${wine_answer,,}" = "y" ]; then
+	echo "CURRENT PC:"
+	"$source_dir/qqclean" wine
+	echo "HOME SERVER:"
+	ssh "$hs_or_lhs" "$HOME/.local/userscripts/bin/qqclean wine"
+	if [ "${other_pc_answer,,}" = "y" ]; then
+		echo "OTHER PC:"
+		ssh -t "$other" "$HOME/.local/userscripts/bin/qqclean wine"
+	fi
+else
+	echo "CURRENT PC:"
+	"$source_dir/qqclean"
+	echo "HOME SERVER:"
+	ssh "$hs_or_lhs" "$HOME/.local/userscripts/bin/qqclean"
+	if [ "${other_pc_answer,,}" = "y" ]; then
+		echo "OTHER PC:"
+		ssh -t "$other" "$HOME/.local/userscripts/bin/qqclean"
+	fi
+fi
+echo "----------------------------------------------"
+echo "BACKING UP HOSTNAME SPECIFIC CONFIGS"
+echo "----------------------------------------------"
+cp ~/.asoundrc ~/.local/userscripts/qqinstall/"$HOSTNAME"/.asoundrc
+cp ~/.config/sxhkd/sxhkdrc-fn-keys ~/.local/userscripts/qqinstall/"$HOSTNAME"/sxhkdrc-fn-keys
+cp ~/.local/userscripts/qqlib ~/.local/userscripts/qqinstall/"$HOSTNAME"/qqlib
+echo "----------------------------------------------"
+echo "PUSHING DOTFILES TO GITHUB"
+echo "----------------------------------------------"
+if [ "${github_answer,,}" = "y" ]; then
+	"$source_dir/qqdotfiles" commit
+	"$source_dir/qqdotfiles" push
+else
+	echo "Skipping..."
+fi
 echo "----------------------------------------------"
 echo "SYNCING DOTFILES TO HOME SERVER"
 echo "----------------------------------------------"
@@ -40,89 +74,65 @@ home_server_dotfiles=(
 	"$HOME/.local/bin"
 )
 for file in "${home_server_dotfiles[@]}"; do
-	rsync -av "$file" hs:"$(dirname "$file")"
+	rsync -av --delete "$file" "$hs_or_lhs":"$(dirname "$file")"
 done
 echo "----------------------------------------------"
 echo "SYNCING DOTFILES TO OTHER PC"
 echo "----------------------------------------------"
-if [ "$1" == "-other-pc" ]; then
-	other_pc="qq@192.168.1.7"
-	other_pc_dotfiles=(
-		"$HOME/.asoundrc"
-		"$HOME/.gtkrc-2.0"
-		"$HOME/.config/alacritty"
-		"$HOME/.config/bspwm"
-		"$HOME/.config/gtk-2.0"
-		"$HOME/.config/gtk-3.0"
-		"$HOME/.config/mpv"
-		"$HOME/.config/polybar"
-		"$HOME/.config/sxhkd"
-		"$HOME/.config/zathura"
-		"$HOME/.local/asus-config"
-	)
+other_pc_dotfiles=(
+	"$HOME/.asoundrc"
+	"$HOME/.gtkrc-2.0"
+	"$HOME/.ssh"
+	"$HOME/.config/alacritty"
+	"$HOME/.config/bspwm"
+	"$HOME/.config/gtk-2.0"
+	"$HOME/.config/gtk-3.0"
+	"$HOME/.config/mpv"
+	"$HOME/.config/polybar"
+	"$HOME/.config/sxhkd"
+	"$HOME/.config/user-dirs.dirs"
+	"$HOME/.config/zathura"
+)
+if [ "${other_pc_answer,,}" = "y" ]; then
 	for file in "${home_server_dotfiles[@]}"; do
-		rsync -av "$file" "$other_pc":"$(dirname "$file")"
+		rsync -av --delete "$file" "$other":"$(dirname "$file")"
 	done
 	for file in "${other_pc_dotfiles[@]}"; do
-		rsync -av "$file" "$other_pc":"$(dirname "$file")"
+		rsync -av --delete "$file" "$other":"$(dirname "$file")"
 	done
 else
 	echo "Skipping..."
 fi
 echo "----------------------------------------------"
-echo "CLEANING PC AND HOME SERVER"
+echo "BACKING UP HOME SERVER"
 echo "----------------------------------------------"
-if [ "${wine_answer,,}" = "y" ]; then
-	"$source_dir/qqclean" -delete-wine
-else
-	"$source_dir/qqclean"
-fi
-ssh hs "$HOME/.local/userscripts/bin/qqclean"
+hs_hostname=$(ssh -t "$hs_or_lhs" "echo \$HOSTNAME")
+hs_hostname=$(echo "$hs_hostname" | tr -d '[:space:]')
+ssh "$hs_or_lhs" "mkdir -p /srv/nfs2/home"
+ssh "$hs_or_lhs" "mkdir -p /srv/nfs2/srv"
+ssh "$hs_or_lhs" "rsync -av --delete /home/\"\$USER\"/ /srv/nfs2/home/\"\$USER\""
+ssh "$hs_or_lhs" "sudo ~/.local/userscripts/qqsudo rsync -av --delete /etc/ /srv/nfs2/etc/"
+ssh "$hs_or_lhs" "sudo ~/.local/userscripts/qqsudo rsync -av --delete /var/ /srv/nfs2/var/"
+ssh "$hs_or_lhs" "sudo ~/.local/userscripts/qqsudo rsync -av --delete /srv/nfs1/ /srv/nfs2/srv/nfs1/"
+ssh "$hs_or_lhs" "sudo ~/.local/userscripts/qqsudo rsync -av --delete /srv/guest/ /srv/nfs2/srv/guest/"
 echo "----------------------------------------------"
-echo "BACKING UP /mnt/nfs"
+echo "BACKING UP CURRENT PC (EXCLUDING /downloads/nobackup)"
 echo "----------------------------------------------"
-rsync -av --delete /mnt/nfs/ /mnt/ext1/backups/nfs/
+mkdir -p /mnt/ext1/backups/disk-"$HOSTNAME"/home
+rsync -av --delete --delete-excluded --exclude='downloads/nobackup/' /home/"$USER"/ /mnt/ext1/backups/disk-"$HOSTNAME"/home/"$USER"/
+sudo "$source_dir/../qqsudo" rsync -av --delete /etc/ /mnt/ext1/backups/disk-"$HOSTNAME"/etc/
+sudo "$source_dir/../qqsudo" rsync -av --delete /var/ /mnt/ext1/backups/disk-"$HOSTNAME"/var/
+sudo "$source_dir/../qqsudo" rsync -av --delete /root/ /mnt/ext1/backups/disk-"$HOSTNAME"/root/
 echo "----------------------------------------------"
-echo "BACKING UP HOME SERVER $HOME"
-echo "----------------------------------------------"
-rsync -av --delete hs:/home/"$USER"/ /mnt/ext1/backups/disk-home-server/"$HOME"/
-echo "----------------------------------------------"
-echo "BACKING UP HOME SERVER /etc"
-echo "----------------------------------------------"
-rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" hs:/etc/ /mnt/ext1/backups/disk-home-server/etc/
-echo "----------------------------------------------"
-echo "BACKING UP HOME SERVER /var"
-echo "----------------------------------------------"
-rsync -av --delete --rsync-path="sudo ~/.local/userscripts/qqsudo rsync" hs:/var/ /mnt/ext1/backups/disk-home-server/var/
-echo "----------------------------------------------"
-echo "BACKING UP $HOME (EXCLUDING Downloads/nobackup)"
-echo "----------------------------------------------"
-rsync -av --delete --delete-excluded --exclude='Downloads/nobackup/' "$HOME"/ /mnt/ext1/backups/disk/"$HOME"/
-echo "----------------------------------------------"
-echo "BACKING UP /etc"
-echo "----------------------------------------------"
-sudo "$source_dir/../qqsudo" rsync -av --delete /etc/ /mnt/ext1/backups/disk/etc/
-echo "----------------------------------------------"
-echo "BACKING UP /var"
-echo "----------------------------------------------"
-sudo "$source_dir/../qqsudo" rsync -av --delete /var/ /mnt/ext1/backups/disk/var/
-echo "----------------------------------------------"
-echo "BACKING UP /root"
-echo "----------------------------------------------"
-sudo "$source_dir/../qqsudo" rsync -av --delete /root/ /mnt/ext1/backups/disk/root/
-echo "----------------------------------------------"
-echo "BACKING UP /usr/share"
-echo "----------------------------------------------"
-sudo "$source_dir/../qqsudo" rsync -av --delete /usr/share/ /mnt/ext1/backups/disk/usr/share/
-echo "----------------------------------------------"
-echo "BACKING UP /mnt/ext1 TO /mnt/ext2 (EXCLUDING backups)"
+echo "BACKING UP ext1 TO ext2 (EXCLUDING backups)"
 echo "----------------------------------------------"
 rsync -av --delete --delete-excluded --exclude='backups/' /mnt/ext1/ /mnt/ext2/
 
 if [ "${eject_answer,,}" = "y" ]; then
-	"$source_dir/qqmount" -u ext1
-	"$source_dir/qqmount" -u ext2
-	"$source_dir/qqnfs" -umount hs
+	"$source_dir/qqmount" u ext1
+	"$source_dir/qqmount" u ext2
+	"$source_dir/qqnfs" 1 unmount
+	"$source_dir/qqnfs" 2 unmount
 fi
 
 read -r -p "Done backing up. Press enter to continue..."

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+qqssh_hs_or_lhs="hs"
+qqssh_other="other"
+
+router_mac="78:d2:94:11:a6:f1"
+current_mac=$(ip neighbor show 192.168.1.1 | awk '{print $5}')
+
+if [ "$current_mac" = "$router_mac" ]; then
+	qqssh_hs_or_lhs="lhs"
+else
+	qqssh_hs_or_lhs="hs"
+fi

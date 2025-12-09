@@ -1,0 +1,1 @@
+cmd_/home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/Module.symvers := sed 's/ko$$/o/' /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/modules.order | scripts/mod/modpost -m    -o /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/Module.symvers -e -i Module.symvers   -T -

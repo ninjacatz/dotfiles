@@ -10,7 +10,7 @@ window:
     columns: 60
     lines: 20
 scrolling:
-  history: 1000
+  history: 10000
   multiplier: 3
 cursor:
   style:
@@ -18,16 +18,16 @@ cursor:
     blink_timeout: 0
 font:
   normal:
-    family: JetBrains Mono
+    family: jetbrains-mono-apple-emoji
     style: Medium
   bold:
-    family: JetBrains Mono
+    family: jetbrains-mono-apple-emoji
     style: Bold
   italic:
-    family: JetBrains Mono
+    family: jetbrains-mono-apple-emoji
     style: MediumItalic
   bold_italic:
-    family: JetBrains Mono
+    family: jetbrains-mono-apple-emoji
     style: BoldItalic
 import:
   - /home/qq/.config/alacritty/themes/gruvbox_dark.yaml

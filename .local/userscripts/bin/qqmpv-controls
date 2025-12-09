@@ -7,27 +7,27 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-play-pause|-stop|-rewind|-forward|-seek-rewind|-seek-forward
+	play-pause|stop|rewind|forward|seek-rewind|seek-forward
 EOF
 }
 
 case $1 in
-	-play-pause)
+	play-pause)
 		command="cycle pause"
 		;;
-	-stop)
+	stop)
 		command="stop"
 		;;
-	-rewind)
+	rewind)
 		command="playlist-prev"
 		;;
-	-forward)
+	forward)
 		command="playlist-next"
 		;;
-	-seek-rewind)
+	seek-rewind)
 		command="seek -1"
 		;;
-	-seek-forward)
+	seek-forward)
 		command="seek 1"
 		;;
 	*)
@@ -39,16 +39,15 @@ esac
 # if currently focused window is mpv, perform function on only currently focused window
 focused_window_class="$(xprop -id "$(bspc query -N -n focused)" | awk '/WM_CLASS/ {print $4}')"
 if [ "$focused_window_class" = '"mpv"' ]; then
-	focused_window_pid="$(xprop -id "$(bspc query -N -n focused)" | awk '/_NET_WM_PID/ {print $3}')"
-	mpv_pid=$focused_window_pid
+	mpv_pid="$(xprop -id "$(bspc query -N -n focused)" | awk '/_NET_WM_PID/ {print $3}')"
 # otherwise, perform function on only the first opened mpv window (smallest pid)
 else
 	smallest_pid=999999
 	if find /tmp/mpvSockets -mindepth 1 | read -r; then
-		for i in /tmp/mpvSockets/*; do
-			i=$(basename "$i")
-			if [[ "$smallest_pid" -gt "$i" ]]; then
-				smallest_pid=$i
+		for pid in /tmp/mpvSockets/*; do
+			pid=$(basename "$pid")
+			if [[ "$smallest_pid" -gt "$pid" ]]; then
+				smallest_pid=$pid
 			fi
 		done
 		mpv_pid=$smallest_pid
@@ -58,7 +57,4 @@ else
 	fi
 fi
 
-full_command="echo $command | socat - \"/tmp/mpvSockets/$mpv_pid\""
-
-bash -c "$full_command"
-
+echo $command | socat - "/tmp/mpvSockets/$mpv_pid"

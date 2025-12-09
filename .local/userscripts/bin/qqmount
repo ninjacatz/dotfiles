@@ -39,7 +39,7 @@ get_mnt_path() {
 	done
 }
 
-if [ "$1" == "-u" ]; then
+if [[ "$1" == "u" || "$1" == "unmount" ]]; then
 	umount=true
 	shift
 fi

@@ -3,7 +3,7 @@
 output=""
 
 if pgrep -x sshd > /dev/null; then
-	output="ssh"
+	output="${output}ssh"
 fi
 
 echo "$output"

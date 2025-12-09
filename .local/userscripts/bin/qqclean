@@ -3,23 +3,20 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-# if no arguments supplied
-if [ "$#" -eq 0 ]; then
-	if [ -d ~/.wine ]; then
-		read -r -p "Do you want to delete ~/.wine? (y/N) " wine_answer
-	fi
-fi
-
-if [[ "${wine_answer,,}" = "y" || "$1" = "-delete-wine" ]]; then
-	rm -rf "$HOME"/.wine
-	rm -rf "$HOME"/.local/share/applications/wine
-	sudo "$source_dir/../qqsudo" rm -rf /root/.wine
+if [[ "$1" = "wine" ]]; then
+	rm -rf "$HOME/.wine"
+	rm -rf "$HOME/.local/share/applications/wine"
+	sudo "$source_dir/../qqsudo" rm -rf "/root/.wine"
 fi
 
 echo "Running bleachbit"
 bleachbit -c --preset &> /dev/null
 echo "Running bleachbit root"
 sudo "$source_dir/../qqsudo" bleachbit -c --preset &> /dev/null
+
+# nfs trash
+rm -rf "/mnt/nfs1/.Trash-1000"
+rm -rf "/mnt/nfs2/.Trash-1000"
 
 # bash
 rm -f "$HOME/.bash_history"
@@ -37,7 +34,7 @@ sudo "$source_dir/../qqsudo" rm -f "/root/.lesshst"
 rm -f "$HOME/.wget-hsts"
 sudo "$source_dir/../qqsudo" rm -f "/root/.wget-hsts"
 # ssh
-# rm -f "$HOME/.ssh/known_hosts"*
+rm -f "$HOME/.ssh/known_hosts"*
 # X session errors
 rm -f "$HOME/.xsession-errors"
 # zathura

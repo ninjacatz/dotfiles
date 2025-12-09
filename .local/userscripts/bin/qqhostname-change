@@ -41,7 +41,7 @@ sudo "$source_dir/../qqsudo" sed -i '2d' "/etc/hosts"
 sudo "$source_dir/../qqsudo" hostname -F "/etc/hostname"
 
 if [ "${reboot_answer,,}" = "y" ]; then
-	"$source_dir/qqpc" -reboot
+	"$source_dir/qqpc" reboot
 else
-	"$source_dir/qqpc" -logout
+	"$source_dir/qqpc" logout
 fi

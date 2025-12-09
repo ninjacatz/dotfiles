@@ -7,9 +7,9 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-wifi|-ethernet|-stop|-cli|-trash-networks
-	-ssh|-vpn|-mac
-		-start|-stop
+	wifi|eth|stop|cli|trash-networks
+	ssh|vpn|mac
+		start|stop
 EOF
 }
 
@@ -21,6 +21,8 @@ ethernet () {
 			sudo "$source_dir/../qqsudo" service networking start
 			;;
 		stop)
+			"$source_dir/qqnfs" 1 unmount
+			"$source_dir/qqnfs" 2 unmount
 			sudo "$source_dir/../qqsudo" service networking stop
 			;;
 	esac
@@ -32,6 +34,8 @@ wifi () {
 			sudo "$source_dir/../qqsudo" service iwd start
 			;;
 		stop)
+			"$source_dir/qqnfs" 1 unmount
+			"$source_dir/qqnfs" 2 unmount
 			sudo "$source_dir/../qqsudo" service iwd stop
 			;;
 	esac
@@ -42,6 +46,7 @@ ssh () {
 		start)
 			if ! pgrep -x sshd > /dev/null; then
 				sudo "$source_dir/../qqsudo" service ssh start
+				sudo "$source_dir/../qqsudo" ufw allow ssh
 			else
 				echo "ssh already running"
 			fi
@@ -49,6 +54,7 @@ ssh () {
 		stop)
 			if pgrep -x sshd > /dev/null; then
 				sudo "$source_dir/../qqsudo" service ssh stop
+				sudo "$source_dir/../qqsudo" ufw delete allow ssh
 				pkill -x ssh-agent
 			else
 				echo "ssh not running"
@@ -94,7 +100,7 @@ mac () {
 }
 
 case "$1" in
-	-wifi)
+	wifi)
 		if pgrep -x iwd > /dev/null; then
 			echo "wifi already running"
 			exit 0
@@ -106,7 +112,7 @@ case "$1" in
 		# polybar boot disables wlan module if service not running
 		polybar-msg cmd restart > /dev/null
 		;;
-	-ethernet)
+	eth)
 		if pgrep -x dhclient > /dev/null; then
 			echo "ethernet already running"
 			exit 0
@@ -116,16 +122,16 @@ case "$1" in
 		wifi stop
 		ethernet start
 		;;
-	-stop)
+	stop)
 		vpn stop
 		ssh stop
 		wifi stop
 		ethernet stop
 		mac stop
 		;;
-	-ssh)
+	ssh)
 		case "$2" in
-			-start)
+			start)
 				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
 					ssh start
 				else
@@ -133,7 +139,7 @@ case "$1" in
 					exit 0
 				fi
 				;;
-			-stop)
+			stop)
 				ssh stop
 				;;
 			*)
@@ -142,9 +148,9 @@ case "$1" in
 				;;
 		esac
 		;;
-	-vpn)
+	vpn)
 		case "$2" in
-			-start)
+			start)
 				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
 					vpn start
 				else
@@ -152,7 +158,7 @@ case "$1" in
 					exit 0
 				fi
 				;;
-			-stop)
+			stop)
 				vpn stop
 				;;
 			*)
@@ -161,13 +167,13 @@ case "$1" in
 				;;
 		esac
 		;;
-	-mac)
+	mac)
 		if ! pgrep -x dhclient > /dev/null && ! pgrep -x iwd > /dev/null; then
 			case "$2" in
-				-start)
+				start)
 					mac start
 					;;
-				-stop)
+				stop)
 					mac stop
 					;;
 				*)
@@ -180,9 +186,9 @@ case "$1" in
 			exit 0
 		fi
 		;;
-	-cli)
+	cli)
 		if pgrep -x iwd > /dev/null; then
-			iwctl station wlan0 get-networks
+			iwctl station wlan0 getnetworks
 			read -r -p "Enter network name: " network
 			iwctl station wlan0 connect "$network"
 		else
@@ -190,7 +196,7 @@ case "$1" in
 			exit 0
 		fi
 		;;
-	-trash-networks)
+	trash-networks)
 		read -r -p "Are you sure you want to trash networks? (y/N) " answer
 		if [ "${answer,,}" = "y" ]; then
 			sudo "$source_dir/../qqsudo" trash "$network_path"/*

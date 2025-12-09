@@ -1,0 +1,80 @@
+#!/bin/bash
+set -eo pipefail
+source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+. "$source_dir/../qquser-check"
+
+read -r -p "WARNING: If using main PC make sure backups have been completed or nothing has changed (files will be overwritten). Press enter to continue"
+
+case "$1" in
+	t420|g15|m15)
+		trash ~/.asoundrc || true
+		cp ~/.local/userscripts/qqinstall/$1/.asoundrc ~/.asoundrc
+
+		trash ~/.local/userscripts/qqlib || true
+		cp ~/.local/userscripts/qqinstall/$1/qqlib ~/.local/userscripts/qqlib
+
+		trash ~/.config/sxhkd/sxhkdrc-fn-keys || true
+		cp ~/.local/userscripts/qqinstall/$1/sxhkdrc-fn-keys ~/.config/sxhkd/sxhkdrc-fn-keys
+		;;
+	*)
+		echo "Invalid option"
+		exit 1
+		;;
+esac
+
+case "$1" in
+	t420)
+		# fixing broken special keys
+		sudo "$source_dir/../qqsudo" cp ~/.local/userscripts/qqinstall/t420/99-thinkpad-extra.hwdb /etc/udev/hwdb.d
+		sudo "$source_dir/../qqsudo" udevadm hwdb --update
+		sudo "$source_dir/../qqsudo" udevadm trigger /dev/input/event4
+		sudo "$source_dir/../qqsudo" udevadm trigger /dev/input/event6
+		;;
+	g15)
+		# installing 6.1 kernel
+		sudo "$source_dir/../qqsudo" apt install linux-image-6.1.90-antix.1-amd64-smp
+		sudo "$source_dir/../qqsudo" apt purge linux-image-5.10*
+
+		# installing nvidia drivers
+		sudo "$source_dir/../qqsudo" apt install ddm-mx
+		sudo "$source_dir/../qqsudo" ddm-mx -i nvidia
+		;;
+	m15)
+		# TODO: hibernate is not working, do not try it
+
+		# permanently set fn key mode to special keys (1) or f1-f12 (2)
+		echo "options hid_apple fnmode=2" | sudo "$source_dir/../qqsudo" tee /etc/modprobe.d/hid_apple.conf
+
+		# disable startup sound
+		sudo "$source_dir/../qqsudo" chattr -i /sys/firmware/efi/efivars/SystemAudioVolume-7c436110-ab2a-4bbb-a880-fe41995c9f82
+		printf "\x07\x00\x00\x00\x00" | sudo "$source_dir/../qqsudo" tee /sys/firmware/efi/efivars/SystemAudioVolume-7c436110-ab2a-4bbb-a880-fe41995c9f82;
+		# disable autoboot on lid open and power connected
+		sudo "$source_dir/../qqsudo" chattr -i /sys/firmware/efi/efivars/AutoBoot-7c436110-ab2a-4bbb-a880-fe41995c9f82
+		printf "\x07\x00\x00\x00\x00" | sudo "$source_dir/../qqsudo" tee /sys/firmware/efi/efivars/AutoBoot-7c436110-ab2a-4bbb-a880-fe41995c9f82;
+
+		# fix suspend
+		# TODO: keyboard and mouse input executes after wake
+		if ! grep -q 'echo LID0' /etc/rc.local; then
+			sudo "$source_dir/../qqsudo" sed -i '/^exit 0$/i echo LID0 > /proc/acpi/wakeup' /etc/rc.local
+		fi
+		if ! grep -q 'echo XHC1' /etc/rc.local; then
+			sudo "$source_dir/../qqsudo" sed -i '/^exit 0$/i echo XHC1 > /proc/acpi/wakeup' /etc/rc.local
+		fi
+
+		# fix camera
+		cd "$HOME/.local/userscripts/qqinstall/m15/facetimehd-firmware"
+		make
+		sudo "$source_dir/../qqsudo" make install
+		sudo "$source_dir/../qqsudo" apt install libssl-dev checkinstall -y
+		cd "$HOME/.local/userscripts/qqinstall/m15/bcwc_pcie"
+		make
+		sudo "$source_dir/../qqsudo" make install
+		sudo "$source_dir/../qqsudo" apt purge libssl-dev checkinstall -y
+		sudo "$source_dir/../qqsudo" depmod
+		sudo "$source_dir/../qqsudo" modprobe facetimehd
+		;;
+	*)
+		echo "Invalid option"
+		exit 1
+		;;
+esac

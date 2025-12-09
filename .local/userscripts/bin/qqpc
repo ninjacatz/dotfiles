@@ -9,91 +9,75 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-menu|-logout|-reboot|-shutdown|-lock|-suspend|-hibernate
-		-notwithaudio
+	(m)enu|(log)out|(r)eboot|(sh)utdown|(l)ock|(s)uspend|(h)ibernate
+		not-with-audio
 EOF
 }
 
-xlock_font="-*-helvetica-*-r-*-*-36-*-*-*-*-*-*-*"
+xlock_font=-*-helvetica-*-r-*-*-48-*-*-*-*-*-*-*
 
-if [ "$2" == "-notwithaudio" ]; then
+if [ "$2" == "not-with-audio" ]; then
 	if [ "$(grep -r "RUNNING" /proc/asound | wc -l)" -ne 0 ]; then
-		echo "Audio is playing"
+		echo "Audio is playing. Exiting"
 		exit 0
 	fi
 fi
 
 case "$1" in
-	-menu)
-		echo "l - Lock"
-		echo "k - Suspend"
-		echo "h - Hibernate"
-		echo "s - Shutdown"
-		echo "r - Reboot"
-		echo "L - Logout"
+	menu|m)
+		usage
 		read -r -p "Select option: " selection
-		case "$selection" in
-			l)
-				"$source_dir/qqpc" -lock
-				;;
-			k)
-				"$source_dir/qqpc" -suspend
-				;;
-			h)
-				"$source_dir/qqpc" -hibernate
-				;;
-			s)
-				"$source_dir/qqpc" -shutdown
-				;;
-			r)
-				"$source_dir/qqpc" -reboot
-				;;
-			L)
-				"$source_dir/qqpc" -logout
-				;;
-			*)
-				echo "Invalid option"
-				exit 1
-				;;
-		esac
+		"$source_dir/qqpc" "$selection"
 		;;
-	-logout)
-		"$source_dir/qqnet" -stop || true
-		"$source_dir/qqcoffee" -off || true
+	logout|log)
+		"$source_dir/qqnet" stop || true
+		"$source_dir/qqcoffee" off || true
 		rm -f /tmp/bspwm_first_run
 		pkill -KILL -u "$USER"
 		;;
-	-reboot)
+	reboot|r)
 		sudo "$source_dir/../qqsudo" reboot
 		;;
-	-shutdown)
+	shutdown|sh)
 		sudo "$source_dir/../qqsudo" shutdown -h now
 		;;
-	-lock)
-		"$source_dir/qqcoffee" -off || true
+	lock|l)
+		"$source_dir/qqcoffee" off || true
 		"$source_dir/qqvolume" mute on || true
-		"$source_dir/qqvolume" input off || true
-		"$source_dir/qqbacklight" -keyboard -min || true
+		"$source_dir/qqvolume" in off || true
+		"$source_dir/qqbacklight" key min || true
 
 		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10 &
 		;;
-	-suspend)
-		"$source_dir/qqpc" -lock
+	suspend|s)
+		"$source_dir/qqpc" lock || true
 
-		"$source_dir/qqnet" -stop || true
+		"$source_dir/qqnfs" 1 unmount || true
+		"$source_dir/qqnet" stop || true
+
+		"$source_dir/qqdevice" keyboard off
+		sudo "$source_dir/../qqsudo" rmmod facetimehd || true
 
 		sudo "$source_dir/../qqsudo" pm-suspend
+
+		"$source_dir/qqdevice" keyboard on
+		sudo "$source_dir/../qqsudo" modprobe facetimehd || true
 
 		# turn on screen and simulate Return key press to trigger xlock
 		xset dpms force on
 		xdotool key BackSpace
 		;;
-	-hibernate)
-		"$source_dir/qqpc" -lock
+	hibernate|h)
+		"$source_dir/qqpc" lock || true
 
-		"$source_dir/qqnet" -stop || true
+		"$source_dir/qqnfs" 1 unmount || true
+		"$source_dir/qqnet" stop || true
+
+		sudo "$source_dir/../qqsudo" rmmod facetimehd || true
 
 		sudo "$source_dir/../qqsudo" pm-hibernate
+
+		sudo "$source_dir/../qqsudo" modprobe facetimehd || true
 
 		# turn on screen and simulate Return key press to trigger xlock
 		xset dpms force on

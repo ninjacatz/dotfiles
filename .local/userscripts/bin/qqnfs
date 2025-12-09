@@ -2,96 +2,65 @@
 set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqssh"
 
 usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-mount|-umount
-		ssh-config
+	1|2
+		(m)ount
+		(u)nmount
+			_|eject|ask
 EOF
 }
 
-# if 2nd argument not supplied
-if [[ -z "$2" ]]; then
-	usage
+hs_or_lhs="$qqssh_hs_or_lhs"
+echo "ssh: $hs_or_lhs"
+
+if [[ "$1" = "1" ]]; then
+	nfs_disk="/dev/sdb4"
+elif [[ "$1" = "2" ]]; then
+	nfs_disk="/dev/sda"
+else
+	echo "Not a valid nfs index"
 	exit 1
 fi
 
-case "$1" in
-	-mount)
-		# check for sshfs ssh process
-		if pgrep -a ssh | grep "\-s sftp" > /dev/null; then
-			echo "nfs already mounted via sshfs"
+case "$2" in
+	mount|m)
+		if mountpoint /mnt/nfs"$1" > /dev/null; then
+			echo "nfs$1 already mounted via sshfs"
 			exit 0
 		fi
-		ssh "$2" "cat > ~/mount_nfs.sh" <<-EOF
-			set -eo pipefail
-			sudo ~/.local/userscripts/qqsudo service nfs-kernel-server start > /dev/null
-			if ! sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
-				echo "unlocking nfs..."
-				sudo ~/.local/userscripts/qqsudo cryptsetup luksOpen /dev/sdb4 nfs
-				success=true
-			else
-				echo "nfs already unlocked"
-			fi
-			if ! mountpoint /srv/nfs > /dev/null; then
-				echo "mounting nfs..."
-				sudo ~/.local/userscripts/qqsudo mount /dev/mapper/nfs /srv/nfs
-				success=true
-			else
-				echo "nfs already mounted"
-			fi
-			if [ "\$success" = "true" ]; then
-				echo "success"
-			fi
-		EOF
-		ssh -t "$2" "bash ~/mount_nfs.sh" 2>/dev/null
-		if ! mountpoint /mnt/nfs > /dev/null; then
-			echo "mounting nfs via sshfs..."
-			nohup sshfs "$2":/srv/nfs /mnt/nfs >/dev/null 2>&1 &
+
+		ssh -t "$hs_or_lhs" "bash ~/mount_nfs.sh $1" 2>/dev/null
+		if ! mountpoint /mnt/nfs"$1" > /dev/null; then
+			echo "mounting nfs$1 via sshfs..."
+			nohup sshfs "$hs_or_lhs":/srv/nfs"$1" /mnt/nfs"$1" >/dev/null 2>&1 &
 			echo "success"
 		fi
 		;;
-	-umount)
-		read -r -p "Do you want to eject nfs? (y/N) " nfs_answer
+	unmount|u)
+		if [[ "$3" = "eject" ]]; then
+			nfs_answer="y"
+		elif [[ "$3" = "ask" ]]; then
+			read -r -p "Do you want to eject nfs$1? (y/N) " nfs_answer
+		fi
 
-		# check for sshfs ssh process
-		if pgrep -a ssh | grep "\-s sftp" > /dev/null; then
-			echo "unmounting nfs via sshfs..."
-			kill "$(pgrep -a ssh | grep "\-s sftp" | awk '{print $1}')"
-			fusermount -u /mnt/nfs
+		if mountpoint /mnt/nfs"$1" > /dev/null; then
+			echo "unmounting nfs$1 via sshfs..."
+			fusermount -u /mnt/nfs"$1"
 			echo "success"
 		else
-			echo "nfs not mounted via sshfs"
+			echo "nfs$1 not mounted via sshfs"
 		fi
 
 		if ! [ "${nfs_answer,,}" = "y" ]; then
 			exit 0
 		fi
 
-		ssh "$2" "cat > ~/umount_nfs.sh" <<-EOF
-			set -eo pipefail
-			sudo ~/.local/userscripts/qqsudo service nfs-kernel-server stop > /dev/null
-			if mountpoint /srv/nfs > /dev/null; then
-				echo "unmounting nfs..."
-				sudo ~/.local/userscripts/qqsudo umount /srv/nfs
-				success=true
-			else
-				echo "nfs not mounted"
-			fi
-			if sudo ~/.local/userscripts/qqsudo cryptsetup status nfs > /dev/null; then
-				echo "locking nfs..."
-				sudo ~/.local/userscripts/qqsudo cryptsetup luksClose nfs
-				success=true
-			else
-				echo "nfs already locked"
-			fi
-			if [ "\$success" = "true" ]; then
-				echo "success"
-			fi
-		EOF
-		ssh -t "$2" "bash ~/umount_nfs.sh" 2>/dev/null
+		ssh -t "$hs_or_lhs" "bash ~/umount_nfs.sh $1" 2>/dev/null
 		;;
 	*)
 		usage

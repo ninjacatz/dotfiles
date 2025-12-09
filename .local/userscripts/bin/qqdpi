@@ -16,18 +16,21 @@ case "$input" in
 	96|1)
 		ui_scale="1.0"
 		dpi="96"
+		bspwm_gap="10"
 		xlock_font_size=$((dpi/4))
 		xlock_font="-*-helvetica-*-r-*-*-$xlock_font_size-*-*-*-*-*-*-*"
 		;;
 	144|1.5)
 		ui_scale="1.5"
 		dpi="144"
+		bspwm_gap="15"
 		xlock_font_size=$((dpi/4))
 		xlock_font="-*-helvetica-*-r-*-*-$xlock_font_size-*-*-*-*-*-*-*"
 		;;
 	192|2)
 		ui_scale="2.0"
 		dpi="192"
+		bspwm_gap="20"
 		xlock_font_size=$((dpi/4))
 		xlock_font="-*-helvetica-*-r-*-*-$xlock_font_size-*-*-*-*-*-*-*"
 		;;
@@ -45,6 +48,9 @@ sed -i s/"gtk-xft-dpi=.*"/"gtk-xft-dpi=$dpi"/ "$HOME/.config/gtk-3.0/settings.in
 
 # change polybar dpi
 sed -i s/"dpi = .*"/"dpi = $dpi"/ "$HOME/.config/polybar/config.ini"
+
+# change bspwm gap size
+sed -i s/"bspc config border_width .*"/"bspc config border_width $bspwm_gap"/ "$HOME/.config/bspwm/bspwmrc"
 
 # change wine dpi
 if [ -e "$HOME/.wine" ];then
@@ -66,5 +72,4 @@ xrdb "$xresources_file"
 
 echo "DPI is set to $dpi"
 
-# refresh wm
 bspc wm -r

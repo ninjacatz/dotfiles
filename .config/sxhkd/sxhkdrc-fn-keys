@@ -1,0 +1,18 @@
+XF86PowerOff
+	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/userscripts/bin/qqpc menu
+
+# ---------------------------
+# FUNCTION ROW
+# ---------------------------
+{XF86MonBrightnessDown,XF86MonBrightnessUp}
+	~/.local/userscripts/bin/qqbacklight int {down,up}
+XF86LaunchA
+XF86LaunchB
+{XF86KbdBrightnessDown,XF86KbdBrightnessUp}
+	~/.local/userscripts/bin/qqbacklight key {down,up}
+{XF86AudioPrev,XF86AudioPlay,XF86AudioNext}
+	~/.local/userscripts/bin/qqmpv-controls {rewind,play-pause,forward}
+XF86AudioMute
+	~/.local/userscripts/bin/qqvolume mute toggle
+{XF86AudioLowerVolume,XF86AudioRaiseVolume}
+	~/.local/userscripts/bin/qqvolume {down,up}

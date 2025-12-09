@@ -1,43 +1,37 @@
 #!/bin/bash
 
-# NOTE: at the end of script, do the following
-# install lm-sensors and macchanger manually
-# run qqasus-config if necessary
-
-usage () {
-	cat <<EOF
-Usage: ${0##*/}
-Options:
-	-t420|-asus|-home-server
-EOF
-}
-
 if [ "$(id -u)" -eq 0 ]; then
 	echo "Run as user"
 	exit 1
 fi
 
-# if no correct arguments supplied
-if [[ "$1" != "-home-server" && "$1" != "-asus" && "$1" != "-t420" ]]; then
-	usage
-	exit 1
-fi
+usage () {
+	cat <<EOF
+Usage: ${0##*/}
+Options:
+	t420|g15|m15|optiplex-9020
+EOF
+}
 
-sudo echo ""
-read -r -p "Must be connected to the internet. Press enter to continue"
-read -r -p "WARNING: If running script for the second time (or more), make sure backups have been completed (many files will be overwritten). Press enter to continue"
-
-# Save the error messages
-errors_file="$HOME/qqinstall-output.txt"
-touch "$errors_file"
-echo -e "\n\n\nqqinstall: $(date +"%-I:%M%P %a %b %-d")" >> "$errors_file"
-mkfifo /tmp/pipe
-tee -a "$errors_file" < /tmp/pipe &
-exec > /tmp/pipe 2>&1
+case "$1" in
+	t420|g15|m15|optiplex-9020)
+		sudo echo ""
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac
 
 # ##########################
 # Functions
 # ##########################
+qq_done_installing () {
+	echo "Done installing!"
+	echo "Follow up tasks:"
+	echo "1. Manually install macchanger and lm-sensors if needed"
+	echo "2. Boost microphone volume in alsamixer if needed"
+}
 
 qq_apt_add () {
 	for arg in "$@"; do
@@ -139,69 +133,44 @@ qq_unmount_ext1 () {
 	fi
 }
 
-# ##########################
-# Setup
-# ##########################
+qq_mount_nfs2 () {
+	echo "qq: Mounting nfs2"
+	sudo mkdir -p /srv/nfs2
+	sudo chmod 755 /srv/nfs2
+	sudo cryptsetup luksOpen /dev/sda1 nfs2
+	sudo mount /dev/mapper/nfs2 /srv/nfs2
+	echo "qq: Done mounting nfs2"
+}
 
-# Set up directories
-backups_dir="/mnt/ext1/backups/disk"
-backups_home_dir="$backups_dir/home/$USER"
-backups_etc_dir="$backups_dir/etc"
-backups_root_dir="$backups_dir/root"
-backups_var_dir="$backups_dir/var"
-# backups_usr_share_dir="$backups_dir/usr/share"
+qq_unmount_nfs2 () {
+	echo "qq: Unmounting nfs2"
+	if mount | grep -q /srv/nfs2; then
+		sudo umount /dev/mapper/nfs2
+		sudo cryptsetup luksClose /dev/mapper/nfs2
+		echo "qq: nfs2 unmounted"
+	fi
+}
+
+# ##########################
+# Begin
+# ##########################
+read -r -p "Must be connected to the internet. Press enter to continue"
+read -r -p "WARNING: If running script for the second time (or more), make sure backups have been completed (many files will be overwritten). Press enter to continue"
+
+# save all output to file
+errors_file="$HOME/qqinstall-output.txt"
+touch "$errors_file"
+echo -e "\n\n\nqqinstall: $(date +"%-I:%M%P %a %b %-d")" >> "$errors_file"
+mkfifo /tmp/pipe
+tee -a "$errors_file" < /tmp/pipe &
+exec > /tmp/pipe 2>&1
 
 qq_mount_ext1
 
-echo "qq: Creating directories"
-sudo mkdir -p /mnt/nfs /mnt/ext1 /mnt/ext2 /mnt/iphone /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/usb5 /mnt/usb6 /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6
-sudo chown "$USER":"$USER" /mnt/*
-mkdir -p "$HOME"/.config "$HOME"/.local/share
-sudo mkdir -p /root/.config /root/.local/share
-
-echo "qq: Adding configs"
-qq_conf_add_ow "$backups_home_dir"/.bashrc
-sudo rm -rf "$HOME"/.bash_logout
-sudo rm -rf /root/.bashrc
-qq_root_ln "$HOME"/.bashrc
-qq_conf_add_ow "$backups_home_dir"/.profile
-sudo rm -rf /root/.profile
-qq_root_ln "$HOME"/.profile
-qq_conf_add_ow "$backups_home_dir"/.Xresources
-qq_conf_add "$backups_home_dir"/.config/mimeapps.list
-qq_root_ln "$HOME"/.config/mimeapps.list
-qq_conf_add "$backups_home_dir"/.local/bin
-qq_conf_add "$backups_home_dir"/.local/userscripts
-qq_root_ln "$backups_home_dir"/.local/userscripts
-qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
-qq_su_conf_add_ow "$backups_etc_dir"/inputrc
-qq_su_conf_add_ow "$backups_etc_dir"/resolvconf/resolv.conf.d/head
-qq_su_conf_add_ow "$backups_etc_dir"/inittab
-sudo init q
-qq_su_conf_add "$backups_etc_dir"/fonts/local.conf
-fc-cache -f
-
-echo "qq: Setting up grub with swap if it exists"
-sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
-if grep swap /etc/fstab > /dev/null; then
-	swap_uuid=$(sed -n '/swap/ s/^UUID=\([^ ]*\).*/\1/p' /etc/fstab)
-	sudo sed -i "/GRUB_CMDLINE_LINUX_DEFAULT=/ { /\(resume=UUID=$swap_uuid\)/! s/\"$/ resume=UUID=$swap_uuid\"/ }" /etc/default/grub
-fi
-sudo update-grub
-
-echo "qq: Setting up ufw"
-sudo ufw enable
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-
-echo "qq: Adding qqsudo to sudoers"
-sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
-
 # ##########################
-# Remove programs and upgrade
+# Remove software
 # ##########################
-
-echo "qq: Removing programs"
+echo "qq: Removing software"
 qq_apt_rm antix-goodies-core
 qq_apt_rm ceni
 qq_apt_rm chroot-rescue
@@ -222,16 +191,89 @@ sudo rm -rf /usr/local/share/live-files
 qq_apt_rm tmux
 qq_apt_rm vim-tiny
 
-echo "qq: Upgrading system"
+# ##########################
+# Full purge and upgrade
+# ##########################
+
+echo "qq: Full purge and upgrade"
 sudo apt autopurge -y
 sudo apt update
 sudo apt upgrade -y
 
 # ##########################
-# Install Networking Software
+# Base Configs
 # ##########################
+# set up directories
+main_pc="m15"
+backups_dir="/mnt/ext1/backups/disk-$main_pc"
+backups_home_dir="$backups_dir/home/$USER"
+backups_etc_dir="$backups_dir/etc"
+backups_root_dir="$backups_dir/root"
+backups_var_dir="$backups_dir/var"
 
-echo "qq: Installing networking software"
+echo "qq: Creating base directories"
+sudo mkdir -p /mnt/nfs1 /mnt/nfs2
+sudo mkdir -p /mnt/ext1 /mnt/ext2
+sudo mkdir -p /mnt/iphone
+sudo mkdir -p /mnt/usb1 /mnt/usb2 /mnt/usb3 /mnt/usb4 /mnt/usb5 /mnt/usb6
+sudo mkdir -p /mnt/cd1 /mnt/cd2 /mnt/cd3 /mnt/cd4 /mnt/cd5 /mnt/cd6
+sudo chown "$USER":"$USER" /mnt/*
+
+mkdir -p "$HOME"/.config "$HOME"/.local/share
+sudo mkdir -p /root/.config /root/.local/share
+
+ln -s /mnt/nfs1/calendar ~
+ln -s /mnt/nfs1/dev ~
+ln -s /mnt/nfs1/documents ~
+ln -s /mnt/nfs1/music ~
+ln -s /mnt/nfs1/notes ~
+ln -s /mnt/nfs1/pictures ~
+ln -s /mnt/nfs1/videos ~
+
+echo "qq: Copying base configs"
+qq_conf_add_ow "$backups_home_dir"/.bashrc
+sudo rm -rf "$HOME"/.bash_logout
+sudo rm -rf /root/.bashrc
+qq_root_ln "$HOME"/.bashrc
+qq_conf_add_ow "$backups_home_dir"/.profile
+sudo rm -rf /root/.profile
+qq_root_ln "$HOME"/.profile
+qq_conf_add_ow "$backups_home_dir"/.Xresources
+qq_conf_add "$backups_home_dir"/.config/mimeapps.list
+qq_conf_add "$backups_home_dir"/.config/user-dirs.dirs
+qq_root_ln "$HOME"/.config/mimeapps.list
+qq_conf_add "$backups_home_dir"/.local/bin
+qq_conf_add "$backups_home_dir"/.local/userscripts
+qq_root_ln "$backups_home_dir"/.local/userscripts
+qq_su_conf_add_ow  "$backups_etc_dir"/tlp.conf
+qq_su_conf_add_ow "$backups_etc_dir"/inputrc
+qq_su_conf_add_ow "$backups_etc_dir"/resolvconf/resolv.conf.d/head
+qq_su_conf_add_ow "$backups_etc_dir"/inittab
+sudo init q
+
+# ##########################
+# Base Setup
+# ##########################
+echo "qq: Setting up grub with swap if it exists"
+sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
+if grep swap /etc/fstab > /dev/null; then
+	swap_uuid=$(sed -n '/swap/ s/^UUID=\([^ ]*\).*/\1/p' /etc/fstab)
+	sudo sed -i "/GRUB_CMDLINE_LINUX_DEFAULT=/ { /\(resume=UUID=$swap_uuid\)/! s/\"$/ resume=UUID=$swap_uuid\"/ }" /etc/default/grub
+fi
+sudo update-grub
+
+echo "qq: Setting up ufw"
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+echo "qq: Adding qqsudo to sudoers"
+sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
+
+# ##########################
+# Install Network Software
+# ##########################
+echo "qq: Installing network software"
 qq_apt_add iwd
 qq_su_conf_add_ow "$backups_etc_dir"/iwd/main.conf
 qq_su_conf_add "$backups_var_dir"/lib/iwd
@@ -240,13 +282,13 @@ qq_su_conf_add_ow "$backups_etc_dir"/openvpn
 sudo update-rc.d openvpn disable
 qq_apt_add ssh
 sudo rm -rf /root/.ssh
-# ssh extra configuration added at bottom of script
+qq_apt_add sshfs
+qq_apt_add nfs-common
 
 # ##########################
-# Install Programs (No GUI)
+# Install Base Software
 # ##########################
-
-echo "qq: Installing programs (no-gui)"
+echo "qq: Installing base software"
 qq_apt_add acpid
 qq_su_conf_add "$backups_etc_dir"/acpi/events/lidbtn
 qq_apt_add bc
@@ -257,17 +299,10 @@ qq_apt_add build-essential
 qq_apt_add calcurse
 qq_apt_add cpufrequtils
 qq_su_conf_add_ow "$backups_etc_dir"/init.d/cpufrequtils
-qq_apt_add ddccontrol
 qq_apt_add exfatprogs
-qq_apt_add ffmpeg
-qq_conf_add "$backups_home_dir"/.config/gh
-qq_apt_add imagemagick
 qq_apt_add jq
-qq_apt_add mesa-utils
-qq_apt_add nfs-common
 qq_apt_add pandoc
 qq_apt_add pm-utils
-qq_apt_add sshfs
 qq_apt_add socat
 qq_apt_add tldr
 qq_apt_add trash-cli
@@ -278,19 +313,18 @@ qq_root_ln "$HOME"/.config/vifm
 qq_apt_add vim-gtk3
 qq_conf_add "$backups_home_dir"/.vim
 qq_root_ln "$HOME"/.vim
-qq_apt_add wodim
-qq_apt_add xinput
-qq_apt_add yt-dlp
+mkdir -p "$HOME"/.vim/swap
 qq_apt_add zip unzip rar unrar 7zip zstd
 
 # ##########################
-# Programming Tools (No GUI)
+# Install Programming Tools
 # ##########################
-echo "qq: Installing programming tools (no-gui)"
+echo "qq: Installing programming tools"
 qq_apt_add flake8
 qq_apt_add gcc-doc
 qq_apt_add gdb
 qq_apt_add gh
+qq_conf_add "$backups_home_dir"/.config/gh
 qq_apt_add git
 qq_conf_add "$backups_home_dir"/.gitconfig
 qq_apt_add manpages
@@ -300,28 +334,28 @@ qq_apt_add shellcheck
 # ##########################
 # HOME SERVER ONLY
 # ##########################
-if [ "$1" == "-home-server" ]; then
-	# Set up home server directories
-	home_server_backups_dir="/mnt/ext1/backups/disk-home-server"
+if [ "$1" == "optiplex-9020" ]; then
+	qq_mount_nfs2
+
+	# set up home server directories
+	home_server_backups_dir="/srv/nfs2/"
 	home_server_backups_home_dir="$home_server_backups_dir/home/$USER"
 	home_server_backups_etc_dir="$home_server_backups_dir/etc"
 	home_server_backups_var_dir="$home_server_backups_dir/var"
 
-	echo "qq: Removing home server programs"
-	qq_apt_rm alsa-tools
-	qq_apt_rm alsa-utils
+	echo "qq: Removing home server software"
+	qq_apt_rm alsa-tools alsa-utils
 	rm ~/.asoundrc
 	sudo apt autopurge -y
 
 	echo "qq: Adding home server configs"
 	qq_conf_add "$home_server_backups_home_dir"/*
-	mkdir -p "$HOME"/.ssh
-	qq_conf_add "$home_server_backups_home_dir"/.ssh/authorized_keys
+	qq_conf_add "$home_server_backups_home_dir"/.ssh
 	qq_su_conf_add_ow "$home_server_backups_etc_dir"/network/interfaces
 	qq_su_conf_add_ow "$home_server_backups_etc_dir"/ssh/sshd_config
 	sudo ufw allow 2269/tcp
 
-	echo "qq: Setting up guest user"
+	echo "qq: Setting up home server guest user"
 	sudo mkdir -p /srv/guest/upload
 	sudo useradd -s /usr/sbin/nologin guest
 	echo 'guest:guest' | sudo chpasswd
@@ -331,9 +365,10 @@ if [ "$1" == "-home-server" ]; then
 	qq_apt_add nfs-kernel-server
 	sudo update-rc.d nfs-kernel-server disable
 	qq_su_conf_add_ow "$home_server_backups_etc_dir"/exports
-	sudo mkdir -p /srv/nfs
-	sudo chmod 755 /srv/nfs
-	ln -s /srv/nfs ~/nfs
+	sudo mkdir -p /srv/nfs1
+	sudo chmod 755 /srv/nfs1
+	ln -s /srv/nfs1 ~/nfs1
+	ln -s /srv/nfs2 ~/nfs2
 
 	echo "qq: Setting up home server nginx"
 	qq_apt_add nginx
@@ -347,9 +382,10 @@ if [ "$1" == "-home-server" ]; then
 	ln -s /var/www/html ~/nginx
 	ln -s /var/log/nginx ~/nginx/log
 
+	qq_unmount_nfs2
 	qq_unmount_ext1
 
-	echo "qq: Done installing!"
+	qq_done_installing
 
 	# exit at end of home server install
 	exit 0
@@ -360,12 +396,13 @@ fi
 # ##########################
 
 # ##########################
-# Install Xorg and WM (GUI)
+# Install Xorg and WM
 # ##########################
 echo "qq: Installing Xorg and WM"
 qq_apt_add xorg
 qq_apt_add xserver-xorg-video-intel
 qq_apt_add xdotool xlockmore xzoom
+qq_apt_add xinput
 qq_apt_add dbus dbus-x11
 qq_apt_add bspwm
 qq_conf_add "$backups_home_dir"/.config/bspwm
@@ -373,11 +410,17 @@ qq_conf_add "$backups_home_dir"/.config/sxhkd
 qq_apt_add polybar
 qq_conf_add "$backups_home_dir"/.config/polybar
 
-echo "qq: Adding gui-only configs"
+# ##########################
+# Copy PC configs
+# ##########################
+echo "qq: Copying PC configs"
 qq_conf_add "$backups_home_dir"/.themes
 qq_root_ln "$HOME"/.themes
+mkdir -p ~/.config/fontconfig
+qq_conf_add "$backups_home_dir"/.config/fontconfig/fonts.conf
 qq_conf_add "$backups_home_dir"/.local/share/fonts
 qq_root_ln "$HOME"/.local/share/fonts
+fc-cache -f -v
 qq_conf_add "$backups_home_dir"/.local/share/icons
 qq_root_ln "$HOME"/.local/share/icons
 qq_conf_add "$backups_home_dir"/.config/gtk-3.0
@@ -386,6 +429,13 @@ qq_conf_add "$backups_home_dir"/.config/gtk-2.0
 qq_root_ln "$HOME"/.config/gtk-2.0
 qq_conf_add "$backups_home_dir"/.gtkrc-2.0
 qq_root_ln "$HOME"/.gtkrc-2.0
+
+qq_conf_add "$backups_home_dir"/downloads
+qq_conf_add_ow "$backups_home_dir"/.ssh
+qq_conf_add "$backups_home_dir"/bg.jpg
+qq_conf_add "$backups_home_dir"/.asoundrc
+qq_conf_add "$backups_home_dir"/.dotfiles
+qq_conf_add "$backups_home_dir"/README.md
 
 # ##########################
 # Install Programs (GUI)
@@ -398,17 +448,18 @@ qq_root_ln "$HOME"/.config/alacritty
 qq_apt_add audacity
 qq_conf_add "$backups_home_dir"/.config/audacity
 qq_conf_add "$backups_home_dir"/.local/share/audacity
+qq_apt_add ddccontrol
 qq_apt_add dillo
 qq_conf_add "$backups_home_dir"/.dillo
+qq_apt_add ffmpeg
 qq_apt_add feh
 qq_apt_add fonts-dejavu-extra
-qq_apt_add fonts-noto-color-emoji
-qq_conf_add 
 qq_apt_add galculator
 qq_conf_add "$backups_home_dir"/.config/galculator
 qq_apt_add gimp
 qq_conf_add "$backups_home_dir"/.config/GIMP
 qq_apt_add guvcview
+qq_apt_add imagemagick
 qq_apt_add libreoffice
 qq_conf_add "$backups_home_dir"/.config/libreoffice
 # librewolf (extrepo)
@@ -419,6 +470,7 @@ if ! dpkg-query -l | grep librewolf > /dev/null; then
 fi
 qq_apt_add librewolf
 qq_conf_add "$backups_home_dir"/.librewolf
+qq_apt_add mesa-utils
 qq_conf_add "$backups_home_dir"/.mozilla
 # monero (appimage)
 qq_conf_add "$backups_home_dir"/.bitmonero
@@ -438,16 +490,17 @@ qq_conf_add "$backups_home_dir"/.soulseek
 qq_apt_add telegram-desktop
 qq_conf_add "$backups_home_dir"/.local/share/TelegramDesktop
 qq_apt_add unclutter-xfixes
+qq_apt_add usbmuxd ifuse
+qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
+sudo update-rc.d usbmuxd defaults
 qq_apt_add xautolock
+qq_apt_add yt-dlp
 qq_apt_add zathura
 qq_conf_add "$backups_home_dir"/.config/zathura
 
 # ##########################
-# Copy/Install Games
+# Install/Copy Games
 # ##########################
-echo "qq: Adding game files"
-qq_conf_add "$backups_home_dir"/games
-
 echo "qq: Installing game programs"
 qq_apt_add dosbox
 qq_apt_add mednaffe
@@ -456,6 +509,7 @@ qq_apt_add scummvm
 # wine games
 qq_apt_add wine
 qq_apt_add wine32:i386
+qq_apt_add mesa-vulkan-drivers
 qq_apt_add libvulkan1:i386
 qq_apt_add libgl1:i386
 qq_apt_add libxrandr2:i386
@@ -464,21 +518,12 @@ qq_apt_add libcrypt1:i386
 # for jedi outcast singleplayer
 qq_apt_add libjpeg8
 
-echo "qq: Opening ports for games"
-# bf1942
-sudo ufw allow 14567
-# source
-sudo ufw allow 27015
+echo "qq: Copying game files"
+qq_conf_add "$backups_home_dir"/games
 
 # ##########################
 # Extra (Not home server)
 # ##########################
-echo "qq: Adding Downloads"
-qq_conf_add "$backups_home_dir"/Downloads
-
-echo "qq: Adding background image"
-qq_conf_add "$backups_home_dir"/bg.jpg
-
 echo "qq: Adding user to input group"
 sudo usermod -aG input "$USER"
 
@@ -486,51 +531,15 @@ echo "qq: Disabling startup services"
 sudo update-rc.d networking disable
 sudo update-rc.d ssh disable
 
-echo "qq: Adding extra configs"
-qq_conf_add "$backups_home_dir"/.asoundrc
-qq_conf_add "$backups_home_dir"/.dotfiles
-qq_conf_add "$backups_home_dir"/README.md
-qq_conf_add "$backups_home_dir"/.local/asus-config
-
-echo "qq: Extra configuring of ssh"
-qq_conf_add_ow "$backups_home_dir"/.ssh
-sudo ufw allow ssh
-
-echo "qq: Installing usbmuxd"
-qq_apt_add usbmuxd ifuse
-qq_su_conf_add "$backups_etc_dir"/init.d/usbmuxd
-sudo update-rc.d usbmuxd defaults
-
 # ##########################
-# T420
+# Installing configs for specific PCs
 # ##########################
-if [ "$1" == "-t420" ]; then
-	echo "qq: Fixing t420 broken keys"
-	qq_su_conf_add "$backups_etc_dir"/udev/hwdb.d/99-thinkpad-extra.hwdb
-	sudo udevadm hwdb --update
-	sudo udevadm trigger /dev/input/event4
-fi
-
-# ##########################
-# Asus G15
-# ##########################
-if [ "$1" == "-asus" ]; then
-	echo "qq: Adding asus laptop configs"
-	trash ~/.asoundrc
-	cp ~/.local/asus-config/.asoundrc ~/.asoundrc
-	trash ~/.local/userscripts/qqlib
-	cp ~/.local/asus-config/qqlib ~/.local/userscripts/qqlib
-
-	echo "qq: Switching to kernel 6.1 for asus"
-	qq_apt_add linux-image-6.1.90-antix.1-amd64-smp
-	sudo apt purge linux-image-5.10* -y
-	# qq_apt_add mesa-vulkan-drivers
-	# qq_apt_add nvidia-driver nvidia-smi
-fi
+echo "qq: Running $1 config script"
+~/.local/userscripts/bin/qqinstall-config "$1"
 
 # ##########################
 # Unmounting
 # ##########################
 qq_unmount_ext1
 
-echo "Done installing!"
+qq_done_installing

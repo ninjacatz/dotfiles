@@ -7,16 +7,16 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-start-cons|-ac-perf
-	-mode
+	default|performance
+	mode
 		start|ac|bat
-	-governor
+	gov
 		performance|conservative
 EOF
 }
 
 case "$1" in
-	-mode)
+	mode)
 		case "$2" in
 			start|ac|bat)
 				sudo "$source_dir/../qqsudo" tlp "$2"
@@ -27,7 +27,7 @@ case "$1" in
 				;;
 		esac
 		;;
-	-governor)
+	gov)
 		cpu_cores=$(nproc)
 		cpu_cores=$((cpu_cores-1))
 
@@ -46,13 +46,13 @@ case "$1" in
 		echo "Governors for cpu0-cpu$cpu_cores:"
 		cpufreq-info | awk -F '\"' '/may decide/ {print $2}'
 		;;
-	-start-cons)
-		"$source_dir/qqcpu" -mode start
-		"$source_dir/qqcpu" -governor conservative
+	default)
+		"$source_dir/qqcpu" mode start
+		"$source_dir/qqcpu" gov conservative
 		;;
-	-ac-perf)
-		"$source_dir/qqcpu" -mode ac
-		"$source_dir/qqcpu" -governor performance
+	performance)
+		"$source_dir/qqcpu" mode ac
+		"$source_dir/qqcpu" gov performance
 		;;
 	*)
 		usage

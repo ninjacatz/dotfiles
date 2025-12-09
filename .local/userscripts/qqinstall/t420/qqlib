@@ -1,0 +1,34 @@
+#!/bin/bash
+
+qqvolume_default_master="Master"
+qqvolume_default_card="0"
+qqvolume_default_device="0"
+qqvolume_default_hw="hw:$qqvolume_default_card,$qqvolume_default_device"
+qqvolume_ext_master="IEC958"
+qqvolume_ext_card="0"
+qqvolume_ext_device="3"
+qqvolume_ext_hw="hw:$qqvolume_ext_card,$qqvolume_ext_device"
+
+qqrecord_mic_audio="$qqvolume_default_hw"
+
+qqscreen_int_monitor="LVDS-1"
+qqscreen_int_res="1920x1080"
+qqscreen_int_rate="60.00"
+qqscreen_ext_monitor="DP-1"
+qqscreen_ext_res="2560x1440"
+qqscreen_ext_rate="75.00"
+qqscreen_parents_monitor="HDMI-1"
+qqscreen_parents_res="1920x1080"
+
+qqbacklight_int_path="/sys/class/backlight/acpi_video0"
+qqbacklight_int_increment="1"
+qqbacklight_key_path="/sys/class/leds/tpacpi::thinklight"
+qqbacklight_key_increment="255"
+qqbacklight_ext_device="/dev/i2c-7"
+qqbacklight_ext_address="0x10"
+qqbacklight_ext_increment="34"
+
+qqdevice_mice=("Logitech M325" "Logitech G400s")
+qqdevice_trackpads=("SynPS/2 Synaptics TouchPad")
+qqdevice_trackpoints=("TPPS/2 IBM TrackPoint")
+qqdevice_keyboards=("AT Translated Set 2 keyboard")

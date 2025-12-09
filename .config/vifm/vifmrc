@@ -99,47 +99,30 @@ set caseoptions=p
 " ---------------------------
 " MARKS
 " ---------------------------
-mark h /home/qq
-mark H /mnt/ext1/backups/disk/home/qq
-
+mark h ~
 mark r /root
-mark R /mnt/ext1/backups/disk/root
-
-mark g /home/qq/games
-mark G /mnt/ext1/Games
-
-mark c ~/.config
-mark C /mnt/ext1/backups/disk/home/qq/.config
-
-mark s ~/.local/share
-mark S /mnt/ext1/backups/disk/home/qq/.local/share
-
+mark c ~/calendar
 mark t ~/.local/share/Trash/files
+mark d ~/documents
+mark w ~/downloads
+mark v ~/videos
+mark p ~/pictures
+mark m ~/music
+mark n ~/notes
+mark j ~/journal
+mark g ~/games
 
-mark d /mnt/nfs/dev
-mark D /mnt/ext1/backups/nfs/dev
+mark 5 ~/.config
+nnoremap '% :cd ~/.local/share<CR>
+mark 6 /etc
+mark 8 ~/dev
+mark 7 ~/.local/userscripts
 
-mark w /home/qq/Downloads
-mark W /mnt/ext1/backups/disk/home/qq/Downloads
-
-mark u /mnt/nfs/documents
-mark U /mnt/ext1/backups/nfs/documents
-
-mark v /mnt/nfs/videos
-mark V /mnt/ext1/backups/nfs/videos
-
-mark p /mnt/nfs/pictures
-mark P /mnt/ext1/backups/nfs/pictures
-
-mark m /mnt/nfs/music
-mark M /mnt/ext1/backups/nfs/music
-
+nnoremap '; :cd /mnt<CR>
 nnoremap '[ :cd /mnt/ext1<CR>
 nnoremap '] :cd /mnt/ext2<CR>
-nnoremap '\ :cd /mnt/nfs<CR>
-
-nnoremap 'n :cd /mnt/nfs/notes<CR>
-nnoremap 'N :cd /mnt/part/journal<CR>
+nnoremap '\ :cd /mnt/nfs1<CR>
+nnoremap '| :cd /mnt/nfs2<CR>
 
 " ---------------------------
 " KEYMAPS
@@ -178,7 +161,8 @@ nnoremap <Space>" :registers<CR>
 " z -> m
 nnoremap <Space>x :tabc<CR>
 nnoremap <Space>v :view<CR>
-nnoremap <Space>n :find **<Left>
+nnoremap <Space>b :find **<Left>
+nnoremap <Space>n :cd<Space>
 nnoremap <Space>m :tabnew<Space>
 nnoremap <Space>, :norm<Space>
 nnoremap <Space>. :%s///g<Left><Left><Left>

@@ -1,0 +1,1 @@
+cmd_/home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/modules.order := {   echo /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/facetimehd.ko; :; } | awk '!x[$$0]++' - > /home/qq/.local/userscripts/qqinstall/m15/bcwc_pcie/modules.order

@@ -1,0 +1,10 @@
+XF86PowerOff
+	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/userscripts/bin/qqpc menu
+
+# ---------------------------
+# TOP ROW
+# ---------------------------
+
+# ---------------------------
+# FUNCTION ROW
+# ---------------------------

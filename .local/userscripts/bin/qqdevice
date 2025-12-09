@@ -8,44 +8,55 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-trackpad|-trackpoint|-mouse
-		-start|-stop
+	trackpad|trackpoint|mouse|keyboard
+		on|off
 EOF
 }
 
-trackpads=("${qqtrackpads[@]}")
-trackpoints=("${qqtrackpads[@]}")
-mice=("${qqmice[@]}")
+trackpads=("${qqdevice_trackpads[@]}")
+trackpoints=("${qqdevice_trackpads[@]}")
+mice=("${qqdevice_mice[@]}")
+keyboards=("${qqdevice_keyboards[@]}")
 
 case "$1" in
-	-trackpad|-trackpoint|-mouse)
-		if [[ "$1" == "-trackpad" ]]; then
+	trackpad|trackpoint|mouse|keyboard)
+		if [[ "$1" == "trackpad" ]]; then
 			devices=("${trackpads[@]}")
-		elif [[ "$1" == "-trackpoint" ]]; then
+		elif [[ "$1" == "trackpoint" ]]; then
 			devices=("${trackpoints[@]}")
-		elif [[ "$1" == "-mouse" ]]; then
+		elif [[ "$1" == "mouse" ]]; then
 			devices=("${mice[@]}")
+		elif [[ "$1" == "keyboard" ]]; then
+			devices=("${keyboards[@]}")
 		fi
 		device_ids=()
-		for device in "${devices[@]}"; do
-			device_ids+=("$(xinput list | grep "$device" | awk -F'=' '{print $2}' | awk '{print $1}')")
-		done
+		if [[ "$1" == "keyboard" ]]; then
+			for device in "${devices[@]}"; do
+				device_ids+=("$(xinput list | grep "$device" | grep "slave  keyboard" \
+					  | awk -F'id=' '{print $2}' | awk '{print $1}' \
+					  | sort -n | head -n 1)")
+			done
+		else
+			for device in "${devices[@]}"; do
+				device_ids+=("$(xinput list | grep "$device" | awk -F'=' '{print $2}' | awk '{print $1}')")
+			done
+		fi
 		case "$2" in
-			-start)
+			on)
 				virtual_pointer_id=$(xinput list | awk -F '=' '/Virtual core pointer/ {print $2}' | awk '{print $1}')
 				for id in "${device_ids[@]}"; do
 					xinput enable "$id"
-					if [[ "$1" == "-trackpad" || "$1" == "-trackpoint" ]]; then
+					if [[ "$1" == "trackpad" || "$1" == "trackpoint" ]]; then
 						sleep 0.1
 						xinput reattach "$id" "$virtual_pointer_id"
 					fi
 				done
 				echo "${1#-} enabled"
 				;;
-			-stop)
+			off)
 				for id in "${device_ids[@]}"; do
 					xinput disable "$id"
-					if [[ "$1" == "-trackpad" || "$1" == "-trackpoint" ]]; then
+					if [[ "$1" == "trackpad" || "$1" == "trackpoint" ]]; then
 						xinput float "$id"
 					fi
 				done

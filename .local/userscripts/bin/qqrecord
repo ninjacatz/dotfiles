@@ -8,7 +8,7 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-screenshot|-screencrop|-mic|-screen|-screen-mic|-stop
+	shot|crop|mic|screen|screen-mic|stop
 EOF
 }
 
@@ -31,39 +31,39 @@ ffmpeg_record_check () {
 	fi
 }
 
-mic_audio="$qqmic_audio"
+mic_audio="$qqrecord_mic_audio"
 
-dir="$HOME/Downloads/recordings"
+dir="$HOME/downloads/recordings"
 video_command=(-f x11grab -thread_queue_size 512 -r 30 -i)
 video_codecs=(-c:v libx264 -preset ultrafast -pix_fmt yuv420p)
 audio_command=(-f alsa -use_wallclock_as_timestamps 1 -thread_queue_size 512 -i)
 audio_codecs=(-c:a libmp3lame -b:a 128k -ar 44100)
 
 case "$1" in
-	-screenshot)
+	shot)
 		file_path=$(create_file_path "screenshot" "png")
 		scrot "$file_path"
 		;;
-	-screencrop)
+	crop)
 		file_path=$(create_file_path "screencrop" "png")
 		scrot -s "$file_path"
 		;;
-	-mic)
+	mic)
 		ffmpeg_record_check
 		file_path=$(create_file_path "mic" "mp3")
 		ffmpeg "${audio_command[@]}" "$mic_audio" "${audio_codecs[@]}" "$file_path"
 		;;
-	-screen)
+	screen)
 		ffmpeg_record_check
 		file_path=$(create_file_path "screen" "mp4")
 		ffmpeg "${video_command[@]}" "$DISPLAY" "${video_codecs[@]}" "$file_path"
 		;;
-	-screen-mic)
+	screen-mic)
 		ffmpeg_record_check
 		file_path=$(create_file_path "screen-mic" "mp4")
 		ffmpeg "${video_command[@]}" "$DISPLAY" "${audio_command[@]}" "$mic_audio" "${video_codecs[@]}" "${audio_codecs[@]}" "$file_path"
 		;;
-	-stop)
+	stop)
 		pkill -f 'ffmpeg.*-f'
 		;;
 	*)

@@ -1,0 +1,48 @@
+XF86PowerOff
+	alacritty --config-file ~/.config/alacritty/script.yml -e ~/.local/userscripts/bin/qqpc menu
+
+# ---------------------------
+# BLUE KEYS TOP LEFT TO BOTTOM RIGHT
+# ---------------------------
+XF86ScreenSaver
+	~/.local/userscripts/bin/qqpc lock
+{_,alt + }XF86Battery
+	~/.local/userscripts/bin/qqcpu {default,performance}
+XF86Sleep
+	~/.local/userscripts/bin/qqpc suspend
+XF86WLAN # automatic independent wifi toggle
+XF86WebCam
+	guvcview -g none
+XF86Display
+{_,alt + ,alt + ctrl + }XF86Display
+	~/.local/userscripts/bin/qqscreen {int,ext,int-ext}
+# trackpad toggle (f8):
+{_,alt + }XF86Launch3
+	~/.local/userscripts/bin/qqdevice trackpad {off,on}
+XF86Suspend
+	~/.local/userscripts/bin/qqpc hibernate
+{XF86MonBrightnessUp,XF86MonBrightnessDown} # automatic
+# thinkLight (automatic)
+# zoom (spacebar):
+XF86Launch4
+	xzoom
+{XF86AudioStop,XF86AudioPlay,XF86AudioPrev,XF86AudioNext}
+	~/.local/userscripts/bin/qqmpv-controls {stop,play-pause,seek-rewind,seek-forward}
+alt + {XF86AudioPrev,XF86AudioNext}
+	~/.local/userscripts/bin/qqmpv-controls {rewind,forward}
+
+# ---------------------------
+# AUDIO BUTTONS
+# ---------------------------
+XF86AudioMute
+	~/.local/userscripts/bin/qqvolume mute toggle
+XF86AudioLowerVolume
+	~/.local/userscripts/bin/qqvolume down
+XF86AudioRaiseVolume
+	~/.local/userscripts/bin/qqvolume up
+# mic mute button:
+XF86Launch1
+	~/.local/userscripts/bin/qqvolume in toggle
+# thinkvantage button:
+{_,alt + }XF86Launch2
+	~/.local/userscripts/bin/qqvolume out {default,ext}

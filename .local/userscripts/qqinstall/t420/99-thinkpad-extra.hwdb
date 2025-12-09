@@ -1,0 +1,5 @@
+evdev:name:ThinkPad Extra Buttons:*
+ KEYBOARD_KEY_1a=prog1 # micmute
+ KEYBOARD_KEY_17=prog2 # thinkvantage
+ KEYBOARD_KEY_07=prog3 # f8_fn_key
+ KEYBOARD_KEY_13=prog4 # zoom

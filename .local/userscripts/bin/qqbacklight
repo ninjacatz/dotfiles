@@ -8,40 +8,40 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-internal|-external
-		-up|-down|-max|-min
+	int|key|ext
+		up|down|max|min
 EOF
 }
 
-internal_backlight_path="$qqinternal_backlight_path"
-internal_increment="$qqinternal_increment"
-keyboard_backlight_path="$qqkeyboard_backlight_path"
-keyboard_increment="$qqkeyboard_increment"
-external_backlight_address="$qqexternal_backlight_address"
-external_backlight_device="$qqexternal_backlight_device"
-external_increment="$qqexternal_increment"
+int_path="$qqbacklight_int_path"
+int_increment="$qqbacklight_int_increment"
+key_path="$qqbacklight_key_path"
+key_increment="$qqbacklight_key_increment"
+ext_address="$qqbacklight_ext_address"
+ext_device="$qqbacklight_ext_device"
+ext_increment="$qqbacklight_ext_increment"
 
 # set up variables
 case "$1" in
-	-internal)
+	int)
 		min=0
-		increment="$internal_increment"
+		increment="$int_increment"
 
-		backlight=$(cat "$internal_backlight_path/brightness")
-		max=$(cat "$internal_backlight_path/max_brightness")
+		backlight=$(cat "$int_path/brightness")
+		max=$(cat "$int_path/max_brightness")
 		;;
-	-keyboard)
+	key)
 		min=0
-		increment="$keyboard_increment"
+		increment="$key_increment"
 
-		backlight=$(cat "$keyboard_backlight_path/brightness")
-		max=$(cat "$keyboard_backlight_path/max_brightness")
+		backlight=$(cat "$key_path/brightness")
+		max=$(cat "$key_path/max_brightness")
 		;;
-	-external)
+	ext)
 		min=0
-		increment="$external_increment"
+		increment="$ext_increment"
 
-		read -r backlight max <<< "$(ddccontrol -r "$external_backlight_address" dev:"$external_backlight_device" | awk -F '[/ ]' '/^Control/ {print $4, $5; exit}')"
+		read -r backlight max <<< "$(ddccontrol -r "$ext_address" dev:"$ext_device" | awk -F '[/ ]' '/^Control/ {print $4, $5; exit}')"
 		;;
 	*)
 		usage
@@ -51,18 +51,18 @@ esac
 
 # find new value
 case "$2" in
-	-up)
+	up)
 		total=$((backlight + increment))
 		((total > max)) && total=$max
 		;;
-	-down)
+	down)
 		total=$((backlight - increment))
 		((total < min)) && total=$min
 		;;
-	-max)
+	max)
 		total=$max
 		;;
-	-min)
+	min)
 		total=$min
 		;;
 	*)
@@ -73,20 +73,20 @@ esac
 
 # change brightness
 case "$1" in
-	-internal)
-		echo "$total" | sudo "$source_dir/../qqsudo" tee "$internal_backlight_path/brightness"
+	int)
+		echo "$total" | sudo "$source_dir/../qqsudo" tee "$int_path/brightness"
 		;;
-	-keyboard)
-		echo "$total" | sudo "$source_dir/../qqsudo" tee "$keyboard_backlight_path/brightness"
+	key)
+		echo "$total" | sudo "$source_dir/../qqsudo" tee "$key_path/brightness"
 		;;
-	-external)
-		ddccontrol -r "$external_backlight_address" -w "$total" dev:"$external_backlight_device"
+	ext)
+		ddccontrol -r "$ext_address" -w "$total" dev:"$ext_device"
 		;;
 esac
 
 # kill ddccontrol daemon after period of inactivity
-(
-	sleep 20
-	sudo "$source_dir/../qqsudo" pkill ddccontrol_serv || true
-	sudo "$source_dir/../qqsudo" pkill ddcpci || true
-) &
+# (
+	# sleep 10
+	# sudo "$source_dir/../qqsudo" pkill ddccontrol_serv || true
+	# sudo "$source_dir/../qqsudo" pkill ddcpci || true
+# ) &

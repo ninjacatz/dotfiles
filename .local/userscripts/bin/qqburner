@@ -1,9 +1,0 @@
-#!/bin/bash
-set -eo pipefail
-source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
-. "$source_dir/../qquser-check"
-
-# TODO: not working
-
-wodim dev=/dev/sr0 -scanbus
-wodim dev=/dev/sr0 -checkdrive

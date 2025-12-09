@@ -4,14 +4,14 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
 iphone_mnt_path="/mnt/iphone"
-iphone_download_path="$HOME/Downloads/iphone"
+iphone_download_path="$HOME/downloads/iphone"
 
 sudo "$source_dir/../qqsudo" service usbmuxd restart
 
 read -r -p "Press enter when iPhone is connected..."
 
 # to mount iphone
-sudo "$source_dir/../qqsudo" ifuse $iphone_mnt_path
+sudo "$source_dir/../qqsudo" ifuse "$iphone_mnt_path"
 
 if [ -z "$(sudo "$source_dir/../qqsudo" ls -A "$iphone_mnt_path")" ]; then
 	sudo "$source_dir/../qqsudo" pkill ifuse

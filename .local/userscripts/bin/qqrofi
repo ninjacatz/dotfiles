@@ -7,7 +7,7 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-app|-game
+	app|game
 EOF
 }
 
@@ -18,7 +18,7 @@ theme="$HOME/.config/rofi/themes/gruvbox-dark.rasi"
 flags=(-disable-history -scroll-method 1 -font "$font" -dpi "$dpi" -theme "$theme" -theme-str 'listview {lines: 10;}')
 
 case $1 in
-	-app)
+	app)
 		# "-drun-exclude-categories" flag not working (bad version of rofi), which is why the following junk is necessary
 		# make all desktop files with "Game" category have ONLY "Game" category
 		sudo "$source_dir/../qqsudo" sed -i '/Categories.*Game/ s/^Categories=.*$/Categories=Game/' /usr/share/applications/*
@@ -29,7 +29,7 @@ case $1 in
 
 		rofi "${flags[@]}" "${modi[@]}"
 		;;
-	-game)
+	game)
 		# find all .desktop files, extract name@exec_line, and sort them
 		names_and_execs=()
 		while IFS= read -r path; do

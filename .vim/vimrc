@@ -100,11 +100,6 @@ endif
 set statusline+=%{StatusLineAutochdirPath()}%f\ %m%r%w%=%{StatusLineFileType()}%L
 
 " ---------------------------
-" TITLE
-" ---------------------------
-set title titlestring=%F\ %{&modified?'[+]\ ':''}-\ Vim
-
-" ---------------------------
 " VISUAL TWEAKS
 " ---------------------------
 " remove intro message
@@ -367,8 +362,8 @@ nnoremap <Leader>i :help<Space>
 nnoremap <Leader>o :split<CR>
 nnoremap <Leader>O :vsplit<CR>
 noremap <Leader>p "0p
-nnoremap <Leader>[ :set autochdir<CR>
-nnoremap <Leader>] :cd %:p:h<CR>:set noautochdir<CR>
+nnoremap <Leader>[ :cd %:p:h<CR>:set noautochdir<CR>
+nnoremap <Leader>] :set autochdir<CR>
 nnoremap <Leader>\ :ClaudeCancel<CR>
 
 " a -> l
@@ -405,7 +400,7 @@ nnoremap <Leader>n :e<Space>
 nnoremap <Leader>N :e **/*
 nnoremap <Leader>m :tabnew<Space>
 nnoremap <Leader>M :tabnew **/*
-nnoremap <Leader>, :norm<Space>
+xnoremap <Leader>, :norm<Space>
 nnoremap <Leader>. :%s///g<Left><Left><Left>
 xnoremap <Leader>. :s///g<Left><Left><Left>
 nnoremap <Leader>> :bufdo %s///gc <Bar> update<Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>

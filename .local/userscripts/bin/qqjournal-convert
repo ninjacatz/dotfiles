@@ -3,21 +3,21 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-journal_path="/mnt/nfs/journal-unencoded"
-journal_converted_path="$HOME/Downloads/journal-converted"
+journal_path="$HOME/journal"
+journal_converted_path="$HOME/downloads/journal-converted"
 
 read -r -p "Do you want to eject devices when done? (y/N) " eject_answer
 
-"$source_dir/qqnfs" -mount hs
+"$source_dir/qqnfs" 1 mount
 
 echo "Copying journals..."
 
-cp -r "$journal_path/" "$journal_converted_path"
+cp -r "$journal_path" "$journal_converted_path"
 
 "$source_dir/qqjournal-convert.py" "$journal_converted_path"
 
 if [ "${eject_answer,,}" = "y" ]; then
-	"$source_dir/qqnfs" -umount hs
+	"$source_dir/qqnfs" 1 unmount
 fi
 
 echo "Done converting"

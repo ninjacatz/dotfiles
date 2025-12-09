@@ -5,54 +5,54 @@ source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qqlib"
 
 # NOTE: cannot have more than 4 monitors
-# NOTE: initial order of desktops inside switch statement indicates placement of desktops 1-4
+# NOTE: initial order of desktops indicates placement of desktops 1-4
 
 usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	-internal|-external|-external-1080p|-internal-external|-parents
+	int|ext|int-ext|parents
 EOF
 }
 
-internal_monitor="$qqinternal_monitor"
-internal_res="$qqinternal_res"
-internal_rate="$qqinternal_rate"
+int_monitor="$qqscreen_int_monitor"
+int_res="$qqscreen_int_res"
+int_rate="$qqscreen_int_rate"
 
-external_monitor="$qqexternal_monitor"
-external_res="$qqexternal_res"
-external_rate="$qqexternal_rate"
+ext_monitor="$qqscreen_ext_monitor"
+ext_res="$qqscreen_ext_res"
+ext_rate="$qqscreen_ext_rate"
 
-parents_monitor="$qqparents_monitor"
-parents_res="$qqparents_res"
+parents_monitor="$qqscreen_parents_monitor"
+parents_res="$qqscreen_parents_res"
 
 old_monitors=("$(xrandr | awk '/ connected/ && /[[:digit:]]x[[:digit:]].*+/{print $1}')")
 
 case "$1" in
-	-internal)
-		new_monitors=("$internal_monitor")
+	int)
+		new_monitors=("$int_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode $internal_res --rate $internal_rate
-		"$source_dir/qqvolume" output default
+		--output "${new_monitors[0]}" --primary --mode $int_res --rate $int_rate
+		"$source_dir/qqvolume" out default
 		;;
-	-external)
-		new_monitors=("$external_monitor")
+	ext)
+		new_monitors=("$ext_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode $external_res --rate $external_rate
-		"$source_dir/qqvolume" output external
+		--output "${new_monitors[0]}" --primary --mode $ext_res --rate $ext_rate
+		"$source_dir/qqvolume" out ext
 		;;
-	-internal-external)
-		new_monitors=("$internal_monitor" "$external_monitor")
+	int-ext)
+		new_monitors=("$int_monitor" "$ext_monitor")
 		xrandr \
-		--output "${new_monitors[0]}" --primary --mode $internal_res --rate $internal_monitor_rate \
-		--output "${new_monitors[1]}" --mode $external_res --rate $external_monitor_rate --above "${new_monitors[0]}"
-		"$source_dir/qqvolume" output external
+		--output "${new_monitors[0]}" --primary --mode $int_res --rate $int_rate \
+		--output "${new_monitors[1]}" --mode $ext_res --rate $ext_rate --above "${new_monitors[0]}"
+		"$source_dir/qqvolume" out ext
 		;;
-	-parents)
+	parents)
 		new_monitors=("$parents_monitor")
 		xrandr \
 		--output "${new_monitors[0]}" --primary --mode $parents_res --pos 0x0 --rotate normal
-		"$source_dir/qqvolume" output external
+		"$source_dir/qqvolume" out ext
 		;;
 	*)
 		usage

@@ -6,7 +6,7 @@ if [ ! -f /tmp/bspwm_first_run ]; then
 	~/.local/userscripts/bin/qqvolume -input -off
 	~/.local/userscripts/bin/qqdevice -trackpad -stop
 	# execute lock after 5 minutes
-	xautolock -time 5 -detectsleep -locker "$HOME/.local/userscripts/bin/qqpc -lock -notwithaudio > /dev/null" &
+	xautolock -time 5 -detectsleep -locker "$HOME/.local/userscripts/bin/qqpc lock not-with-audio > /dev/null" &
 
 	touch /tmp/bspwm_first_run
 fi
@@ -14,8 +14,8 @@ fi
 # ---------------------------
 # BASIC CONFIG
 # ---------------------------
-bspc config border_width 10
-bspc config window_gap 0
+bspc config border_width 20
+bspc config window_gap 20
 bspc config split_ratio 0.5
 
 # set border colors
@@ -50,7 +50,7 @@ bspc config bottom_padding "$height_in_pixels"
 if pgrep -x sxhkd > /dev/null; then
 	pkill -x sxhkd
 fi
-sxhkd &
+sxhkd -c ~/.config/sxhkd/sxhkdrc ~/.config/sxhkd/sxhkdrc-fn-keys &
 
 # set polybar (on multiple monitors)
 if pgrep -x polybar > /dev/null; then

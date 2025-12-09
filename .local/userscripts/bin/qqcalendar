@@ -3,7 +3,9 @@ set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 
-calendar_path="/mnt/nfs/calendar"
+calendar_path="$HOME/calendar"
 
-"$source_dir/qqnfs" -mount hs
+"$source_dir/qqnfs" 1 mount
+
+sleep 1
 calcurse -D "$calendar_path"

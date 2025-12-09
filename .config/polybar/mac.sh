@@ -2,8 +2,8 @@
 
 output=""
 
-if [ -e /tmp/mac-on ]; then
-	output="mac"
+if [ -e /tmp/mac_on ]; then
+	output="${output}mac"
 fi
 
 echo "$output"

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
 . "$source_dir/../qqlib"
@@ -10,28 +11,30 @@ Options:
 	up|down|min|max
 	mute
 		on|off|toggle
-	input
+	in
 		on|off|toggle
-	output
-		default|external
+	out
+		default|ext
 EOF
 }
 
-default_master="$qqdefault_master"
-default_card="$qqdefault_card"
-default_hw="$qqdefault_hw"
+default_master="$qqvolume_default_master"
+default_card="$qqvolume_default_card"
+default_hw="$qqvolume_default_hw"
 
-ext_master="$qqext_master"
-ext_card="$qqext_card"
-ext_hw="$qqext_hw"
+ext_master="$qqvolume_ext_master"
+ext_card="$qqvolume_ext_card"
+ext_hw="$qqvolume_ext_hw"
 
 increment=5
 
 current_dev=$(grep hw: "$HOME/.asoundrc" | awk -F'"' '{print $2}')
 if [ "$current_dev" == "$default_hw" ]; then
 	current_master="$default_master"
+	current_card="$default_card"
 elif [ "$current_dev" == "$ext_hw" ]; then
 	current_master="$ext_master"
+	current_card="$ext_card"
 else
 	echo "Not a known device"
 	exit 1
@@ -39,30 +42,30 @@ fi
 
 case "$1" in
 	up)
-		amixer set "$current_master" "$increment%+"
+		amixer -c "$current_card" set "$current_master" "$increment%+"
 		;;
 	down)
-		amixer set "$current_master" "$increment%-"
+		amixer -c "$current_card" set "$current_master" "$increment%-"
 		;;
 	min)
-		amixer set "$current_master" 0%
+		amixer -c "$current_card" set "$current_master" 0%
 		;;
 	max)
-		amixer set "$current_master" 100%
+		amixer -c "$current_card" set "$current_master" 100%
 		;;
 	mute)
 		case "$2" in
 			on)
-				amixer set "$current_master" mute
+				amixer -c "$current_card" set "$current_master" mute
 				;;
 			off)
-				amixer set "$current_master" unmute
+				amixer -c "$current_card" set "$current_master" unmute
 				;;
 			toggle)
-				if amixer get "$current_master" | grep -q '\[off\]'; then
-					amixer set "$current_master" unmute
+				if amixer -c "$current_card" get "$current_master" | grep -q '\[off\]'; then
+					amixer -c "$current_card" set "$current_master" unmute
 				else
-					amixer set "$current_master" mute
+					amixer -c "$current_card" set "$current_master" mute
 				fi
 				;;
 			*)
@@ -71,23 +74,27 @@ case "$1" in
 				;;
 		esac
 		;;
-	input)
+	in)
 		case "$2" in
 			on)
-				amixer set Capture cap
-				sudo "$source_dir/../qqsudo" chmod 660 /dev/video0
+				amixer  -c "$current_card" set Capture cap
+				sudo "$source_dir/../qqsudo" chmod 660 /dev/video* || true
+				sudo "$source_dir/../qqsudo" modprobe facetimehd || true
 				;;
 			off)
-				amixer set Capture nocap
-				sudo "$source_dir/../qqsudo" chmod 000 /dev/video0
+				amixer  -c "$current_card" set Capture nocap
+				sudo "$source_dir/../qqsudo" chmod 000 /dev/video* || true
+				sudo "$source_dir/../qqsudo" rmmod facetimehd || true
 				;;
 			toggle)
-				if amixer get Capture | grep "\[on\]" > /dev/null; then
-					amixer set Capture nocap
-					sudo "$source_dir/../qqsudo" chmod 000 /dev/video0
+				if amixer -c "$current_card" get Capture | grep "\[on\]" > /dev/null; then
+					amixer -c "$current_card" set Capture nocap
+					sudo "$source_dir/../qqsudo" chmod 000 /dev/video* || true
+					sudo "$source_dir/../qqsudo" rmmod facetimehd || true
 				else
-					amixer set Capture cap
-					sudo "$source_dir/../qqsudo" chmod 660 /dev/video0
+					amixer -c "$current_card" set Capture cap
+					sudo "$source_dir/../qqsudo" chmod 660 /dev/video* || true
+					sudo "$source_dir/../qqsudo" modprobe facetimehd || true
 				fi
 				;;
 			*)
@@ -96,18 +103,28 @@ case "$1" in
 				;;
 		esac
 		;;
-	output)
+	out)
 		case "$2" in
 			default)
 				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$default_hw\"/" "$HOME/.asoundrc"
 				sed -i "s/card .*/card $default_card/g" "$HOME/.asoundrc"
+
 				sed -i "s/master-mixer = .*/master-mixer = $default_master/" "$HOME/.config/polybar/config.ini"
+				sed -i "s/master-soundcard .*/master-soundcard = hw:$default_card/g" "$HOME/.config/polybar/config.ini"
+				sed -i "s/speaker-soundcard .*/speaker-soundcard = hw:$default_card/g" "$HOME/.config/polybar/config.ini"
+				sed -i "s/headphone-soundcard .*/headphone-soundcard = hw:$default_card/g" "$HOME/.config/polybar/config.ini"
+
 				polybar-msg cmd restart > /dev/null
 				;;
-			external)
+			ext)
 				sed -i "s/^[[:space:]]*pcm .*/\t\tpcm \"$ext_hw\"/" "$HOME/.asoundrc"
 				sed -i "s/card .*/card $ext_card/g" "$HOME/.asoundrc"
+
 				sed -i "s/master-mixer = .*/master-mixer = $ext_master/" "$HOME/.config/polybar/config.ini"
+				sed -i "s/master-soundcard .*/master-soundcard = hw:$ext_card/g" "$HOME/.config/polybar/config.ini"
+				sed -i "s/speaker-soundcard .*/speaker-soundcard = hw:$ext_card/g" "$HOME/.config/polybar/config.ini"
+				sed -i "s/headphone-soundcard .*/headphone-soundcard = hw:$ext_card/g" "$HOME/.config/polybar/config.ini"
+
 				polybar-msg cmd restart > /dev/null
 				;;
 			*)
