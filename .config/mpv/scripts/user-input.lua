@@ -7,10 +7,10 @@ local options = require 'mp.options'
 local opts = {
     -- All drawing is scaled by this value, including the text borders and the
     -- cursor. Change it if you have a high-DPI display.
-    scale =                           2.0,
+    scale =                               2.0,
     -- Set the font used for the REPL and the console. This probably doesn't
     -- have to be a monospaced font.
-    font = "JetBrains Mono",
+    font = "SF Mono + Apple Emoji",
     -- Set the font size used for the REPL and the console. This will be
     -- multiplied by "scale."
     font_size = 16,

@@ -28,6 +28,8 @@ qqbacklight_ext_device="/dev/i2c-7"
 qqbacklight_ext_address="0x10"
 qqbacklight_ext_increment="34"
 
+qqpc_backlight_key_path="$qqbacklight_key_path"
+
 qqdevice_mice=("Logitech M325" "Logitech G400s")
 qqdevice_trackpads=("bcm5974")
 qqdevice_trackpoints=()

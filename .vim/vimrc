@@ -53,6 +53,8 @@ set incsearch hlsearch
 set splitbelow splitright
 " set grep command
 set grepprg=grep\ -irnHI
+" disable auto-comment on new line
+autocmd BufEnter * set formatoptions-=c formatoptions-=r formatoptions-=o
 " prevent netrw from loading
 let g:loaded_netrw=1
 let g:loaded_netrwPlugin=1
@@ -131,8 +133,6 @@ set showtabline=1
 " set cursor to line in insert mode, or block otherwise
 autocmd InsertEnter * silent execute "!echo -ne '\e[5 q'"
 autocmd InsertLeave * silent execute "!echo -ne '\e[2 q'"
-" TODO: (where to put?) disable auto-comment on new line
-autocmd FileType * set formatoptions-=c formatoptions-=r formatoptions-=o
 
 " ---------------------------
 " COLORSCHEME

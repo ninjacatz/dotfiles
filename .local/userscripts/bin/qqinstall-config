@@ -66,7 +66,7 @@ case "$1" in
 		make
 		sudo "$source_dir/../qqsudo" make install
 		sudo "$source_dir/../qqsudo" apt install libssl-dev checkinstall -y
-		cd "$HOME/.local/userscripts/qqinstall/m15/bcwc_pcie"
+		cd "$HOME/.local/userscripts/qqinstall/m15/facetimehd-firmware/bcwc_pcie"
 		make
 		sudo "$source_dir/../qqsudo" make install
 		sudo "$source_dir/../qqsudo" apt purge libssl-dev checkinstall -y

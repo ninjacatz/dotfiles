@@ -24,6 +24,7 @@ sudo "$source_dir/../qqsudo" rm -f "/root/.bash_history"
 # vim
 rm -f "$HOME/.vim/viminfo"
 rm -f "$HOME/.vim/.netrwhist"
+rm -f "$HOME/.vim/swap/"*
 # vifm
 rm -f "$HOME/.config/vifm/vifminfo.json"
 # iwctl
@@ -47,10 +48,19 @@ rm -f "$HOME/.local/share/recently-used.xbel"
 # MPV saved video locations
 rm -f "$HOME/.config/mpv/watch_later/"*
 # Extra clutter
-rm -rf "$HOME/.fltk"
+rm -rf "$HOME/.pki"
+rm -f "$HOME/.sudo_as_admin_successful"
+sudo "$source_dir/../qqsudo" rm -f "/root/.sudo_as_admin_successful"
 rm -rf "$HOME/.config/menus"
+rm -rf "$HOME/.config/dconf"
+rm -rf "$HOME/.config/xresources.d"
+rm -rf "$HOME/.config/QtProject.conf"
 rm -rf "$HOME/.local/share/desktop-directories"
 rm -rf "$HOME/.local/share/mime"
+rm -rf "$HOME/.local/share/icons/hicolor"
+rm -rf "$HOME/.local/share/gegl-0.4"
+rm -rf "$HOME/.local/share/xorg"
+rm -rf "$HOME/.local/share/recently-used.xbel"
 # Audacity recent files
 sed -i '/^file/d' "$HOME/.config/audacity/audacity.cfg" || true
 # OpenOffice recent files

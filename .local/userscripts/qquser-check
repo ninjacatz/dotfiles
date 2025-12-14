@@ -1,5 +1,4 @@
 #!/bin/bash
-set -eo pipefail
 
 if [[ "$EUID" -eq 0 ]]; then
 	echo "Run as user"

@@ -1,9 +1,10 @@
 #!/bin/sh
 
-output=""
-
-if [ -e /tmp/mac_on ]; then
-	output="${output}mac"
-fi
-
-echo "$output"
+while true; do
+	sleep 1
+	if [ -e /tmp/mac_on ]; then
+		echo mac
+	else
+		echo
+	fi
+done

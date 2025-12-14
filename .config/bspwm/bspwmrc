@@ -15,7 +15,7 @@ fi
 # BASIC CONFIG
 # ---------------------------
 bspc config border_width 20
-bspc config window_gap 20
+bspc config window_gap 0
 bspc config split_ratio 0.5
 
 # set border colors
@@ -45,7 +45,6 @@ bspc config bottom_padding "$height_in_pixels"
 # ---------------------------
 # STARTUP
 # ---------------------------
-
 # set keybindings
 if pgrep -x sxhkd > /dev/null; then
 	pkill -x sxhkd
@@ -64,16 +63,16 @@ done
 if pgrep -x picom > /dev/null; then
 	pkill -x picom
 fi
-picom &
-
-# set desktop background
-feh --bg-fill --random ~/bg.jpg &
+picom --frame-opacity 0.9 &
 
 # hide mouse after certain time
 if pgrep -x unclutter > /dev/null; then
 	pkill -x unclutter
 fi
 unclutter -idle 10 &
+
+# set desktop background
+feh --bg-fill ~/.local/share/background/bg-sea-wave-frigate-oil-painting-sailing-ship-4K.jpg &
 
 # disable screen blanking
 xset dpms 0 0 0 && xset s 0 0 &

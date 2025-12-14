@@ -18,16 +18,16 @@ cursor:
     blink_timeout: 0
 font:
   normal:
-    family: jetbrains-mono-apple-emoji
+    family: SF Mono + Apple Emoji
     style: Medium
   bold:
-    family: jetbrains-mono-apple-emoji
+    family: SF Mono + Apple Emoji
     style: Bold
   italic:
-    family: jetbrains-mono-apple-emoji
+    family: SF Mono + Apple Emoji
     style: MediumItalic
   bold_italic:
-    family: jetbrains-mono-apple-emoji
+    family: SF Mono + Apple Emoji
     style: BoldItalic
 import:
   - /home/qq/.config/alacritty/themes/gruvbox_dark.yaml

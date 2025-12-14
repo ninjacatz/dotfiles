@@ -4,7 +4,7 @@
 # ---------------------------
 # 1 -> 0
 # ---------------------------
-super + {_, alt + }grave
+super + {_,alt + }grave
 	~/.local/userscripts/bin/qqbspwm desktop {next,prev}
 super + {1,2,3,4}
 	bspc desktop -f {1,2,3,4}
@@ -13,20 +13,20 @@ super + alt + {1,2,3,4}
 super + alt + ctrl + {1,2,3,4}
 	for node in $(bspc query -N -d); do bspc node "$node" -d {1,2,3,4}; done
 super + 5
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.profile ~/.asoundrc ~/.Xresources ~/.vim/vimrc ~/.config/vifm/vifmrc ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini ~/.config/zathura/zathurarc ~/.config/alacritty/alacritty.yml ~/.config/mpv/mpv.conf ~/.config/mimeapps.list ~/.config/user-dirs.dirs ~/.config/fontconfig/fonts.conf ~/.ssh/config
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.bashrc ~/.profile ~/.asoundrc ~/.Xresources ~/.vim/vimrc ~/.config/vifm/vifmrc ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc ~/.config/polybar/config.ini ~/.config/zathura/zathurarc ~/.config/alacritty/alacritty.yml ~/.config/mpv/mpv.conf ~/.config/mimeapps.list ~/.config/user-dirs.dirs ~/.config/guvcview2/video0 ~/.config/fontconfig/fonts.conf ~/.gtkrc-2.0 ~/.config/gtk-3.0/settings.ini ~/.ssh/config
 super + 6
-	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sudo -E vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/inittab /etc/resolvconf/resolv.conf.d/head /etc/iwd/main.conf /var/lib/iwd/619Vine.psk /etc/openvpn/AirVPN_All-servers_UDP-443-Entry3.conf 
+	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e sudo -E vim /etc/tlp.conf /etc/default/grub /etc/fstab /etc/inputrc /etc/acpi/events/lidbtn /etc/inittab /etc/resolvconf/resolv.conf.d/head /etc/iwd/main.conf /var/lib/iwd/NETGEAR24.psk /etc/openvpn/AirVPN_All-servers_UDP-443-Entry3.conf /etc/network/interfaces
 super + 7
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/.local/userscripts/bin
 super + 8
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e vim ~/dev
-super + {_, alt + }9
+super + {_,alt + }9
 	~/.local/userscripts/bin/qqvolume {down,mute toggle}
-super + {_, alt + }0
+super + {_,alt + }0
 	~/.local/userscripts/bin/qqvolume {up,in toggle}
-super + {_, alt + , alt + ctrl + }minus
+super + {_,alt + , alt + ctrl + }minus
 	~/.local/userscripts/bin/qqbacklight {int down,key down,ext down}
-super + {_, alt + , alt + ctrl + }equal
+super + {_,alt + , alt + ctrl + }equal
 	~/.local/userscripts/bin/qqbacklight {int up,key up,ext up}
 super + {_,alt + }BackSpace
 	{bspc wm -r,rm /tmp/bspwm_first_run && bspc wm -r}
@@ -38,49 +38,51 @@ super + {_,alt + }Tab
 	~/.local/userscripts/bin/qqbspwm select {next,prev}
 super + q
 	bspc node -c
-super + {_, alt + }w
-	{librewolf,dillo}
-super + {_, alt + }e
+super + w
+	librewolf
+super + {_,alt + }e
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e {vim,sudo -E vim}
-super + {_, alt + }r
+super + {_,alt + }r
 	~/.local/userscripts/bin/qqrecord {screen-mic,stop}
-super + {_, alt + }t
+super + {_,alt + }t
 	alacritty --config-file ~/.config/alacritty/term.yml {_,-e sudo -E bash}
-super + {_, alt + }y
-	~/.local/userscripts/bin/qqnet ssh {start,stop}
-super + {_, alt + }u
-	~/.local/userscripts/bin/qqnet mac {start,stop}
-super + {_,alt + ,alt + ctrl + }i
-	~/.local/userscripts/bin/qqnet {wifi,eth,stop}
-super + {_, alt + }o
-	~/.local/userscripts/bin/qqnet vpn {start,stop}
-super + p
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqiphone-sync; sleep 2"
+super + {_,alt + }y
+	~/.local/userscripts/bin/qqnet mac {on,off}
+super + alt + ctrl + y
+	~/.local/userscripts/bin/qqnet stop
+super + {_,alt + }u
+	~/.local/userscripts/bin/qqnet eth {on,off}
+super + {_,alt + }i
+	~/.local/userscripts/bin/qqnet wifi {on,off}
+super + {_,alt + }o
+	~/.local/userscripts/bin/qqnet vpn {on,off}
+super + {_,alt + }p
+	~/.local/userscripts/bin/qqnet ssh {on,off}
 super + bracketleft
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext1; sleep 2"
 super + alt + bracketleft
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount u ext1; sleep 2"
-super + bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount ext2; sleep 2"
-super + alt + bracketright
-	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount u ext2; sleep 2"
-super + backslash
+super + alt + ctrl + bracketleft
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount u ext1; ~/.local/userscripts/bin/qqmount u ext2; sleep 2"
+super + bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs 1 mount; sleep 2"
-super + alt + backslash
+super + alt + bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs 2 mount; sleep 2"
-super + alt + ctrl+  backslash
+super + alt + ctrl +  bracketright
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqnfs 1 unmount ask; ~/.local/userscripts/bin/qqnfs 2 unmount ask; sleep 2"
+super + backslash
+	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqiphone-sync; sleep 2"
 
 # ---------------------------
 # A -> L
 # ---------------------------
-super + {_, alt + }a
+super + {_,alt + }a
 	~/.local/userscripts/bin/qqvolume out {default,ext}
-super + {_, alt + }s
+super + {_,alt + }s
 	~/.local/userscripts/bin/qqrecord {shot,crop}
-super + {_, alt + }d
+super + {_,alt + }d
 	~/.local/userscripts/bin/qqpc {lock,suspend}
-super + {_, alt + }f
+super + {_,alt + }f
 	alacritty --config-file ~/.config/alacritty/vifm.yml -e {vifm,sudo -E vifm}
 super + {_,alt + }g
 	~/.local/userscripts/bin/qqcpu {default,performance}
@@ -98,7 +100,7 @@ super + Return
 # ---------------------------
 # Z -> M
 # ---------------------------
-super + {_, alt + }z
+super + {_,alt + }z
 	~/.local/userscripts/bin/qqcoffee {on,off}
 super + {_,alt + ,}x
 	~/.local/userscripts/bin/qqdevice trackpad {off,on}
@@ -108,15 +110,15 @@ super + {_,alt + ,alt + ctrl + }v
 	~/.local/userscripts/bin/qqscreen {int,ext,int-ext}
 super + {_,alt + }b
 	~/.local/userscripts/bin/qqbspwm bar {hide,show}
-super + {_, alt + ,alt + ctrl + }n
+super + {_,alt + ,alt + ctrl + }n
 	alacritty --config-file ~/.config/alacritty/vim.yml --class vim -e ~/.local/userscripts/bin/{qqnotes,qqjournal,qqcalendar}
 super + m
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount; sleep 2"
 super + alt + m
 	alacritty --config-file ~/.config/alacritty/script.yml -e sh -c "~/.local/userscripts/bin/qqmount u; sleep 2"
-super + {_, alt + }comma
+super + {_,alt + }comma
 	~/.local/userscripts/bin/qqmpv-controls {seek-rewind,rewind}
-super + {_, alt + }period
+super + {_,alt + }period
 	~/.local/userscripts/bin/qqmpv-controls {seek-forward,forward}
 super + slash
 	~/.local/userscripts/bin/qqmpv-controls play-pause
@@ -124,7 +126,7 @@ super + slash
 # ---------------------------
 # OTHER KEYS
 # ---------------------------
-super + {_, alt + }space
+super + {_,alt + }space
 	~/.local/userscripts/bin/qqrofi {app,game}
 super + {Left,Right,Up,Down}
 	~/.local/userscripts/bin/qqbspwm size {left,right,top,bottom}

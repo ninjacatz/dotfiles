@@ -11,7 +11,7 @@ Options:
 	1|2
 		(m)ount
 		(u)nmount
-			_|eject|ask
+			_|lock|ask
 EOF
 }
 
@@ -42,10 +42,10 @@ case "$2" in
 		fi
 		;;
 	unmount|u)
-		if [[ "$3" = "eject" ]]; then
+		if [[ "$3" = "lock" ]]; then
 			nfs_answer="y"
 		elif [[ "$3" = "ask" ]]; then
-			read -r -p "Do you want to eject nfs$1? (y/N) " nfs_answer
+			read -r -p "Do you want to lock nfs$1? (y/N) " nfs_answer
 		fi
 
 		if mountpoint /mnt/nfs"$1" > /dev/null; then

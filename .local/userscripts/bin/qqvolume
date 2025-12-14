@@ -77,24 +77,20 @@ case "$1" in
 	in)
 		case "$2" in
 			on)
-				amixer  -c "$current_card" set Capture cap
+				amixer  -c "$default_card" set Capture cap
 				sudo "$source_dir/../qqsudo" chmod 660 /dev/video* || true
-				sudo "$source_dir/../qqsudo" modprobe facetimehd || true
 				;;
 			off)
-				amixer  -c "$current_card" set Capture nocap
+				amixer  -c "$default_card" set Capture nocap
 				sudo "$source_dir/../qqsudo" chmod 000 /dev/video* || true
-				sudo "$source_dir/../qqsudo" rmmod facetimehd || true
 				;;
 			toggle)
-				if amixer -c "$current_card" get Capture | grep "\[on\]" > /dev/null; then
-					amixer -c "$current_card" set Capture nocap
+				if amixer -c "$default_card" get Capture | grep "\[on\]" > /dev/null; then
+					amixer -c "$default_card" set Capture nocap
 					sudo "$source_dir/../qqsudo" chmod 000 /dev/video* || true
-					sudo "$source_dir/../qqsudo" rmmod facetimehd || true
 				else
-					amixer -c "$current_card" set Capture cap
+					amixer -c "$default_card" set Capture cap
 					sudo "$source_dir/../qqsudo" chmod 660 /dev/video* || true
-					sudo "$source_dir/../qqsudo" modprobe facetimehd || true
 				fi
 				;;
 			*)

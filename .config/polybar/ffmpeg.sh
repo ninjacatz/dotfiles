@@ -1,9 +1,10 @@
 #!/bin/sh
 
-output=""
-
-if pgrep -x ffmpeg > /dev/null; then
-	output="${output}ffmpeg"
-fi
-
-echo "$output"
+while true; do
+	sleep 1
+	if pgrep -x ffmpeg > /dev/null; then
+		echo ffmpeg
+	else
+		echo
+	fi
+done

@@ -59,7 +59,7 @@ sudo() {
 	fi
 }
 # enable color support for ls and grep
-alias ls='ls --color=auto --group-directories-first -a'
+alias ls='ls --color=auto --group-directories-first -A'
 alias grep='grep --color=always'
 # making cp and mv ask before overwriting files as user and sudo
 alias sudo='sudo '

@@ -74,19 +74,18 @@ esac
 # change brightness
 case "$1" in
 	int)
-		echo "$total" | sudo "$source_dir/../qqsudo" tee "$int_path/brightness"
+		echo "$total" | sudo "$source_dir/../qqsudo" tee "$int_path/brightness" > /dev/null
 		;;
 	key)
-		echo "$total" | sudo "$source_dir/../qqsudo" tee "$key_path/brightness"
+		echo "$total" | sudo "$source_dir/../qqsudo" tee "$key_path/brightness" > /dev/null
 		;;
 	ext)
 		ddccontrol -r "$ext_address" -w "$total" dev:"$ext_device"
+		# kill ddccontrol daemon after period of inactivity
+		(
+			sleep 10
+			sudo "$source_dir/../qqsudo" pkill ddccontrol_serv || true
+			sudo "$source_dir/../qqsudo" pkill ddcpci || true
+		) &
 		;;
 esac
-
-# kill ddccontrol daemon after period of inactivity
-# (
-	# sleep 10
-	# sudo "$source_dir/../qqsudo" pkill ddccontrol_serv || true
-	# sudo "$source_dir/../qqsudo" pkill ddcpci || true
-# ) &

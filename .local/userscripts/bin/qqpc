@@ -2,6 +2,7 @@
 set -eo pipefail
 source_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 . "$source_dir/../qquser-check"
+. "$source_dir/../qqlib"
 
 # TODO: if you dont login after waking from suspend, the computer stays on
 
@@ -10,13 +11,14 @@ usage () {
 Usage: ${0##*/}
 Options:
 	(m)enu|(log)out|(r)eboot|(sh)utdown|(l)ock|(s)uspend|(h)ibernate
-		not-with-audio
+		not-with-(a)udio
 EOF
 }
 
+backlight_key_path="$qqpc_backlight_key_path"
 xlock_font=-*-helvetica-*-r-*-*-48-*-*-*-*-*-*-*
 
-if [ "$2" == "not-with-audio" ]; then
+if [[ "$2" == "not-with-audio" || "$2" == "a" ]]; then
 	if [ "$(grep -r "RUNNING" /proc/asound | wc -l)" -ne 0 ]; then
 		echo "Audio is playing. Exiting"
 		exit 0
@@ -30,9 +32,11 @@ case "$1" in
 		"$source_dir/qqpc" "$selection"
 		;;
 	logout|log)
-		"$source_dir/qqnet" stop || true
-		"$source_dir/qqcoffee" off || true
-		rm -f /tmp/bspwm_first_run
+		if [ "$HOSTNAME" != "optiplex-9020" ]; then
+			"$source_dir/qqnet" stop
+			"$source_dir/qqcoffee" off
+			rm -f /tmp/bspwm_first_run
+		fi
 		pkill -KILL -u "$USER"
 		;;
 	reboot|r)
@@ -42,46 +46,58 @@ case "$1" in
 		sudo "$source_dir/../qqsudo" shutdown -h now
 		;;
 	lock|l)
-		"$source_dir/qqcoffee" off || true
-		"$source_dir/qqvolume" mute on || true
-		"$source_dir/qqvolume" in off || true
-		"$source_dir/qqbacklight" key min || true
-
-		xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10 &
+		if [ "$HOSTNAME" != "optiplex-9020" ]; then
+			"$source_dir/qqcoffee" off
+			"$source_dir/qqvolume" mute on
+			"$source_dir/qqvolume" in off || true
+			backlight_key_value=$(cat "$backlight_key_path/brightness")
+			"$source_dir/qqbacklight" key min
+			xlock -info " " -username " " -password " Password: " -validate "Validating password..." -invalid "Invalid password" -bg Black -fg White +usefirst +description +showdate -echokeys -echokey "*" -font "$xlock_font" -startCmd "xset dpms force off" -dpmsoff 10 -timeout 10 \
+			&& echo "$backlight_key_value" | sudo "$source_dir/../qqsudo" tee "$backlight_key_path/brightness" > /dev/null &
+		fi
 		;;
 	suspend|s)
-		"$source_dir/qqpc" lock || true
-
-		"$source_dir/qqnfs" 1 unmount || true
-		"$source_dir/qqnet" stop || true
-
-		"$source_dir/qqdevice" keyboard off
-		sudo "$source_dir/../qqsudo" rmmod facetimehd || true
+		if [ "$HOSTNAME" != "optiplex-9020" ]; then
+			"$source_dir/qqpc" lock
+			"$source_dir/qqnet" stop
+			if [ "$HOSTNAME" = "m15" ]; then
+				"$source_dir/qqdevice" keyboard off
+				sudo "$source_dir/../qqsudo" rmmod facetimehd || true
+			fi
+		fi
 
 		sudo "$source_dir/../qqsudo" pm-suspend
 
-		"$source_dir/qqdevice" keyboard on
-		sudo "$source_dir/../qqsudo" modprobe facetimehd || true
-
-		# turn on screen and simulate Return key press to trigger xlock
-		xset dpms force on
-		xdotool key BackSpace
+		if [ "$HOSTNAME" != "optiplex-9020" ]; then
+			if [ "$HOSTNAME" = "m15" ]; then
+				"$source_dir/qqdevice" keyboard on
+				sudo "$source_dir/../qqsudo" modprobe facetimehd || true
+			fi
+			xset dpms force on
+			xdotool key BackSpace
+		fi
 		;;
 	hibernate|h)
-		"$source_dir/qqpc" lock || true
+		if [ "$HOSTNAME" != "optiplex-9020" ]; then
+			"$source_dir/qqpc" lock
+			"$source_dir/qqnet" stop
+			if [ "$HOSTNAME" = "m15" ]; then
+				sudo "$source_dir/../qqsudo" rmmod facetimehd || true
+				sudo "$source_dir/../qqsudo" rmmod brcmfmac || true
+			fi
+		fi
 
-		"$source_dir/qqnfs" 1 unmount || true
-		"$source_dir/qqnet" stop || true
+		sudo "$source_dir/../qqsudo" pm-hibernate &
 
-		sudo "$source_dir/../qqsudo" rmmod facetimehd || true
-
-		sudo "$source_dir/../qqsudo" pm-hibernate
-
-		sudo "$source_dir/../qqsudo" modprobe facetimehd || true
-
-		# turn on screen and simulate Return key press to trigger xlock
-		xset dpms force on
-		xdotool key BackSpace
+		# none of this runs
+		# if [ "$HOSTNAME" != "optiplex-9020" ]; then
+			# if [ "$HOSTNAME" = "m15" ]; then
+				# sudo "$source_dir/../qqsudo" modprobe facetimehd || true
+				# sudo "$source_dir/../qqsudo" modprobe brcmfmac || true
+			# fi
+			# xset dpms force on
+			# xdotool key BackSpace
+		# fi
 		;;
 	*)
 		usage

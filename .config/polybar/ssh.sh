@@ -1,9 +1,10 @@
 #!/bin/sh
 
-output=""
-
-if pgrep -x sshd > /dev/null; then
-	output="${output}ssh"
-fi
-
-echo "$output"
+while true; do
+	sleep 1
+	if pgrep -x sshd > /dev/null; then
+		echo ssh
+	else
+		echo
+	fi
+done

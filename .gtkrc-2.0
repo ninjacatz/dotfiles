@@ -1,8 +1,7 @@
 gtk-theme-name="Gruvbox-Dark"
-gtk-icon-theme-name="Papirus"
-gtk-font-name="jetbrains-mono-apple-emoji"
-# gtk-cursor-theme-name=DMZ-White
-# gtk-cursor-theme-size=24
+gtk-icon-theme-name="WhiteSur-grey"
+gtk-font-name="SF Mono + Apple Emoji"
+gtk-cursor-theme-name=macOS
 
 gtk-xft-antialias=1
 gtk-xft-hinting=1

@@ -168,10 +168,13 @@ exec > /tmp/pipe 2>&1
 qq_mount_ext1
 
 # ##########################
-# Remove software
+# Remove software and upgrade
 # ##########################
 echo "qq: Removing software"
 qq_apt_rm antix-goodies-core
+qq_apt_rm antix-libs
+sudo rm -rf /usr/local/share/live-files
+sudo rm -rf /usr/local/share/excludes
 qq_apt_rm ceni
 qq_apt_rm chroot-rescue
 qq_apt_rm cli-aptix
@@ -186,14 +189,8 @@ qq_apt_rm nano
 sudo rm -rf "$HOME"/.nanorc
 sudo rm -rf /root/.nanorc
 qq_apt_rm pppoeconf
-qq_apt_rm remaster_antix
-sudo rm -rf /usr/local/share/live-files
 qq_apt_rm tmux
 qq_apt_rm vim-tiny
-
-# ##########################
-# Full purge and upgrade
-# ##########################
 
 echo "qq: Full purge and upgrade"
 sudo apt autopurge -y
@@ -238,9 +235,6 @@ qq_root_ln "$HOME"/.bashrc
 qq_conf_add_ow "$backups_home_dir"/.profile
 sudo rm -rf /root/.profile
 qq_root_ln "$HOME"/.profile
-qq_conf_add_ow "$backups_home_dir"/.Xresources
-qq_conf_add "$backups_home_dir"/.config/mimeapps.list
-qq_conf_add "$backups_home_dir"/.config/user-dirs.dirs
 qq_root_ln "$HOME"/.config/mimeapps.list
 qq_conf_add "$backups_home_dir"/.local/bin
 qq_conf_add "$backups_home_dir"/.local/userscripts
@@ -267,23 +261,9 @@ sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 
-echo "qq: Adding qqsudo to sudoers"
+echo "qq: Adding qqsudo and setting admin flag to sudoers"
 sudo grep -q "ALL=(ALL) NOPASSWD" /etc/sudoers || sudo echo "$USER  ALL=(ALL) NOPASSWD: /home/$USER/.local/userscripts/qqsudo" | sudo tee -a /etc/sudoers
-
-# ##########################
-# Install Network Software
-# ##########################
-echo "qq: Installing network software"
-qq_apt_add iwd
-qq_su_conf_add_ow "$backups_etc_dir"/iwd/main.conf
-qq_su_conf_add "$backups_var_dir"/lib/iwd
-qq_apt_add openvpn
-qq_su_conf_add_ow "$backups_etc_dir"/openvpn
-sudo update-rc.d openvpn disable
-qq_apt_add ssh
-sudo rm -rf /root/.ssh
-qq_apt_add sshfs
-qq_apt_add nfs-common
+sudo grep -q "Defaults !admin_flag" /etc/sudoers || sudo echo "Defaults !admin_flag" | sudo tee -a /etc/sudoers
 
 # ##########################
 # Install Base Software
@@ -315,6 +295,21 @@ qq_conf_add "$backups_home_dir"/.vim
 qq_root_ln "$HOME"/.vim
 mkdir -p "$HOME"/.vim/swap
 qq_apt_add zip unzip rar unrar 7zip zstd
+
+# ##########################
+# Install Network Software
+# ##########################
+echo "qq: Installing network software"
+qq_apt_add iwd
+qq_su_conf_add_ow "$backups_etc_dir"/iwd/main.conf
+qq_su_conf_add "$backups_var_dir"/lib/iwd
+qq_apt_add openvpn
+qq_su_conf_add_ow "$backups_etc_dir"/openvpn
+sudo update-rc.d openvpn disable
+qq_apt_add ssh
+sudo rm -rf /root/.ssh
+qq_apt_add sshfs
+qq_apt_add nfs-common
 
 # ##########################
 # Install Programming Tools
@@ -396,26 +391,11 @@ fi
 # ##########################
 
 # ##########################
-# Install Xorg and WM
-# ##########################
-echo "qq: Installing Xorg and WM"
-qq_apt_add xorg
-qq_apt_add xserver-xorg-video-intel
-qq_apt_add xdotool xlockmore xzoom
-qq_apt_add xinput
-qq_apt_add dbus dbus-x11
-qq_apt_add bspwm
-qq_conf_add "$backups_home_dir"/.config/bspwm
-qq_conf_add "$backups_home_dir"/.config/sxhkd
-qq_apt_add polybar
-qq_conf_add "$backups_home_dir"/.config/polybar
-
-# ##########################
 # Copy PC configs
 # ##########################
 echo "qq: Copying PC configs"
-qq_conf_add "$backups_home_dir"/.themes
-qq_root_ln "$HOME"/.themes
+qq_conf_add "$backups_home_dir"/.local/share/themes
+qq_root_ln "$HOME"/.local/share/themes
 mkdir -p ~/.config/fontconfig
 qq_conf_add "$backups_home_dir"/.config/fontconfig/fonts.conf
 qq_conf_add "$backups_home_dir"/.local/share/fonts
@@ -432,15 +412,43 @@ qq_root_ln "$HOME"/.gtkrc-2.0
 
 qq_conf_add "$backups_home_dir"/downloads
 qq_conf_add_ow "$backups_home_dir"/.ssh
-qq_conf_add "$backups_home_dir"/bg.jpg
+qq_conf_add "$backups_home_dir"/.local/share/background
+qq_conf_add_ow "$backups_home_dir"/.Xresources
+qq_conf_add "$backups_home_dir"/.config/mimeapps.list
+qq_conf_add "$backups_home_dir"/.config/user-dirs.dirs
 qq_conf_add "$backups_home_dir"/.asoundrc
 qq_conf_add "$backups_home_dir"/.dotfiles
 qq_conf_add "$backups_home_dir"/README.md
 
 # ##########################
-# Install Programs (GUI)
+# PC Setup
 # ##########################
-echo "qq: Installing gui programs"
+echo "qq: Adding user to input group"
+sudo usermod -aG input "$USER"
+
+echo "qq: Disabling startup services"
+sudo update-rc.d networking disable
+sudo update-rc.d ssh disable
+
+# ##########################
+# Install Xorg and WM
+# ##########################
+echo "qq: Installing Xorg and WM"
+qq_apt_add xorg
+qq_apt_add xserver-xorg-video-intel
+qq_apt_add xdotool xlockmore xzoom
+qq_apt_add xinput
+qq_apt_add dbus dbus-x11
+qq_apt_add bspwm
+qq_conf_add "$backups_home_dir"/.config/bspwm
+qq_conf_add "$backups_home_dir"/.config/sxhkd
+qq_apt_add polybar
+qq_conf_add "$backups_home_dir"/.config/polybar
+
+# ##########################
+# Install PC Software
+# ##########################
+echo "qq: Installing PC software"
 qq_apt_add alacritty
 qq_conf_add "$backups_home_dir"/.config/alacritty
 sudo update-alternatives --set x-terminal-emulator /usr/bin/alacritty
@@ -449,8 +457,6 @@ qq_apt_add audacity
 qq_conf_add "$backups_home_dir"/.config/audacity
 qq_conf_add "$backups_home_dir"/.local/share/audacity
 qq_apt_add ddccontrol
-qq_apt_add dillo
-qq_conf_add "$backups_home_dir"/.dillo
 qq_apt_add ffmpeg
 qq_apt_add feh
 qq_apt_add fonts-dejavu-extra
@@ -460,7 +466,7 @@ qq_apt_add gimp
 qq_conf_add "$backups_home_dir"/.config/GIMP
 qq_apt_add guvcview
 qq_apt_add imagemagick
-qq_apt_add libreoffice
+qq_apt_add libreoffice-writer
 qq_conf_add "$backups_home_dir"/.config/libreoffice
 # librewolf (extrepo)
 qq_apt_add extrepo
@@ -501,7 +507,7 @@ qq_conf_add "$backups_home_dir"/.config/zathura
 # ##########################
 # Install/Copy Games
 # ##########################
-echo "qq: Installing game programs"
+echo "qq: Installing game software"
 qq_apt_add dosbox
 qq_apt_add mednaffe
 qq_apt_add mupen64plus-qt
@@ -520,16 +526,6 @@ qq_apt_add libjpeg8
 
 echo "qq: Copying game files"
 qq_conf_add "$backups_home_dir"/games
-
-# ##########################
-# Extra (Not home server)
-# ##########################
-echo "qq: Adding user to input group"
-sudo usermod -aG input "$USER"
-
-echo "qq: Disabling startup services"
-sudo update-rc.d networking disable
-sudo update-rc.d ssh disable
 
 # ##########################
 # Installing configs for specific PCs

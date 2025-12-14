@@ -7,9 +7,9 @@ usage () {
 	cat <<EOF
 Usage: ${0##*/}
 Options:
-	wifi|eth|stop|cli|trash-networks
-	ssh|vpn|mac
-		start|stop
+	(w)ifi|(e)thernet|(ss)h|(v)pn|(m)ac
+		on|off
+	(s)top|(c)li-wifi|(t)rash-networks
 EOF
 }
 
@@ -17,47 +17,74 @@ network_path="/var/lib/iwd"
 
 ethernet () {
 	case "$1" in
-		start)
-			sudo "$source_dir/../qqsudo" service networking start
+		on)
+			if pgrep -x dhclient > /dev/null; then
+				echo "ethernet already running"
+			else
+				sudo "$source_dir/../qqsudo" service networking start
+			fi
 			;;
-		stop)
-			"$source_dir/qqnfs" 1 unmount
-			"$source_dir/qqnfs" 2 unmount
-			sudo "$source_dir/../qqsudo" service networking stop
+		off)
+			if ! pgrep -x dhclient > /dev/null; then
+				echo "ethernet not running"
+			else
+				ssh_interface=$(ip route get 192.168.1.100 | awk '{print $3}' || true)
+				if [[ "$ssh_interface" == "eth0" ]]; then
+					"$source_dir/qqnfs" 1 unmount || pkill sshfs
+					"$source_dir/qqnfs" 2 unmount || pkill sshfs
+				fi
+				sudo "$source_dir/../qqsudo" service networking stop
+				sudo "$source_dir/../qqsudo" pkill -x dhclient
+			fi
 			;;
 	esac
 }
 
 wifi () {
 	case "$1" in
-		start)
-			sudo "$source_dir/../qqsudo" service iwd start
+		on)
+			if pgrep -x iwd > /dev/null; then
+				echo "wifi already running"
+			else
+				sudo "$source_dir/../qqsudo" service iwd start
+			fi
+			# polybar boot disables wlan module if service not running
+			polybar-msg cmd restart > /dev/null
 			;;
-		stop)
-			"$source_dir/qqnfs" 1 unmount
-			"$source_dir/qqnfs" 2 unmount
-			sudo "$source_dir/../qqsudo" service iwd stop
+		off)
+			if ! pgrep -x iwd > /dev/null; then
+				echo "wifi not running"
+			else
+				ssh_interface=$(ip route get 192.168.1.100 | awk '{print $3}' || true)
+				if [[ "$ssh_interface" == "wlan0" ]]; then
+					"$source_dir/qqnfs" 1 unmount || pkill sshfs
+					"$source_dir/qqnfs" 2 unmount || pkill sshfs
+				fi
+				sudo "$source_dir/../qqsudo" service iwd stop
+			fi
 			;;
 	esac
 }
 
 ssh () {
 	case "$1" in
-		start)
-			if ! pgrep -x sshd > /dev/null; then
+		on)
+			if ! pgrep -x dhclient > /dev/null && ! pgrep -x iwd > /dev/null; then
+				echo "No network services running. Start a network service before enabling ssh"
+			elif pgrep -x sshd > /dev/null; then
+				echo "ssh already running"
+			else
 				sudo "$source_dir/../qqsudo" service ssh start
 				sudo "$source_dir/../qqsudo" ufw allow ssh
-			else
-				echo "ssh already running"
 			fi
 			;;
-		stop)
-			if pgrep -x sshd > /dev/null; then
+		off)
+			if ! pgrep -x sshd > /dev/null; then
+				echo "ssh not running"
+			else
 				sudo "$source_dir/../qqsudo" service ssh stop
 				sudo "$source_dir/../qqsudo" ufw delete allow ssh
 				pkill -x ssh-agent
-			else
-				echo "ssh not running"
 			fi
 			;;
 	esac
@@ -65,18 +92,20 @@ ssh () {
 
 vpn () {
 	case "$1" in
-		start)
-			if ! pgrep -x openvpn > /dev/null; then
-				sudo "$source_dir/../qqsudo" service openvpn start
-			else
+		on)
+			if ! pgrep -x dhclient > /dev/null && ! pgrep -x iwd > /dev/null; then
+				echo "No network services running. Start a network service before starting vpn"
+			elif pgrep -x openvpn > /dev/null; then
 				echo "vpn already running"
+			else
+				sudo "$source_dir/../qqsudo" service openvpn start
 			fi
 			;;
-		stop)
-			if pgrep -x openvpn > /dev/null; then
-				sudo "$source_dir/../qqsudo" service openvpn stop
-			else
+		off)
+			if ! pgrep -x openvpn > /dev/null; then
 				echo "vpn not running"
+			else
+				sudo "$source_dir/../qqsudo" service openvpn stop
 			fi
 			;;
 	esac
@@ -84,63 +113,37 @@ vpn () {
 
 mac () {
 	case "$1" in
-		start)
-			echo "Wifi mac randomization turned on"
-			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/s/^#//' "/etc/iwd/main.conf"
-			sudo "$source_dir/../qqsudo" macchanger -a eth0 || true
-			touch /tmp/mac_on
+		on)
+			if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
+				echo "A network service is running. Stop any network services before configuring mac addresses"
+			else
+				sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/s/^#//' "/etc/iwd/main.conf"
+				echo "Wifi mac randomization turned on"
+				sudo "$source_dir/../qqsudo" macchanger -a eth0 || true
+				touch /tmp/mac_on
+			fi
 			;;
-		stop)
-			echo "Wifi mac randomization turned off"
-			sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/ s/^#\?/#/' "/etc/iwd/main.conf"
-			sudo "$source_dir/../qqsudo" macchanger -p eth0 || true
-			rm -f /tmp/mac_on
+		off)
+			if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
+				echo "A network service is running. Stop any network services before configuring mac addresses"
+			else
+				sudo "$source_dir/../qqsudo" sed -i '/AddressRandom/ s/^#\?/#/' "/etc/iwd/main.conf"
+				echo "Wifi mac randomization turned off"
+				sudo "$source_dir/../qqsudo" macchanger -p eth0 || true
+				rm -f /tmp/mac_on
+			fi
 			;;
 	esac
 }
 
 case "$1" in
-	wifi)
-		if pgrep -x iwd > /dev/null; then
-			echo "wifi already running"
-			exit 0
-		fi
-		vpn stop
-		ssh stop
-		ethernet stop
-		wifi start
-		# polybar boot disables wlan module if service not running
-		polybar-msg cmd restart > /dev/null
-		;;
-	eth)
-		if pgrep -x dhclient > /dev/null; then
-			echo "ethernet already running"
-			exit 0
-		fi
-		vpn stop
-		ssh stop
-		wifi stop
-		ethernet start
-		;;
-	stop)
-		vpn stop
-		ssh stop
-		wifi stop
-		ethernet stop
-		mac stop
-		;;
-	ssh)
+	wifi|w)
 		case "$2" in
-			start)
-				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
-					ssh start
-				else
-					echo "No network services running. Start a network service before enabling ssh"
-					exit 0
-				fi
+			on)
+				wifi on
 				;;
-			stop)
-				ssh stop
+			off)
+				wifi off
 				;;
 			*)
 				usage
@@ -148,18 +151,13 @@ case "$1" in
 				;;
 		esac
 		;;
-	vpn)
+	eth|e)
 		case "$2" in
-			start)
-				if pgrep -x dhclient > /dev/null || pgrep -x iwd > /dev/null; then
-					vpn start
-				else
-					echo "No network services running. Start a network service before starting vpn"
-					exit 0
-				fi
+			on)
+				ethernet on
 				;;
-			stop)
-				vpn stop
+			off)
+				ethernet off
 				;;
 			*)
 				usage
@@ -167,36 +165,65 @@ case "$1" in
 				;;
 		esac
 		;;
-	mac)
-		if ! pgrep -x dhclient > /dev/null && ! pgrep -x iwd > /dev/null; then
-			case "$2" in
-				start)
-					mac start
-					;;
-				stop)
-					mac stop
-					;;
-				*)
-					usage
-					exit 1
-					;;
-			esac
-		else
-			echo "A network service is running. Stop any network services before configuring mac addresses"
-			exit 0
-		fi
+	stop|s)
+		vpn off
+		ssh off
+		wifi off
+		ethernet off
+		mac off
 		;;
-	cli)
+	ssh|ss)
+		case "$2" in
+			on)
+				ssh on
+				;;
+			off)
+				ssh off
+				;;
+			*)
+				usage
+				exit 1
+				;;
+		esac
+		;;
+	vpn|v)
+		case "$2" in
+			on)
+				vpn on
+				;;
+			off)
+				vpn off
+				;;
+			*)
+				usage
+				exit 1
+				;;
+		esac
+		;;
+	mac|m)
+		case "$2" in
+			on)
+				mac on
+				;;
+			off)
+				mac off
+				;;
+			*)
+				usage
+				exit 1
+				;;
+		esac
+		;;
+	cli-wifi|c)
 		if pgrep -x iwd > /dev/null; then
-			iwctl station wlan0 getnetworks
+			iwctl station wlan0 get-networks
 			read -r -p "Enter network name: " network
 			iwctl station wlan0 connect "$network"
 		else
 			echo "Wifi service not running. Start wifi first"
-			exit 0
 		fi
 		;;
-	trash-networks)
+	trash-networks|t)
 		read -r -p "Are you sure you want to trash networks? (y/N) " answer
 		if [ "${answer,,}" = "y" ]; then
 			sudo "$source_dir/../qqsudo" trash "$network_path"/*

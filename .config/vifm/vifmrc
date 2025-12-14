@@ -1,12 +1,13 @@
 " vim: filetype=vim :
 
+" TODO: enable mouse in all modes (requires version 0.13)
+" set mouse=a
+
 " ---------------------------
 " BASIC FUNCTIONALITY
 " ---------------------------
 " use xdg defaults for all files:
 filetype * xdg-open 2>/dev/null &
-" TODO: enable mouse in all modes (requires version 0.13)
-" set mouse=a
 " uses vifm utilities instead of shell utilities
 set syscalls
 " show hidden files
@@ -21,6 +22,8 @@ set history=1000
 set undolevels=1000
 " automatically resolve symbolic links
 set nofollowlinks
+" do not display '.' and '..'
+set dotdirs=
 " do not run executables
 set norunexec
 " natural sort of (version) numbers within text
@@ -67,6 +70,8 @@ set statusline+=%A\ %u:%g\ %E\ %T%=%d
 " ---------------------------
 " show directory preview by default
 view!
+" show only one column by default
+only
 " no wrapping in previews
 set nowrap
 " show only filenames in view columns
@@ -120,9 +125,10 @@ mark 7 ~/.local/userscripts
 
 nnoremap '; :cd /mnt<CR>
 nnoremap '[ :cd /mnt/ext1<CR>
-nnoremap '] :cd /mnt/ext2<CR>
-nnoremap '\ :cd /mnt/nfs1<CR>
-nnoremap '| :cd /mnt/nfs2<CR>
+nnoremap '{ :cd /mnt/ext2<CR>
+nnoremap '] :cd /mnt/nfs1<CR>
+nnoremap '} :cd /mnt/nfs2<CR>
+nnoremap '\ :cd /mnt/iphone<CR>
 
 " ---------------------------
 " KEYMAPS
@@ -150,6 +156,7 @@ nnoremap <Space>t :!nohup alacritty --config-file $HOME/.config/alacritty/term.y
 nnoremap <Space>y :history<CR>
 
 " a -> l
+nnoremap <Space>f :tree<CR>
 nnoremap <Space>s :sort<CR>
 nnoremap <C-h> :tabprevious<CR>
 nnoremap <C-l> :tabnext<CR>
@@ -159,10 +166,13 @@ nnoremap <Space>' :marks<CR>
 nnoremap <Space>" :registers<CR>
 
 " z -> m
+" :hideui
 nnoremap <Space>x :tabc<CR>
+nnoremap <Space>c :vsplit<CR>
+nnoremap <Space>C :only<CR>
 nnoremap <Space>v :view<CR>
 nnoremap <Space>b :find **<Left>
-nnoremap <Space>n :cd<Space>
+nnoremap <Space>n :goto<Space>
 nnoremap <Space>m :tabnew<Space>
 nnoremap <Space>, :norm<Space>
 nnoremap <Space>. :%s///g<Left><Left><Left>

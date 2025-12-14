@@ -60,9 +60,6 @@ fi
 # change mpv user-input scale
 sed -i "s/^\(\s*scale\s*=\s*\)[0-9.]\+/\1 $ui_scale/" "$HOME"/.config/mpv/scripts/user-input.lua
 
-# change dillo font factor
-sed -i s/"font_factor=.*"/"font_factor=$ui_scale"/ "$HOME/.dillo/dillorc"
-
 # change Xresources DPI
 xresources_file="$HOME/.Xresources"
 #if existing setting is present, change it

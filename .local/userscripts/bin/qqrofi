@@ -13,7 +13,7 @@ EOF
 
 games_path="$HOME/games"
 dpi=$(awk '/dpi:/ {print $2}' "$HOME/.Xresources")
-font="jetbrains mono 13"
+font="JetBrains Mono 13"
 theme="$HOME/.config/rofi/themes/gruvbox-dark.rasi"
 flags=(-disable-history -scroll-method 1 -font "$font" -dpi "$dpi" -theme "$theme" -theme-str 'listview {lines: 10;}')
 
